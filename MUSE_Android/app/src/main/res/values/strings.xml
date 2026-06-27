@@ -1,0 +1,90 @@
+<resources>
+    <string name="app_name">TestApp</string>
+    <string name="terms_progress">1/3</string>
+    <string name="btn_skip">Skip</string>
+    <string name="terms_title">Điều khoản sử dụng</string>
+    <string name="terms_subtitle">Cập nhật lần cuối: 12/06/2026</string>
+    <string name="terms_section_1_title">1. GIỚI THIỆU</string>
+    <string name="terms_section_1_content">Chào mừng bạn đến với MUSE - ứng dụng thời trang và phong cách sống. Khi bạn truy cập, hệ thống cài đặt hoặc sử dụng ứng dụng MUSE (gọi chung là “Ứng dụng”), bạn đã đồng ý tuân thủ các Điều khoản sử dụng này. Nếu bạn không chấp nhận, vui lòng không sử dụng Ứng dụng.</string>
+    <string name="terms_section_2_title">2. ĐIỀU KIỆN SỬ DỤNG</string>
+    <string name="terms_section_2_content">Để sử dụng đầy đủ các tính năng của MUSE, bạn cần đăng ký một tài khoản cá nhân. Bạn cần cung cấp thông tin chính xác, trung thực và đầy đủ, bao gồm: Họ và tên, địa chỉ email hoặc số điện thoại, mật khẩu (nếu có).\nBạn hoàn toàn chịu trách nhiệm bảo mật thông tin đăng nhập (tên đăng nhập, mật khẩu). MUSE sẽ không chịu trách nhiệm về bất kỳ thiệt hại nào phát sinh từ việc bạn để lộ mật khẩu hoặc hành động trái phép từ tài khoản.</string>
+    <string name="terms_section_3_title">3. HÀNH VI BỊ CẤM</string>
+    <string name="terms_section_3_content">Khi sử dụng ứng dụng, bạn không được thực hiện bất kỳ hành vi nào sau đây:\n- Đăng tải, gửi lên, chia sẻ hoặc truyền tải nội dung có tính chất: Khiêu dâm, đồi trụy, bạo lực, khủng bố, kích động thù hận, phân biệt chủng tộc, giả làm người khác vi phạm quyền riêng tư của người khác.\n- Xâm phạm quyền sở hữu trí tuệ của MUSE hoặc bên thứ ba.\n- Sử dụng bất kỳ công cụ, phần mềm nào can thiệp bất hợp pháp vào hệ thống của MUSE.</string>
+    <string name="terms_section_4_title">4. QUYỀN SỞ HỮU TRÍ TUỆ</string>
+    <string name="terms_section_4_content">Toàn bộ nội dung trên Ứng dụng MUSE, bao gồm nhưng không giới hạn: Các thiết kế, văn bản, đồ họa, hình ảnh, video, âm thanh, mã nguồn và phần mềm đều thuộc quyền sở hữu của MUSE hoặc được cấp phép hợp pháp từ các đối tác.</string>
+    <string name="terms_section_5_title">5. TRỢ GIÚP VÀ KHÓA TÀI KHOẢN</string>
+    <string name="terms_section_5_content">MUSE có quyền tạm ngừng hoặc chấm dứt vĩnh viễn tài khoản của bạn ngay lập tức mà không cần thông báo trước nếu bạn vi phạm bất kỳ điều khoản nào trong quy định này.</string>
+    <string name="terms_section_6_title">6. SỬA ĐỔI ĐIỀU KHOẢN</string>
+    <string name="terms_section_6_content">MUSE có thể thay đổi, bổ sung hoặc hủy bỏ các quy định trong Điều khoản sử dụng này vào bất cứ lúc nào.</string>
+    <string name="terms_section_7_title">7. LIÊN HỆ</string>
+    <string name="terms_section_7_content">Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ:\nBộ phận kỹ thuật: support@muse-app.com\nQuản lý điều khoản: legal@muse-app.com</string>
+    <string name="terms_agree">Tôi đồng ý với Điều khoản sử dụng ứng dụng</string>
+    <string name="btn_next">Next</string>
+
+    <!-- Privacy Policy -->
+    <string name="privacy_progress">2/3</string>
+    <string name="privacy_title">Chính sách bảo mật</string>
+    <string name="privacy_subtitle">Cam kết bảo vệ quyền riêng tư của bạn</string>
+    <string name="privacy_section_1_title">1. THÔNG TIN THU THẬP</string>
+    <string name="privacy_section_1_content">Chúng tôi thu thập các thông tin sau:\n- Thông tin định danh: Họ tên, email, số điện thoại.\n- Thông tin thiết bị: Loại thiết bị, hệ điều hành, địa chỉ IP.\n- Thông tin sử dụng: Cách bạn tương tác với các tính năng trong ứng dụng.</string>
+    <string name="privacy_section_2_title">2. MỤC ĐÍCH SỬ DỤNG</string>
+    <string name="privacy_section_2_content">Thông tin của bạn được sử dụng để:\n- Cung cấp và duy trì dịch vụ.\n- Cá nhân hóa trải nghiệm người dùng.\n- Gửi thông báo về các cập nhật hoặc ưu đãi mới nhất.</string>
+    <string name="privacy_section_3_title">3. CHIA SẺ DỮ LIỆU</string>
+    <string name="privacy_section_3_content">MUSE cam kết không bán dữ liệu của bạn cho bên thứ ba. Chúng tôi chỉ chia sẻ thông tin khi có sự đồng ý của bạn hoặc theo yêu cầu của pháp luật.</string>
+    <string name="privacy_section_4_title">4. THỜI GIAN LƯU TRỮ</string>
+    <string name="privacy_section_4_content">Dữ liệu của bạn sẽ được lưu trữ trong suốt thời gian bạn sử dụng ứng dụng hoặc cho đến khi bạn yêu cầu xóa tài khoản.</string>
+    <string name="privacy_section_5_title">5. BẢO MẬT DỮ LIỆU</string>
+    <string name="privacy_section_5_content">Chúng tôi áp dụng các biện pháp mã hóa tiên tiến để bảo vệ thông tin cá nhân của bạn khỏi các truy cập trái phép.</string>
+    <string name="privacy_section_6_title">6. LIÊN HỆ VỀ BẢO MẬT</string>
+    <string name="privacy_section_6_content">Mọi thắc mắc về quyền riêng tư, vui lòng liên hệ:\nEmail: privacy@muse-app.com</string>
+    <string name="btn_prev">Prev</string>
+
+    <!-- Notification Screen -->
+    <string name="notif_progress">3/3</string>
+    <string name="notif_title">Đừng bỏ lỡ những điều thú vị</string>
+    <string name="notif_subtitle">MUSE muốn gửi thông báo cho bạn trong những trường hợp sau:</string>
+    <string name="notif_item_1">✨ Xu hướng mới nhất: Thông báo khi có bộ sưu tập, BST thời trang mới từ các nhà thiết kế hàng đầu.</string>
+    <string name="notif_item_2">🎁 Ưu đãi đặc biệt: Các mã giảm giá, quà tặng dành riêng cho thành viên MUSE.</string>
+    <string name="notif_item_3">💬 Phản hồi cộng đồng: Thông báo khi có người bình luận, thích hoặc gửi tin nhắn cho bạn.</string>
+    <string name="notif_item_4">📅 Sự kiện thời trang: Nhắc nhở về các buổi trình diễn, talkshow, workshop sắp diễn ra.</string>
+    <string name="notif_footer">Bạn hoàn toàn có thể tắt thông báo bất kỳ lúc nào trong phần Cài đặt của ứng dụng hoặc trong Cài đặt hệ thống điện thoại.</string>
+    <string name="btn_enable_notif">BẬT THÔNG BÁO</string>
+    <string name="btn_later">ĐỂ SAU</string>
+    <string name="btn_get_started">Get Started</string>
+
+    <!-- Login Screen -->
+    <string name="login_welcome">Welcome\nBack!</string>
+    <string name="hint_email_phone">Số điện thoại hoặc Email</string>
+    <string name="hint_password">Mật khẩu</string>
+    <string name="forgot_password">Quên mật khẩu?</string>
+    <string name="btn_login">Đăng Nhập</string>
+    <string name="or_continue_with">- Hoặc tiếp tục với -</string>
+    <string name="no_account">Chưa có tài khoản?</string>
+    <string name="register">Đăng Ký</string>
+
+    <!-- Register Screen -->
+    <string name="register_title">Tạo tài khoản\nmới</string>
+    <string name="hint_confirm_password">Nhập lại mật khẩu</string>
+    <string name="register_legal">Bằng cách nhấn Đăng ký, bạn đã đồng ý với các điều khoản của chúng tôi</string>
+    <string name="btn_register">Đăng ký</string>
+    <string name="already_have_account">Đã có tài khoản?</string>
+    <string name="login_now">Đăng nhập</string>
+
+    <!-- Edit Profile Screen -->
+    <string name="edit_profile_title">SỬA THÔNG TIN</string>
+    <string name="section_detail_info">Thông tin chi tiết</string>
+    <string name="label_email">Email</string>
+    <string name="label_phone">Số điện thoại</string>
+    <string name="label_password">Mật khẩu</string>
+    <string name="change_password">Change Password</string>
+    <string name="section_address">Địa chỉ</string>
+    <string name="label_street">Đường</string>
+    <string name="label_ward">Phường</string>
+    <string name="label_city">Tỉnh/ Thành phố</string>
+    <string name="label_address_note">Ghi chú</string>
+    <string name="section_payment">Thanh toán</string>
+    <string name="label_account_number">Số tài khoản</string>
+    <string name="label_account_name">Tên chủ tài khoản</string>
+    <string name="label_bank">Ngân hàng</string>
+    <string name="btn_save">Lưu</string>
+</resources>

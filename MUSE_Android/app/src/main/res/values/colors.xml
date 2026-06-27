@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary -->
+    <color name="primary_500">#FB6F92</color>
+    <color name="primary_100">#FFE5EC</color>
+    <color name="primary_700">#E63F69</color>
+
+    <!-- Neutral -->
+    <color name="neutral_50">#FCFAFA</color>
+    <color name="neutral_100">#FFE5EC</color>   <!-- theo bảng, nhưng có thể #FFF0F0 -->
+    <color name="neutral_300">#DDD8D8</color>
+    <color name="neutral_800">#332F2F</color>
+    <color name="neutral_900">#1F1C1C</color>
+    <color name="neutral_600">#6B6464</color>   <!-- lấy từ dòng Neutral 900 thứ hai -->
+
+    <!-- Success, Warning, Error (chưa dùng) -->
+    <color name="success_500">#4CAF50</color>
+    <color name="warning_500">#FF9800</color>
+    <color name="error_500">#6B6464</color>
+
+    <!-- Ứng dụng chính -->
+    <color name="background">@color/neutral_50</color>
+    <color name="text_primary">@color/neutral_900</color>
+    <color name="text_secondary">@color/neutral_600</color>
+</resources>
