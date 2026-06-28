@@ -87,4 +87,18 @@
     <string name="label_account_name">Tên chủ tài khoản</string>
     <string name="label_bank">Ngân hàng</string>
     <string name="btn_save">Lưu</string>
+
+    <!-- Cart Screen -->
+    <string name="cart_title">Giỏ hàng</string>
+    <string name="cart_empty_count">(0)</string>
+    <string name="btn_edit">Sửa</string>
+    <string name="cart_empty_title">“Hổng” có gì trong giỏ hết</string>
+    <string name="cart_empty_subtitle">Về trang cửa hàng để chọn mua sản phẩm bạn nhé!!</string>
+    <string name="btn_shop_now">Mua sắm ngay</string>
+    <string name="cart_recommendation_title">Có thể bạn cũng thích</string>
+    <string name="cart_voucher">Voucher</string>
+    <string name="cart_voucher_hint">Chọn hoặc nhập mã</string>
+    <string name="cart_reward_points">Dùng điểm thưởng</string>
+    <string name="cart_select_all">Tất cả</string>
+    <string name="btn_buy_now">Mua ngay</string>
 </resources>
