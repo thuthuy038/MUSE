@@ -12,7 +12,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MUSE_Android">
+        android:theme="@style/Theme.MUSE_Android"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".profile.EditProfileActivity"
             android:exported="false" />
@@ -32,17 +33,23 @@
             android:name=".policy.TermsOfUseActivity"
             android:exported="false" />
         <activity
-            android:name=".auth.WelcomeScreen"
-            android:exported="false" />
-        <activity
             android:name=".main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".search.SearchActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".search.SearchResultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".auth.WelcomeScreen"
+            android:exported="false" />
     </application>
 
 </manifest>
