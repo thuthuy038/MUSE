@@ -1,15 +1,11 @@
-package com.project.muse_android;
+package com.project.muse_android.auth;
 
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.project.muse_android.databinding.RegisterScreenBinding;
 import com.project.network.ApiClient;

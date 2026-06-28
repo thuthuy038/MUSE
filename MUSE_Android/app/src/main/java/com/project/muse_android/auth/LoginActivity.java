@@ -1,4 +1,4 @@
-package com.project.muse_android;
+package com.project.muse_android.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,13 +6,10 @@ import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.project.muse_android.databinding.LoginScreenBinding;
+import com.project.muse_android.profile.EditProfileActivity;
 import com.project.network.ApiClient;
 import com.project.models.LoginRequest;
 import com.project.models.LoginResponse;
@@ -58,7 +55,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         binding.tvRegister.setOnClickListener(v -> {
-            Intent intent = new Intent(com.project.muse_android.LoginActivity.this, RegisterActivity.class);
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
     }
@@ -69,22 +66,20 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(com.project.muse_android.LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                     // Lưu token hoặc chuyển sang màn hình chính
-                    Intent intent = new Intent(com.project.muse_android.LoginActivity.this, EditProfileActivity.class);
+                    Intent intent = new Intent(LoginActivity.this, EditProfileActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(com.project.muse_android.LoginActivity.this, "Đăng nhập thất bại: " + response.message(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + response.message(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
-                Toast.makeText(com.project.muse_android.LoginActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
-
-
 }

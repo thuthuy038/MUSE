@@ -14,28 +14,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MUSE_Android">
         <activity
-            android:name=".EditProfileActivity"
+            android:name=".profile.EditProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".RegisterActivity"
+            android:name=".auth.RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".auth.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".NotificationScreenActivity"
+            android:name=".notification.NotificationScreenActivity"
             android:exported="false" />
         <activity
-            android:name=".PrivacyPolicyActivity"
+            android:name=".policy.PrivacyPolicyActivity"
             android:exported="false" />
         <activity
-            android:name=".TermsOfUseActivity"
+            android:name=".policy.TermsOfUseActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".main.MainActivity"
             android:exported="false" />
         <activity
-            android:name=".WelcomeScreen"
+            android:name=".auth.WelcomeScreen"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
