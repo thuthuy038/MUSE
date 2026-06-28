@@ -87,4 +87,54 @@
     <string name="label_account_name">Tên chủ tài khoản</string>
     <string name="label_bank">Ngân hàng</string>
     <string name="btn_save">Lưu</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_membership_golden">THÀNH VIÊN GOLDEN</string>
+    <string name="profile_orders_count">0</string>
+    <string name="profile_orders_label">ĐƠN HÀNG</string>
+    <string name="profile_points_count">0</string>
+    <string name="profile_points_label">ĐIỂM TÍCH LŨY</string>
+
+    <string name="profile_section_account">CÀI ĐẶT TÀI KHOẢN</string>
+    <string name="profile_personal_info">Thông tin cá nhân</string>
+    <string name="profile_setting">Cài đặt</string>
+    <string name="profile_notifications">Thông báo</string>
+    <string name="profile_membership">Membership</string>
+
+    <string name="profile_section_history">LỊCH SỬ MUA SẮM</string>
+    <string name="profile_my_orders">Đơn hàng của bạn</string>
+    <string name="profile_favorites">Sản phẩm yêu thích</string>
+
+    <string name="profile_section_services">DỊCH VỤ CỦA MUSE</string>
+    <string name="profile_ai_stylist">AI Stylist</string>
+    <string name="profile_ai_stylist_desc">Đề xuất style từ AI.</string>
+    <string name="profile_ar_room">Phòng AR</string>
+    <string name="profile_ar_room_desc">Phòng thử đồ ảo.</string>
+
+    <string name="btn_logout">ĐĂNG XUẤT</string>
+
+    <!-- Logout Dialog -->
+    <string name="logout_title">Đăng xuất</string>
+    <string name="logout_message">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản hiện tại?</string>
+    <string name="btn_confirm">ĐỒNG Ý</string>
+    <string name="btn_cancel">HỦY</string>
+
+    <!-- Reset Password Flow -->
+    <string name="forgot_password_title">Quên\nmật khẩu?</string>
+    <string name="hint_email_phone_reset">Nhập số điện thoại hoặc email</string>
+    <string name="forgot_password_hint">* Chúng tôi sẽ gửi mã xác nhận thay đổi mật khẩu về email hoặc số điện thoại của bạn</string>
+    <string name="btn_confirm_reset">Xác nhận</string>
+
+    <string name="hint_otp">Nhập mã xác nhận</string>
+    <string name="otp_hint">* Vui lòng nhập mã xác nhận gồm 6 chữ số được gửi đến email hoặc số điện thoại của bạn</string>
+
+    <string name="hint_new_password">Nhập mật khẩu mới</string>
+    <string name="hint_confirm_new_password">Nhập lại mật khẩu mới</string>
+    <string name="password_length_hint">* Mật khẩu tối thiểu 8 kí tự</string>
+
+    <!-- Success Dialogs -->
+    <string name="login_success">Đăng nhập thành công!</string>
+    <string name="register_success">Đăng ký thành công!</string>
+    <string name="change_password_success">Đổi mật khẩu thành công!</string>
+    <string name="btn_close">ĐÓNG</string>
 </resources>

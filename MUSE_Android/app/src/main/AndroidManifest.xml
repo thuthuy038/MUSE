@@ -14,13 +14,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MUSE_Android">
         <activity
-            android:name=".profile.EditProfileActivity"
+            android:name=".auth.ForgotPasswordActivity"
             android:exported="false" />
         <activity
-            android:name=".auth.RegisterActivity"
+            android:name=".auth.VerifyOtpActivity"
             android:exported="false" />
         <activity
-            android:name=".auth.LoginActivity"
+            android:name=".auth.ResetPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".profile.ProfileActivity"
             android:exported="false" />
         <activity
             android:name=".notification.NotificationScreenActivity"
@@ -35,7 +38,7 @@
             android:name=".main.MainActivity"
             android:exported="false" />
         <activity
-            android:name=".auth.WelcomeScreen"
+            android:name=".auth.AuthActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

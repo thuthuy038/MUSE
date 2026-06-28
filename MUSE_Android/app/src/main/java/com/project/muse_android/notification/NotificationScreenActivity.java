@@ -1,11 +1,13 @@
 package com.project.muse_android.notification;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.project.muse_android.databinding.NotificationScreenBinding;
+import com.project.muse_android.dialog.SuccessDialog;
+import com.project.muse_android.main.MainActivity;
 
 public class NotificationScreenActivity extends AppCompatActivity {
 
@@ -18,21 +20,21 @@ public class NotificationScreenActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         binding.btnEnable.setOnClickListener(v -> {
-            Toast.makeText(this, "Đã bật thông báo!", Toast.LENGTH_SHORT).show();
+            SuccessDialog dialog = SuccessDialog.newInstance("Đã bật nhận thông báo thành công!");
+            dialog.setOnCloseListener(this::navigateToHome);
+            dialog.show(getSupportFragmentManager(), "success_dialog");
         });
 
-        binding.btnLater.setOnClickListener(v -> {
-            Toast.makeText(this, "Bạn có thể cài đặt sau", Toast.LENGTH_SHORT).show();
-        });
-
+        binding.btnLater.setOnClickListener(v -> navigateToHome());
+        binding.btnSkip.setOnClickListener(v -> navigateToHome());
+        binding.btnGetStarted.setOnClickListener(v -> navigateToHome());
         binding.btnPrev.setOnClickListener(v -> finish());
+    }
 
-        binding.btnGetStarted.setOnClickListener(v -> {
-            Toast.makeText(this, "Chào mừng bạn đến với MUSE!", Toast.LENGTH_LONG).show();
-        });
-
-        binding.btnSkip.setOnClickListener(v -> {
-            // Xử lý skip
-        });
+    private void navigateToHome() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }
