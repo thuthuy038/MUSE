@@ -78,12 +78,6 @@ public class ProfileOverviewFragment extends Fragment {
                     e.printStackTrace();
                     binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
                 }
-            try {
-                byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
-                Glide.with(this).load(decodedString).into(binding.ivAvatar);
-            } catch (Exception e) {
-                e.printStackTrace();
-                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
             }
         } else {
             binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
@@ -123,14 +117,6 @@ public class ProfileOverviewFragment extends Fragment {
                                     e.printStackTrace();
                                     binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
                                 }
-                        if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
-                            try {
-                                byte[] decodedString = Base64.decode(user.getAvatar(), Base64.DEFAULT);
-                                Glide.with(ProfileOverviewFragment.this).load(decodedString).into(binding.ivAvatar);
-                                sessionManager.saveAvatar(user.get_id(), user.getAvatar());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
                             }
                         } else {
                             if (sessionManager.getAvatar(user.get_id()) == null) {
