@@ -10,7 +10,7 @@ public class User {
     private String email;
     private String phone = null;
     private String role;
-    private String avatar = null;
+    private Avatar avatar = null;
     private List<Address> addresses = null;
     private Payment payment = null;
     private int points = 0;
@@ -79,10 +79,43 @@ public class User {
         public void setBank(String bank) { this.bank = bank; }
     }
 
+    public static class Avatar {
+        private String gridfsFileId;
+        private String filename;
+        private String originalname;
+        private String mimetype;
+        private int size;
+        private String url;
+
+        public Avatar() {}
+
+        public Avatar(String url) {
+            this.url = url;
+        }
+
+        public String getGridfsFileId() { return gridfsFileId; }
+        public void setGridfsFileId(String gridfsFileId) { this.gridfsFileId = gridfsFileId; }
+
+        public String getFilename() { return filename; }
+        public void setFilename(String filename) { this.filename = filename; }
+
+        public String getOriginalname() { return originalname; }
+        public void setOriginalname(String originalname) { this.originalname = originalname; }
+
+        public String getMimetype() { return mimetype; }
+        public void setMimetype(String mimetype) { this.mimetype = mimetype; }
+
+        public int getSize() { return size; }
+        public void setSize(int size) { this.size = size; }
+
+        public String getUrl() { return url; }
+        public void setUrl(String url) { this.url = url; }
+    }
+
     public User() {
     }
 
-    public User(String _id, String code, String name, String email, String phone, String role, String avatar, List<Address> addresses, Payment payment) {
+    public User(String _id, String code, String name, String email, String phone, String role, Avatar avatar, List<Address> addresses, Payment payment) {
         this._id = _id;
         this.code = code;
         this.name = name;
@@ -142,11 +175,11 @@ public class User {
         this.role = role;
     }
 
-    public String getAvatar() {
+    public Avatar getAvatar() {
         return avatar;
     }
 
-    public void setAvatar(String avatar) {
+    public void setAvatar(Avatar avatar) {
         this.avatar = avatar;
     }
 
@@ -228,7 +261,7 @@ public class User {
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
                 ", role='" + role + '\'' +
-                ", avatar='" + avatar + '\'' +
+                ", avatar=" + avatar +
                 ", addresses=" + addresses +
                 ", payment=" + payment +
                 '}';

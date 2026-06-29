@@ -57,11 +57,19 @@ public class SettingsFragment extends Fragment {
 
         String cachedAvatar = sessionManager.getAvatar(sessionManager.getUserId());
         if (cachedAvatar != null) {
-            try {
-                byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
-                Glide.with(this).load(decodedString).into(binding.ivAvatar);
-            } catch (Exception e) {
-                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+            if (cachedAvatar.startsWith("http") || cachedAvatar.startsWith("/")) {
+                String fullUrl = cachedAvatar;
+                if (cachedAvatar.startsWith("/")) {
+                    fullUrl = "https://server-testing-ymn9.onrender.com" + cachedAvatar;
+                }
+                Glide.with(this).load(fullUrl).into(binding.ivAvatar);
+            } else {
+                try {
+                    byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
+                    Glide.with(this).load(decodedString).into(binding.ivAvatar);
+                } catch (Exception e) {
+                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+                }
             }
         }
     }

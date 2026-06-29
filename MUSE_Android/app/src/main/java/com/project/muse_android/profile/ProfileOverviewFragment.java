@@ -64,12 +64,20 @@ public class ProfileOverviewFragment extends Fragment {
         // Load cached avatar immediately for better UX
         String cachedAvatar = sessionManager.getAvatar(sessionManager.getUserId());
         if (cachedAvatar != null) {
-            try {
-                byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
-                Glide.with(this).load(decodedString).into(binding.ivAvatar);
-            } catch (Exception e) {
-                e.printStackTrace();
-                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+            if (cachedAvatar.startsWith("http") || cachedAvatar.startsWith("/")) {
+                String fullUrl = cachedAvatar;
+                if (cachedAvatar.startsWith("/")) {
+                    fullUrl = "https://server-testing-ymn9.onrender.com" + cachedAvatar;
+                }
+                Glide.with(this).load(fullUrl).into(binding.ivAvatar);
+            } else {
+                try {
+                    byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
+                    Glide.with(this).load(decodedString).into(binding.ivAvatar);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+                }
             }
         } else {
             binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
@@ -91,14 +99,24 @@ public class ProfileOverviewFragment extends Fragment {
                         // Cache updated name & email in session
                         sessionManager.saveUser(user.get_id(), user.getName(), user.getEmail());
 
-                        if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
-                            try {
-                                byte[] decodedString = Base64.decode(user.getAvatar(), Base64.DEFAULT);
-                                Glide.with(ProfileOverviewFragment.this).load(decodedString).into(binding.ivAvatar);
-                                sessionManager.saveAvatar(user.get_id(), user.getAvatar());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+                        if (user.getAvatar() != null && user.getAvatar().getUrl() != null && !user.getAvatar().getUrl().isEmpty()) {
+                            String avatarUrl = user.getAvatar().getUrl();
+                            if (avatarUrl.startsWith("http") || avatarUrl.startsWith("/")) {
+                                String fullUrl = avatarUrl;
+                                if (avatarUrl.startsWith("/")) {
+                                    fullUrl = "https://server-testing-ymn9.onrender.com" + avatarUrl;
+                                }
+                                Glide.with(ProfileOverviewFragment.this).load(fullUrl).into(binding.ivAvatar);
+                                sessionManager.saveAvatar(user.get_id(), fullUrl);
+                            } else {
+                                try {
+                                    byte[] decodedString = Base64.decode(avatarUrl, Base64.DEFAULT);
+                                    Glide.with(ProfileOverviewFragment.this).load(decodedString).into(binding.ivAvatar);
+                                    sessionManager.saveAvatar(user.get_id(), avatarUrl);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+                                }
                             }
                         } else {
                             if (sessionManager.getAvatar(user.get_id()) == null) {
