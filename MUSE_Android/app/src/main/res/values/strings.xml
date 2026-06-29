@@ -88,6 +88,21 @@
     <string name="label_bank">Ngân hàng</string>
     <string name="btn_save">Lưu</string>
 
+
+    <!-- Cart Screen -->
+    <string name="cart_title">Giỏ hàng</string>
+    <string name="cart_empty_count">(0)</string>
+    <string name="btn_edit">Sửa</string>
+    <string name="cart_empty_title">“Hổng” có gì trong giỏ hết</string>
+    <string name="cart_empty_subtitle">Về trang cửa hàng để chọn mua sản phẩm bạn nhé!!</string>
+    <string name="btn_shop_now">Mua sắm ngay</string>
+    <string name="cart_recommendation_title">Có thể bạn cũng thích</string>
+    <string name="cart_voucher">Voucher</string>
+    <string name="cart_voucher_hint">Chọn hoặc nhập mã</string>
+    <string name="cart_reward_points">Dùng điểm thưởng</string>
+    <string name="cart_select_all">Tất cả</string>
+    <string name="btn_buy_now">Mua ngay</string>
+
     <!-- Profile Screen -->
     <string name="profile_membership_golden">THÀNH VIÊN GOLDEN</string>
     <string name="profile_orders_count">0</string>
@@ -137,4 +152,5 @@
     <string name="register_success">Đăng ký thành công!</string>
     <string name="change_password_success">Đổi mật khẩu thành công!</string>
     <string name="btn_close">ĐÓNG</string>
+
 </resources>
