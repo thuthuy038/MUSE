@@ -10,7 +10,9 @@ public class User {
     private String email;
     private String phone = null;
     private String role;
+
     private Avatar avatar = null;
+
     private List<Address> addresses = null;
     private Payment payment = null;
     private int points = 0;

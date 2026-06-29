@@ -70,6 +70,11 @@ public class SettingsFragment extends Fragment {
                 } catch (Exception e) {
                     binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
                 }
+            try {
+                byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
+                Glide.with(this).load(decodedString).into(binding.ivAvatar);
+            } catch (Exception e) {
+                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
             }
         }
     }
