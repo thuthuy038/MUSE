@@ -33,6 +33,10 @@ public class SessionManager {
                 .apply();
     }
 
+    private static final String KEY_USER_AVATAR = "user_avatar";
+
+    private static final String KEY_IS_FIRST_LAUNCH = "is_first_launch";
+
     public String getUserId() {
         return prefs.getString(KEY_USER_ID, null);
     }
@@ -45,11 +49,36 @@ public class SessionManager {
         return prefs.getString(KEY_USER_EMAIL, null);
     }
 
+    public void saveAvatar(String userId, String avatarBase64) {
+        if (userId != null) {
+            prefs.edit().putString("user_avatar_" + userId, avatarBase64).apply();
+        }
+    }
+
+    public String getAvatar(String userId) {
+        if (userId == null) return null;
+        return prefs.getString("user_avatar_" + userId, null);
+    }
+
+    public boolean isFirstLaunch() {
+        return prefs.getBoolean(KEY_IS_FIRST_LAUNCH, true);
+    }
+
+    public void setFirstLaunch(boolean isFirstLaunch) {
+        prefs.edit().putBoolean(KEY_IS_FIRST_LAUNCH, isFirstLaunch).apply();
+    }
+
     public boolean isLoggedIn() {
         return prefs.getBoolean(KEY_IS_LOGGED_IN, false);
     }
 
     public void clearSession() {
-        prefs.edit().clear().apply();
+        prefs.edit()
+                .remove(KEY_TOKEN)
+                .remove(KEY_USER_ID)
+                .remove(KEY_USER_NAME)
+                .remove(KEY_USER_EMAIL)
+                .putBoolean(KEY_IS_LOGGED_IN, false)
+                .apply();
     }
 }

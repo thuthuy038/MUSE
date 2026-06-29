@@ -1,187 +1,193 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/neutral_50"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:fillViewport="true">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:fontFamily="@font/montserrat"
-        android:text="@string/login_welcome"
-        android:textColor="@color/neutral_900"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        android:lineSpacingMultiplier="0.9" />
-
-    <!-- Input Email/Phone -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:background="@drawable/edittext_bg"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp">
+        android:orientation="vertical"
+        android:padding="24dp">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/account_circle"
-            app:tint="@color/neutral_600" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:fontFamily="@font/montserrat"
+            android:text="@string/login_welcome"
+            android:textColor="@color/neutral_900"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:lineSpacingMultiplier="0.9" />
 
-        <EditText
-            android:id="@+id/etEmail"
+        <!-- Input Email/Phone -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:background="@android:color/transparent"
-            android:fontFamily="@font/montserrat"
-            android:hint="@string/hint_email_phone"
-            android:inputType="textEmailAddress"
-            android:textColor="@color/neutral_900"
-            android:textColorHint="@color/neutral_600"
-            android:textSize="14sp" />
-    </LinearLayout>
+            android:layout_marginTop="48dp"
+            android:background="@drawable/edittext_bg"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp">
 
-    <!-- Input Password -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/edittext_bg"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_account_circle"
+                app:tint="@color/neutral_600" />
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_lock"
-            app:tint="@color/neutral_600" />
+            <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:background="@android:color/transparent"
+                android:fontFamily="@font/montserrat"
+                android:hint="@string/hint_email_phone"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/neutral_900"
+                android:textColorHint="@color/neutral_600"
+                android:textSize="14sp" />
+        </LinearLayout>
 
-        <EditText
-            android:id="@+id/etPassword"
-            android:layout_width="0dp"
+        <!-- Input Password -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:fontFamily="@font/montserrat"
-            android:hint="@string/hint_password"
-            android:inputType="textPassword"
-            android:textColor="@color/neutral_900"
-            android:textColorHint="@color/neutral_600"
-            android:textSize="14sp" />
+            android:layout_marginTop="16dp"
+            android:background="@drawable/edittext_bg"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp">
 
-        <ImageView
-            android:id="@+id/ivShowPassword"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_visibility"
-            app:tint="@color/neutral_600" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvForgotPassword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/montserrat"
-        android:text="@string/forgot_password"
-        android:textColor="@color/primary_500"
-        android:textSize="13sp" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:backgroundTint="@color/primary_500"
-        android:fontFamily="@font/montserrat"
-        android:paddingVertical="16dp"
-        android:text="@string/btn_login"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:cornerRadius="8dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="64dp"
-        android:fontFamily="@font/montserrat"
-        android:text="@string/or_continue_with"
-        android:textColor="@color/neutral_600"
-        android:textSize="13sp" />
-
-    <!-- Social Login Icons -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="24dp"
-        android:orientation="horizontal">
-
-        <FrameLayout
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:background="@drawable/circle_indicator_inactive"
-            android:backgroundTint="@android:color/white"
-            android:elevation="2dp"
-            android:padding="12dp">
             <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_google" />
-        </FrameLayout>
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_lock"
+                app:tint="@color/neutral_600" />
 
-        <FrameLayout
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="24dp"
-            android:background="@drawable/circle_indicator_inactive"
-            android:backgroundTint="@android:color/white"
-            android:elevation="2dp"
-            android:padding="12dp">
+            <EditText
+                android:id="@+id/etPassword"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:fontFamily="@font/montserrat"
+                android:hint="@string/hint_password"
+                android:inputType="textPassword"
+                android:textColor="@color/neutral_900"
+                android:textColorHint="@color/neutral_600"
+                android:textSize="14sp" />
+
             <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_facebook" />
-        </FrameLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="48dp"
-        android:orientation="horizontal">
+                android:id="@+id/ivShowPassword"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_visibility"
+                app:tint="@color/neutral_600" />
+        </LinearLayout>
 
         <TextView
+            android:id="@+id/tvForgotPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
             android:fontFamily="@font/montserrat"
-            android:text="@string/no_account"
-            android:textColor="@color/neutral_800"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/tvRegister"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:fontFamily="@font/montserrat"
-            android:text="@string/register"
+            android:text="@string/forgot_password"
             android:textColor="@color/primary_500"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+            android:textSize="13sp" />
 
-</LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:backgroundTint="@color/primary_500"
+            android:fontFamily="@font/montserrat"
+            android:paddingVertical="16dp"
+            android:text="@string/btn_login"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="64dp"
+            android:fontFamily="@font/montserrat"
+            android:text="@string/or_continue_with"
+            android:textColor="@color/neutral_600"
+            android:textSize="13sp" />
+
+        <!-- Social Login Icons -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/circle_indicator_inactive"
+                android:backgroundTint="@android:color/white"
+                android:elevation="2dp"
+                android:padding="12dp">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_google" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="24dp"
+                android:background="@drawable/circle_indicator_inactive"
+                android:backgroundTint="@android:color/white"
+                android:elevation="2dp"
+                android:padding="12dp">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_facebook" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="48dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat"
+                android:text="@string/no_account"
+                android:textColor="@color/neutral_800"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvRegister"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:fontFamily="@font/montserrat"
+                android:text="@string/register"
+                android:textColor="@color/primary_500"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

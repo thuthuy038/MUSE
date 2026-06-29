@@ -31,6 +31,16 @@ public interface ApiService {
         @Body RegisterRequest request
     );
 
+    @POST("api/auth/send-otp")
+    Call<Map<String, String>> sendOtp(
+        @Body Map<String, String> body
+    );
+
+    @POST("api/auth/reset-password")
+    Call<Map<String, String>> resetPassword(
+        @Body Map<String, String> body
+    );
+
     @GET("api/auth/profile")
     Call<User> getProfile(
         @Header("Authorization") String token
@@ -56,5 +66,20 @@ public interface ApiService {
         @Path("id") String userId,
         @Header("Authorization") String token,
         @Body Map<String, Object> userData
+    );
+
+    @GET
+    Call<java.util.List<com.project.models.Province>> getProvinces(
+        @retrofit2.http.Url String url
+    );
+
+    @GET
+    Call<com.project.models.Province> getProvinceDetails(
+        @retrofit2.http.Url String url
+    );
+
+    @GET
+    Call<com.project.models.District> getDistrictDetails(
+        @retrofit2.http.Url String url
     );
 }

@@ -1,5 +1,6 @@
 package com.project.models;
 
+import java.util.List;
 import java.util.Objects;
 
 public class User {
@@ -10,11 +11,78 @@ public class User {
     private String phone = null;
     private String role;
     private String avatar = null;
+    private List<Address> addresses = null;
+    private Payment payment = null;
+    private int points = 0;
+    private int level = 1;
+    private String createdAt = null;
+    private int orderCount = 0;
+
+    public static class Address {
+        private String street;
+        private String ward;
+        private String district;
+        private String province;
+        private String addressNote;
+        private boolean isDefault;
+
+        public Address() {}
+
+        public Address(String street, String ward, String district, String province, String addressNote, boolean isDefault) {
+            this.street = street;
+            this.ward = ward;
+            this.district = district;
+            this.province = province;
+            this.addressNote = addressNote;
+            this.isDefault = isDefault;
+        }
+
+        public String getStreet() { return street; }
+        public void setStreet(String street) { this.street = street; }
+
+        public String getWard() { return ward; }
+        public void setWard(String ward) { this.ward = ward; }
+
+        public String getDistrict() { return district; }
+        public void setDistrict(String district) { this.district = district; }
+
+        public String getProvince() { return province; }
+        public void setProvince(String province) { this.province = province; }
+
+        public String getAddressNote() { return addressNote; }
+        public void setAddressNote(String addressNote) { this.addressNote = addressNote; }
+
+        public boolean isDefault() { return isDefault; }
+        public void setDefault(boolean isDefault) { this.isDefault = isDefault; }
+    }
+
+    public static class Payment {
+        private String accountNumber;
+        private String accountName;
+        private String bank;
+
+        public Payment() {}
+
+        public Payment(String accountNumber, String accountName, String bank) {
+            this.accountNumber = accountNumber;
+            this.accountName = accountName;
+            this.bank = bank;
+        }
+
+        public String getAccountNumber() { return accountNumber; }
+        public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
+
+        public String getAccountName() { return accountName; }
+        public void setAccountName(String accountName) { this.accountName = accountName; }
+
+        public String getBank() { return bank; }
+        public void setBank(String bank) { this.bank = bank; }
+    }
 
     public User() {
     }
 
-    public User(String _id, String code, String name, String email, String phone, String role, String avatar) {
+    public User(String _id, String code, String name, String email, String phone, String role, String avatar, List<Address> addresses, Payment payment) {
         this._id = _id;
         this.code = code;
         this.name = name;
@@ -22,6 +90,8 @@ public class User {
         this.phone = phone;
         this.role = role;
         this.avatar = avatar;
+        this.addresses = addresses;
+        this.payment = payment;
     }
 
     public String get_id() {
@@ -80,6 +150,54 @@ public class User {
         this.avatar = avatar;
     }
 
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public int getOrderCount() {
+        return orderCount;
+    }
+
+    public void setOrderCount(int orderCount) {
+        this.orderCount = orderCount;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -91,12 +209,14 @@ public class User {
                 Objects.equals(email, user.email) &&
                 Objects.equals(phone, user.phone) &&
                 Objects.equals(role, user.role) &&
-                Objects.equals(avatar, user.avatar);
+                Objects.equals(avatar, user.avatar) &&
+                Objects.equals(addresses, user.addresses) &&
+                Objects.equals(payment, user.payment);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(_id, code, name, email, phone, role, avatar);
+        return Objects.hash(_id, code, name, email, phone, role, avatar, addresses, payment);
     }
 
     @Override
@@ -109,6 +229,8 @@ public class User {
                 ", phone='" + phone + '\'' +
                 ", role='" + role + '\'' +
                 ", avatar='" + avatar + '\'' +
+                ", addresses=" + addresses +
+                ", payment=" + payment +
                 '}';
     }
 }

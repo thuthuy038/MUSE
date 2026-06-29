@@ -72,10 +72,11 @@
                     android:layout_height="match_parent"
                     android:contentDescription="Profile Picture"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/account_circle"
+                    android:src="@drawable/ic_account_circle"
                     app:shapeAppearanceOverlay="@style/CircleImage" />
 
                 <FrameLayout
+                    android:id="@+id/btnEditAvatar"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_gravity="bottom|end"
@@ -99,6 +100,30 @@
                 android:textColor="@color/neutral_900"
                 android:textSize="18sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/montserrat"
+                android:labelFor="@+id/etName"
+                android:text="Họ và Tên"
+                android:textColor="@color/neutral_600"
+                android:textSize="12sp" />
+
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:autofillHints="name"
+                android:background="@drawable/edittext_bg"
+                android:fontFamily="@font/montserrat"
+                android:inputType="textPersonName"
+                android:padding="12dp"
+                android:textColor="@color/neutral_900"
+                android:textSize="14sp"
+                tools:ignore="LabelFor" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -206,6 +231,73 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:fontFamily="@font/montserrat"
+                android:text="@string/label_city"
+                android:textColor="@color/neutral_600"
+                android:textSize="12sp" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/edittext_bg">
+
+                <Spinner
+                    android:id="@+id/spinnerCity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/montserrat"
+                android:text="Quận / Huyện"
+                android:textColor="@color/neutral_600"
+                android:textSize="12sp" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/edittext_bg">
+
+                <Spinner
+                    android:id="@+id/spinnerDistrict"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/montserrat"
+                android:text="@string/label_ward"
+                android:textColor="@color/neutral_600"
+                android:textSize="12sp" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/edittext_bg">
+
+                <Spinner
+                    android:id="@+id/spinnerWard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/montserrat"
                 android:labelFor="@+id/etStreet"
                 android:text="@string/label_street"
                 android:textColor="@color/neutral_600"
@@ -224,52 +316,6 @@
                 android:textColor="@color/neutral_900"
                 android:textSize="14sp"
                 tools:ignore="LabelFor" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:fontFamily="@font/montserrat"
-                android:labelFor="@+id/etWard"
-                android:text="@string/label_ward"
-                android:textColor="@color/neutral_600"
-                android:textSize="12sp" />
-
-            <EditText
-                android:id="@+id/etWard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:autofillHints="postalAddress"
-                android:background="@drawable/edittext_bg"
-                android:fontFamily="@font/montserrat"
-                android:inputType="text"
-                android:padding="12dp"
-                android:textColor="@color/neutral_900"
-                android:textSize="14sp"
-                tools:ignore="LabelFor" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:fontFamily="@font/montserrat"
-                android:text="@string/label_city"
-                android:textColor="@color/neutral_600"
-                android:textSize="12sp" />
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:background="@drawable/edittext_bg">
-
-                <Spinner
-                    android:id="@+id/spinnerCity"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp" />
-            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
