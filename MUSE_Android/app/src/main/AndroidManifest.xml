@@ -35,10 +35,10 @@
             android:name=".policy.TermsOfUseActivity"
             android:exported="false" />
         <activity
-            android:name=".main.MainActivity"
+            android:name=".auth.WelcomeScreen"
             android:exported="false" />
         <activity
-            android:name=".auth.AuthActivity"
+            android:name=".main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
