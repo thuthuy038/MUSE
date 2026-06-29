@@ -1,40 +1,65 @@
 package com.project.models;
+import com.google.gson.annotations.SerializedName;
+import com.project.models.ProductImage;
 
-import java.util.Objects;
+import java.util.List;
 
 public class Product {
-    private String _id;
+
+    @SerializedName("_id")
+    private String mongoId;
+
+    private String id;
     private String code;
+
     private String name;
-    private double price;
-    private int discountPercent = 0;
-    private int stock;
     private String description;
-//    private List<ProductImage> images = null;
-    private double rating = 0.0;
-    private int reviewCount = 0;
 
-    public Product() {
+    private double price;
+    private int discountPercent;
+    private double discountPrice;
+
+    private List<ProductImage> images;
+    private List<String> colors;
+
+    private List<String> sizes;
+    private List<ProductVariant> variants;
+    private List<ProductReview> reviews;
+
+    private String material;
+
+    private boolean isNew;
+    private boolean isBestSeller;
+
+    private int sold;
+    private int stock;
+
+    private float rating;
+    private int reviewCount;
+
+    private String createdAt;
+    private String updatedAt;
+
+    private String status;
+
+    private String category;
+
+    // getter setter
+
+    public String getMongoId() {
+        return mongoId;
     }
 
-    public Product(String _id, String code, String name, double price, int discountPercent, int stock, String description, double rating, int reviewCount) {
-        this._id = _id;
-        this.code = code;
-        this.name = name;
-        this.price = price;
-        this.discountPercent = discountPercent;
-        this.stock = stock;
-        this.description = description;
-        this.rating = rating;
-        this.reviewCount = reviewCount;
+    public void setMongoId(String mongoId) {
+        this.mongoId = mongoId;
     }
 
-    public String get_id() {
-        return _id;
+    public String getId() {
+        return id;
     }
 
-    public void set_id(String _id) {
-        this._id = _id;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getCode() {
@@ -53,6 +78,14 @@ public class Product {
         this.name = name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public double getPrice() {
         return price;
     }
@@ -69,6 +102,86 @@ public class Product {
         this.discountPercent = discountPercent;
     }
 
+    public double getDiscountPrice() {
+        return discountPrice;
+    }
+
+    public void setDiscountPrice(double discountPrice) {
+        this.discountPrice = discountPrice;
+    }
+
+    public List<ProductImage> getImages() {
+        return images;
+    }
+
+    public void setImages(List<ProductImage> images) {
+        this.images = images;
+    }
+
+    public List<String> getColors() {
+        return colors;
+    }
+
+    public void setColors(List<String> colors) {
+        this.colors = colors;
+    }
+
+    public List<String> getSizes() {
+        return sizes;
+    }
+
+    public void setSizes(List<String> sizes) {
+        this.sizes = sizes;
+    }
+
+    public List<ProductVariant> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(List<ProductVariant> variants) {
+        this.variants = variants;
+    }
+
+    public List<ProductReview> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<ProductReview> reviews) {
+        this.reviews = reviews;
+    }
+
+    public String getMaterial() {
+        return material;
+    }
+
+    public void setMaterial(String material) {
+        this.material = material;
+    }
+
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void setNew(boolean aNew) {
+        isNew = aNew;
+    }
+
+    public boolean isBestSeller() {
+        return isBestSeller;
+    }
+
+    public void setBestSeller(boolean bestSeller) {
+        isBestSeller = bestSeller;
+    }
+
+    public int getSold() {
+        return sold;
+    }
+
+    public void setSold(int sold) {
+        this.sold = sold;
+    }
+
     public int getStock() {
         return stock;
     }
@@ -77,19 +190,11 @@ public class Product {
         this.stock = stock;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public double getRating() {
+    public float getRating() {
         return rating;
     }
 
-    public void setRating(double rating) {
+    public void setRating(float rating) {
         this.rating = rating;
     }
 
@@ -101,39 +206,35 @@ public class Product {
         this.reviewCount = reviewCount;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Product product = (Product) o;
-        return Double.compare(product.price, price) == 0 &&
-                discountPercent == product.discountPercent &&
-                stock == product.stock &&
-                Double.compare(product.rating, rating) == 0 &&
-                reviewCount == product.reviewCount &&
-                Objects.equals(_id, product._id) &&
-                Objects.equals(code, product.code) &&
-                Objects.equals(name, product.name) &&
-                Objects.equals(description, product.description);
+    public String getCreatedAt() {
+        return createdAt;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(_id, code, name, price, discountPercent, stock, description, rating, reviewCount);
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "_id='" + _id + '\'' +
-                ", code='" + code + '\'' +
-                ", name='" + name + '\'' +
-                ", price=" + price +
-                ", discountPercent=" + discountPercent +
-                ", stock=" + stock +
-                ", description='" + description + '\'' +
-                ", rating=" + rating +
-                ", reviewCount=" + reviewCount +
-                '}';
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }
