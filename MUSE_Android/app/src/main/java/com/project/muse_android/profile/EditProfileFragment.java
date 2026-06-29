@@ -180,6 +180,20 @@ public class EditProfileFragment extends Fragment {
         // Load local cached avatar if exists
         String cachedAvatar = sessionManager.getAvatar(sessionManager.getUserId());
         if (cachedAvatar != null) {
+            if (cachedAvatar.startsWith("http") || cachedAvatar.startsWith("/")) {
+                String fullUrl = cachedAvatar;
+                if (cachedAvatar.startsWith("/")) {
+                    fullUrl = "https://server-testing-ymn9.onrender.com" + cachedAvatar;
+                }
+                Glide.with(this).load(fullUrl).into(binding.ivProfile);
+            } else {
+                try {
+                    byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
+                    Glide.with(this).load(decodedString).into(binding.ivProfile);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
+                }
             try {
                 byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
                 Glide.with(this).load(decodedString).into(binding.ivProfile);
@@ -342,6 +356,24 @@ public class EditProfileFragment extends Fragment {
                             binding.etPhone.setText(user.getPhone());
                         }
 
+                        if (user.getAvatar() != null && user.getAvatar().getUrl() != null && !user.getAvatar().getUrl().isEmpty()) {
+                            String avatarUrl = user.getAvatar().getUrl();
+                            if (avatarUrl.startsWith("http") || avatarUrl.startsWith("/")) {
+                                String fullUrl = avatarUrl;
+                                if (avatarUrl.startsWith("/")) {
+                                    fullUrl = "https://server-testing-ymn9.onrender.com" + avatarUrl;
+                                }
+                                Glide.with(EditProfileFragment.this).load(fullUrl).into(binding.ivProfile);
+                                sessionManager.saveAvatar(user.get_id(), fullUrl);
+                            } else {
+                                try {
+                                    byte[] decodedString = Base64.decode(avatarUrl, Base64.DEFAULT);
+                                    Glide.with(EditProfileFragment.this).load(decodedString).into(binding.ivProfile);
+                                    sessionManager.saveAvatar(user.get_id(), avatarUrl);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
+                                }
                         if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
                             try {
                                 byte[] decodedString = Base64.decode(user.getAvatar(), Base64.DEFAULT);

@@ -202,10 +202,13 @@
             android:orientation="horizontal">
 
             <FrameLayout
+                android:id="@+id/btnGoogleRegister"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:background="@drawable/circle_indicator_inactive"
                 android:backgroundTint="@android:color/white"
+                android:clickable="true"
+                android:focusable="true"
                 android:elevation="2dp"
                 android:padding="12dp">
                 <ImageView
@@ -214,19 +217,6 @@
                     android:src="@drawable/ic_google" />
             </FrameLayout>
 
-            <FrameLayout
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_marginStart="24dp"
-                android:background="@drawable/circle_indicator_inactive"
-                android:backgroundTint="@android:color/white"
-                android:elevation="2dp"
-                android:padding="12dp">
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_facebook" />
-            </FrameLayout>
         </LinearLayout>
 
         <LinearLayout

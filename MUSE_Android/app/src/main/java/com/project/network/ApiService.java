@@ -6,6 +6,7 @@ import com.project.models.Product;
 import com.project.models.RegisterRequest;
 import com.project.models.RegisterResponse;
 import com.project.models.User;
+import com.project.models.GoogleLoginRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,11 @@ public interface ApiService {
     @POST("api/auth/login")
     Call<LoginResponse> login(
         @Body LoginRequest request
+    );
+
+    @POST("api/auth/google")
+    Call<LoginResponse> googleLogin(
+        @Body GoogleLoginRequest request
     );
 
     @POST("api/auth/register")
