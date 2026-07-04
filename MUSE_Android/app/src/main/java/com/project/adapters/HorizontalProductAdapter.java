@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -14,67 +15,70 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.project.models.Product;
+import com.project.models.ProductVariant;
 import com.project.models.enums.HorizontalProductMode;
 import com.project.muse_android.R;
 
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
-public class HorizontalProductAdapter
-        extends RecyclerView.Adapter<HorizontalProductAdapter.ProductViewHolder> {
+public class HorizontalProductAdapter extends RecyclerView.Adapter<HorizontalProductAdapter.ViewHolder> {
+
+    public interface OnProductActionListener {
+        void onProductClick(Product product);
+
+        void onDelete(Product product, int position);
+
+        void onSimilar(Product product, int position);
+
+        void onCheckedChanged(Product product, int position, boolean checked);
+
+        void onQuantityChanged(Product product, int position, int quantity);
+    }
 
     private final Context context;
     private final HorizontalProductMode mode;
+    private final OnProductActionListener listener;
 
-    private List<Product> productList = new ArrayList<>();
+    private final List<Product> products = new ArrayList<>();
 
-    private OnProductClickListener listener;
-
-    public interface OnProductClickListener {
-        void onProductClick(Product product);
-
-        void onIncreaseQuantity(Product product, int position);
-
-        void onDecreaseQuantity(Product product, int position);
-
-        void onVariantClick(Product product, int position);
-    }
-
-    public HorizontalProductAdapter(
-            Context context,
-            HorizontalProductMode mode
-    ) {
-        this.context = context;
-        this.mode = mode;
-    }
+    // tạm lưu số lượng khi Product chưa có quantity
+    private final HashMap<String, Integer> quantityMap = new HashMap<>();
 
     public HorizontalProductAdapter(
             Context context,
             HorizontalProductMode mode,
-            OnProductClickListener listener
+            OnProductActionListener listener
     ) {
         this.context = context;
         this.mode = mode;
         this.listener = listener;
     }
 
-    public void setData(List<Product> list) {
-        productList = list != null
-                ? list
-                : new ArrayList<>();
+    public void setData(List<Product> data) {
+        products.clear();
+
+        if (data != null) {
+            products.addAll(data);
+
+            for (Product product : data) {
+                if (!quantityMap.containsKey(product.getId())) {
+                    quantityMap.put(product.getId(), 1);
+                }
+            }
+        }
 
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public ProductViewHolder onCreateViewHolder(
+    public ViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent,
             int viewType
     ) {
-
         View view = LayoutInflater.from(context)
                 .inflate(
                         R.layout.item_product_horizontal,
@@ -82,165 +86,124 @@ public class HorizontalProductAdapter
                         false
                 );
 
-        return new ProductViewHolder(view);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(
-            @NonNull ProductViewHolder holder,
+            @NonNull ViewHolder holder,
             int position
     ) {
 
-        Product product = productList.get(position);
-
-        if (product == null) return;
+        Product product = products.get(position);
 
         holder.txtName.setText(product.getName());
 
-        NumberFormat currency =
-                NumberFormat.getCurrencyInstance(
-                        new Locale("vi", "VN")
-                );
-
-        // =========================
-        // HÌNH ẢNH
-        // =========================
+        /*
+         * IMAGE
+         */
 
         if (product.getImages() != null
                 && !product.getImages().isEmpty()) {
 
-            String imageUrl =
-                    product.getImages()
-                            .get(0)
-                            .getUrl();
-
-            if (imageUrl != null
-                    && imageUrl.startsWith("/")) {
-
-                imageUrl =
-                        "https://server-testing-ymn9.onrender.com"
-                                + imageUrl;
-            }
-
             Glide.with(context)
-                    .load(imageUrl)
+                    .load(product.getImages().get(0).getUrl())
                     .placeholder(R.drawable.demo_product)
-                    .error(R.drawable.demo_product)
                     .into(holder.imgProduct);
+        }
+
+        /*
+         * VARIANT DEFAULT
+         */
+
+        String color = "";
+        String size = "";
+
+        if (product.getVariants() != null
+                && !product.getVariants().isEmpty()) {
+
+            ProductVariant variant =
+                    product.getVariants().get(0);
+
+            color = variant.getColor();
+            size = variant.getSize();
+        }
+
+        int quantity =
+                quantityMap.getOrDefault(
+                        product.getId(),
+                        1
+                );
+
+        /*
+         * MODE
+         */
+
+        if (mode == HorizontalProductMode.CART) {
+
+            holder.cbSelect.setVisibility(View.VISIBLE);
+
+            holder.layoutVariant.setVisibility(View.VISIBLE);
+            holder.layoutQuantityEditor.setVisibility(View.VISIBLE);
+            holder.txtCartPrice.setVisibility(View.VISIBLE);
+
+            holder.layoutReadOnly.setVisibility(View.GONE);
+
+            holder.txtVariant.setText(
+                    color + " | " + size
+            );
+
+            double price =
+                    product.getDiscountPrice() > 0
+                            ? product.getDiscountPrice()
+                            : product.getPrice();
+
+            holder.txtCartPrice.setText(
+                    formatPrice(price)
+            );
+
+            holder.txtQuantity.setText(
+                    String.valueOf(quantity)
+            );
 
         } else {
 
-            holder.imgProduct.setImageResource(
-                    R.drawable.demo_product
+            holder.cbSelect.setVisibility(View.GONE);
+
+            holder.layoutVariant.setVisibility(View.GONE);
+            holder.layoutQuantityEditor.setVisibility(View.GONE);
+            holder.txtCartPrice.setVisibility(View.GONE);
+
+            holder.layoutReadOnly.setVisibility(View.VISIBLE);
+
+            holder.txtVariantReadOnly.setText(
+                    color + ", " + size
             );
-        }
-
-        // ====================================
-        // DỮ LIỆU TẠM
-        // Sau này thay bằng CartItem
-        // ====================================
-
-        String color = "Hồng";
-        String size = "S";
-        int quantity = 1;
-
-        // ====================================
-        // CART MODE
-        // ====================================
-
-        holder.txtVariant.setText(
-                color + " | " + size
-        );
-
-        holder.txtQuantity.setText(
-                String.valueOf(quantity)
-        );
-
-        holder.txtCartPrice.setText(
-                currency.format(
-                        product.getPrice()
-                )
-        );
-
-        // ====================================
-        // READ ONLY MODE
-        // ====================================
-
-        holder.txtVariantReadOnly.setText(
-                color + ", " + size
-        );
-
-        holder.txtReadonlyQuantity.setText(
-                "x" + quantity
-        );
-
-        if (product.getDiscountPercent() > 0) {
 
             holder.txtDiscountPriceReadOnly.setText(
-                    currency.format(
+                    formatPrice(
                             product.getDiscountPrice()
                     )
             );
 
-            holder.txtOriginalPriceReadOnly.setVisibility(
-                    View.VISIBLE
-            );
-
             holder.txtOriginalPriceReadOnly.setText(
-                    currency.format(
+                    formatPrice(
                             product.getPrice()
                     )
             );
 
-        } else {
-
-            holder.txtDiscountPriceReadOnly.setText(
-                    currency.format(
-                            product.getPrice()
-                    )
+            holder.txtOriginalPriceReadOnly.setPaintFlags(
+                    Paint.STRIKE_THRU_TEXT_FLAG
             );
 
-            holder.txtOriginalPriceReadOnly.setVisibility(
-                    View.GONE
+            holder.txtReadonlyQuantity.setText(
+                    "x" + quantity
             );
         }
 
-        // ====================================
-        // HIỂN THỊ THEO MODE
-        // ====================================
-
-        if (mode == HorizontalProductMode.CART) {
-
-            holder.layoutVariant.setVisibility(
-                    View.VISIBLE
-            );
-
-            holder.layoutQuantityEditor.setVisibility(
-                    View.VISIBLE
-            );
-
-            holder.layoutReadOnly.setVisibility(
-                    View.GONE
-            );
-
-        } else {
-
-            holder.layoutVariant.setVisibility(
-                    View.GONE
-            );
-
-            holder.layoutQuantityEditor.setVisibility(
-                    View.GONE
-            );
-
-            holder.layoutReadOnly.setVisibility(
-                    View.VISIBLE
-            );
-        }
-
-        // ====================================
-        // EVENTS
-        // ====================================
+        /*
+         * CLICK ITEM
+         */
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -248,58 +211,157 @@ public class HorizontalProductAdapter
             }
         });
 
-        holder.btnAdd.setOnClickListener(v -> {
+        /*
+         * DELETE
+         */
+
+        holder.layoutDelete.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onIncreaseQuantity(
+                listener.onDelete(
                         product,
-                        position
+                        holder.getAdapterPosition()
                 );
             }
         });
+
+        /*
+         * SIMILAR
+         */
+
+        holder.layoutSimilar.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onSimilar(
+                        product,
+                        holder.getAdapterPosition()
+                );
+            }
+        });
+
+        /*
+         * CHECKBOX
+         */
+
+        holder.cbSelect.setOnCheckedChangeListener(null);
+
+        holder.cbSelect.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> {
+                    if (listener != null) {
+                        listener.onCheckedChanged(
+                                product,
+                                holder.getAdapterPosition(),
+                                isChecked
+                        );
+                    }
+                }
+        );
+
+        /*
+         * ADD QUANTITY
+         */
+
+        holder.btnAdd.setOnClickListener(v -> {
+
+            int currentQuantity =
+                    quantityMap.getOrDefault(
+                            product.getId(),
+                            1
+                    );
+
+            currentQuantity++;
+
+            quantityMap.put(
+                    product.getId(),
+                    currentQuantity
+            );
+
+            holder.txtQuantity.setText(
+                    String.valueOf(currentQuantity)
+            );
+
+            if (listener != null) {
+                listener.onQuantityChanged(
+                        product,
+                        holder.getAdapterPosition(),
+                        currentQuantity
+                );
+            }
+        });
+
+        /*
+         * MINUS QUANTITY
+         */
 
         holder.btnMinus.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onDecreaseQuantity(
-                        product,
-                        position
-                );
-            }
-        });
 
-        holder.layoutVariant.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onVariantClick(
-                        product,
-                        position
+            int currentQuantity =
+                    quantityMap.getOrDefault(
+                            product.getId(),
+                            1
+                    );
+
+            if (currentQuantity > 1) {
+                currentQuantity--;
+
+                quantityMap.put(
+                        product.getId(),
+                        currentQuantity
                 );
+
+                holder.txtQuantity.setText(
+                        String.valueOf(currentQuantity)
+                );
+
+                if (listener != null) {
+                    listener.onQuantityChanged(
+                            product,
+                            holder.getAdapterPosition(),
+                            currentQuantity
+                    );
+                }
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return productList.size();
+        return products.size();
     }
 
-    public static class ProductViewHolder
-            extends RecyclerView.ViewHolder {
+    private String formatPrice(double price) {
+        DecimalFormat formatter =
+                new DecimalFormat("#,###");
+
+        return formatter
+                .format(price)
+                .replace(",", ".") + "đ";
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView imgProduct;
 
-        ImageView btnAdd;
-        ImageView btnMinus;
-
         TextView txtName;
 
-        // CART
+        /*
+         * CART
+         */
+
+        CheckBox cbSelect;
+
         LinearLayout layoutVariant;
         LinearLayout layoutQuantityEditor;
 
         TextView txtVariant;
-        TextView txtQuantity;
         TextView txtCartPrice;
+        TextView txtQuantity;
 
-        // READ ONLY
+        ImageView btnMinus;
+        ImageView btnAdd;
+
+        /*
+         * READ ONLY
+         */
+
         LinearLayout layoutReadOnly;
 
         TextView txtVariantReadOnly;
@@ -307,87 +369,51 @@ public class HorizontalProductAdapter
         TextView txtOriginalPriceReadOnly;
         TextView txtReadonlyQuantity;
 
-        public ProductViewHolder(
-                @NonNull View itemView
-        ) {
+        /*
+         * ACTIONS
+         */
+
+        LinearLayout layoutDelete;
+        LinearLayout layoutSimilar;
+
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            imgProduct =
-                    itemView.findViewById(
-                            R.id.imgProduct
-                    );
+            imgProduct = itemView.findViewById(R.id.imgProduct);
 
-            txtName =
-                    itemView.findViewById(
-                            R.id.txtName
-                    );
+            txtName = itemView.findViewById(R.id.txtName);
 
-            txtCartPrice =
-                    itemView.findViewById(
-                            R.id.txtCartPrice
-                    );
+            cbSelect = itemView.findViewById(R.id.cbSelect);
 
-            // CART
-            layoutVariant =
-                    itemView.findViewById(
-                            R.id.layoutVariant
-                    );
+            layoutVariant = itemView.findViewById(R.id.layoutVariant);
+            layoutQuantityEditor = itemView.findViewById(R.id.layoutQuantityEditor);
 
-            layoutQuantityEditor =
-                    itemView.findViewById(
-                            R.id.layoutQuantityEditor
-                    );
+            txtVariant = itemView.findViewById(R.id.txtVariant);
+            txtCartPrice = itemView.findViewById(R.id.txtCartPrice);
+            txtQuantity = itemView.findViewById(R.id.txtQuantity);
 
-            txtVariant =
-                    itemView.findViewById(
-                            R.id.txtVariant
-                    );
+            btnMinus = itemView.findViewById(R.id.btnMinus);
+            btnAdd = itemView.findViewById(R.id.btnAdd);
 
-            txtQuantity =
-                    itemView.findViewById(
-                            R.id.txtQuantity
-                    );
-
-            btnAdd =
-                    itemView.findViewById(
-                            R.id.btnAdd
-                    );
-
-            btnMinus =
-                    itemView.findViewById(
-                            R.id.btnMinus
-                    );
-
-            // READ ONLY
-            layoutReadOnly =
-                    itemView.findViewById(
-                            R.id.layoutReadOnly
-                    );
+            layoutReadOnly = itemView.findViewById(R.id.layoutReadOnly);
 
             txtVariantReadOnly =
-                    itemView.findViewById(
-                            R.id.txtVariantReadOnly
-                    );
+                    itemView.findViewById(R.id.txtVariantReadOnly);
 
             txtDiscountPriceReadOnly =
-                    itemView.findViewById(
-                            R.id.txtDiscountPriceReadOnly
-                    );
+                    itemView.findViewById(R.id.txtDiscountPriceReadOnly);
 
             txtOriginalPriceReadOnly =
-                    itemView.findViewById(
-                            R.id.txtOriginalPriceReadOnly
-                    );
+                    itemView.findViewById(R.id.txtOriginalPriceReadOnly);
 
             txtReadonlyQuantity =
-                    itemView.findViewById(
-                            R.id.txtReadonlyQuantity
-                    );
+                    itemView.findViewById(R.id.txtReadonlyQuantity);
 
-            txtOriginalPriceReadOnly.setPaintFlags(
-                    txtOriginalPriceReadOnly.getPaintFlags()
-                            | Paint.STRIKE_THRU_TEXT_FLAG
-            );
+            layoutDelete =
+                    itemView.findViewById(R.id.layoutDelete);
+
+            layoutSimilar =
+                    itemView.findViewById(R.id.layoutSimilar);
         }
     }
 }
