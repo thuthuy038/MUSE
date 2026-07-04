@@ -63,7 +63,7 @@ public class ProfileOverviewFragment extends Fragment {
 
         // Load cached avatar immediately for better UX
         String cachedAvatar = sessionManager.getAvatar(sessionManager.getUserId());
-        if (cachedAvatar != null) {
+        if (cachedAvatar != null && !cachedAvatar.isEmpty()) {
             if (cachedAvatar.startsWith("http") || cachedAvatar.startsWith("/")) {
                 String fullUrl = cachedAvatar;
                 if (cachedAvatar.startsWith("/")) {
@@ -78,16 +78,10 @@ public class ProfileOverviewFragment extends Fragment {
                     e.printStackTrace();
                     binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
                 }
-              try {
-                    byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
-                    Glide.with(this).load(decodedString).into(binding.ivAvatar);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle)
-                }
-            } else {
-                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
             }
+        } else {
+            binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+        }
         // Fetch fresh user profile from API
         if (token != null) {
             ApiClient.INSTANCE.getInstance().getProfile("Bearer " + token).enqueue(new Callback<User>() {
@@ -122,24 +116,16 @@ public class ProfileOverviewFragment extends Fragment {
                                     e.printStackTrace();
                                     binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
                                 }
-                        if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
-                                try {
-                                    byte[] decodedString = Base64.decode(user.getAvatar(), Base64.DEFAULT);
-                                    Glide.with(ProfileOverviewFragment.this).load(decodedString).into(binding.ivAvatar);
-                                    sessionManager.saveAvatar(user.get_id(), user.getAvatar());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle)
-                                }
-                            } else {
-                                if (sessionManager.getAvatar(user.get_id()) == null) 
-                                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
-                                }
                             }
                         } else {
-                            Toast.makeText(getContext(), "Không thể tải thông tin mới nhất", Toast.LENGTH_SHORT).show();
+                            if (sessionManager.getAvatar(user.get_id()) == null) {
+                                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+                            }
                         }
+                    } else {
+                        Toast.makeText(getContext(), "Không thể tải thông tin mới nhất", Toast.LENGTH_SHORT).show();
                     }
+                }
 
                 @Override
                 public void onFailure(Call<User> call, Throwable t) {

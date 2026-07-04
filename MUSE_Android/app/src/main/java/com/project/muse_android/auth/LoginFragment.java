@@ -70,17 +70,7 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                 .build();
         googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
 
-googleSignInLauncher = registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                            handleGoogleSignInResult(task);
-                        } else {
-                            Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-            );
+
 
             binding.btnGoogleLogin.setOnClickListener(v -> {
                 googleSignInClient.signOut().addOnCompleteListener(task -> {
