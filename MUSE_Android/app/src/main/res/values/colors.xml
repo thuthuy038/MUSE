@@ -22,4 +22,6 @@
     <color name="background">@color/neutral_50</color>
     <color name="text_primary">@color/neutral_900</color>
     <color name="text_secondary">@color/neutral_600</color>
+
+    <color name="white">#ffffff</color>
 </resources>
