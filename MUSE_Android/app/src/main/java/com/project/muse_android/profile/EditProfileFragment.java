@@ -194,20 +194,22 @@ public class EditProfileFragment extends Fragment {
                     e.printStackTrace();
                     binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
                 }
+
+
             try {
-                byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
-                Glide.with(this).load(decodedString).into(binding.ivProfile);
-            } catch (Exception e) {
-                e.printStackTrace();
+                    byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
+                    Glide.with(this).load(decodedString).into(binding.ivProfile);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
+                }
+            } else {
                 binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
             }
-        } else {
-            binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
-        }
 
-        loadLocations();
-        loadUserProfile();
-    }
+            loadLocations();
+            loadUserProfile();
+        }
 
     private void loadLocations() {
         com.project.network.ApiClient.INSTANCE.getInstance().getProvinces("https://provinces.open-api.vn/api/?depth=1").enqueue(new Callback<List<Province>>() {
@@ -374,20 +376,21 @@ public class EditProfileFragment extends Fragment {
                                     e.printStackTrace();
                                     binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
                                 }
-                        if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
-                            try {
-                                byte[] decodedString = Base64.decode(user.getAvatar(), Base64.DEFAULT);
-                                Glide.with(EditProfileFragment.this).load(decodedString).into(binding.ivProfile);
-                                sessionManager.saveAvatar(user.get_id(), user.getAvatar());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
+                       
+                            if (user.getAvatar() != null && !user.getAvatar().isEmpty()) 
+                                try {
+                                    byte[] decodedString = Base64.decode(user.getAvatar(), Base64.DEFAULT);
+                                    Glide.with(EditProfileFragment.this).load(decodedString).into(binding.ivProfile)
+                                    sessionManager.saveAvatar(user.get_id(), user.getAvatar());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
+                                }
+                            } else {
+                                if (sessionManager.getAvatar(user.get_id()) == null) {
+                                    binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
                             }
-                        } else {
-                            if (sessionManager.getAvatar(user.get_id()) == null) {
-                                binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
                             }
-                        }
 
                         // Parse Address (filter default, otherwise take first one)
                         List<User.Address> addresses = user.getAddresses();

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TestApp</string>
+    <string name="app_name">MUSÉ</string>
     <string name="terms_progress">1/3</string>
     <string name="btn_skip">Skip</string>
     <string name="terms_title">Điều khoản sử dụng</string>
@@ -137,4 +137,17 @@
     <string name="register_success">Đăng ký thành công!</string>
     <string name="change_password_success">Đổi mật khẩu thành công!</string>
     <string name="btn_close">ĐÓNG</string>
+
+    <!-- Cart Screen -->
+    <string name="cart_title">Giỏ hàng</string>
+    <string name="cart_empty_count">(0)</string>
+    <string name="btn_edit">Sửa</string>
+    <string name="cart_empty_title">Giỏ hàng trống</string>
+    <string name="cart_empty_subtitle">Giỏ hàng của bạn đang trống</string>
+    <string name="btn_shop_now">Mua sắm ngay</string>
+    <string name="cart_recommendation_title">Có thể bạn cũng thích</string>
+    <string name="cart_voucher">Mã giảm giá</string>
+    <string name="cart_voucher_hint">Nhập mã giảm giá tại đây</string>
+    <string name="cart_reward_points">Điểm tích lũy</string>
+    <string name="cart_select_all">Chọn tất cả</string>
 </resources>

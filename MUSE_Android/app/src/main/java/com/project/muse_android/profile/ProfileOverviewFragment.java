@@ -78,17 +78,16 @@ public class ProfileOverviewFragment extends Fragment {
                     e.printStackTrace();
                     binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
                 }
-            try {
-                byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
-                Glide.with(this).load(decodedString).into(binding.ivAvatar);
-            } catch (Exception e) {
-                e.printStackTrace();
+              try {
+                    byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
+                    Glide.with(this).load(decodedString).into(binding.ivAvatar);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle)
+                }
+            } else {
                 binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
             }
-        } else {
-            binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
-        }
-
         // Fetch fresh user profile from API
         if (token != null) {
             ApiClient.INSTANCE.getInstance().getProfile("Bearer " + token).enqueue(new Callback<User>() {
@@ -124,23 +123,23 @@ public class ProfileOverviewFragment extends Fragment {
                                     binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
                                 }
                         if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
-                            try {
-                                byte[] decodedString = Base64.decode(user.getAvatar(), Base64.DEFAULT);
-                                Glide.with(ProfileOverviewFragment.this).load(decodedString).into(binding.ivAvatar);
-                                sessionManager.saveAvatar(user.get_id(), user.getAvatar());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+                                try {
+                                    byte[] decodedString = Base64.decode(user.getAvatar(), Base64.DEFAULT);
+                                    Glide.with(ProfileOverviewFragment.this).load(decodedString).into(binding.ivAvatar);
+                                    sessionManager.saveAvatar(user.get_id(), user.getAvatar());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle)
+                                }
+                            } else {
+                                if (sessionManager.getAvatar(user.get_id()) == null) 
+                                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+                                }
                             }
                         } else {
-                            if (sessionManager.getAvatar(user.get_id()) == null) {
-                                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
-                            }
+                            Toast.makeText(getContext(), "Không thể tải thông tin mới nhất", Toast.LENGTH_SHORT).show();
                         }
-                    } else {
-                        Toast.makeText(getContext(), "Không thể tải thông tin mới nhất", Toast.LENGTH_SHORT).show();
                     }
-                }
 
                 @Override
                 public void onFailure(Call<User> call, Throwable t) {
@@ -199,15 +198,23 @@ public class ProfileOverviewFragment extends Fragment {
         });
 
         binding.menuPersonalInfo.getRoot().setOnClickListener(v -> {
+            int containerId = R.id.profile_container;
+            if (getView() != null && getView().getParent() instanceof View) {
+                containerId = ((View) getView().getParent()).getId();
+            }
             getParentFragmentManager().beginTransaction()
-                    .replace(R.id.profile_container, new EditProfileFragment())
+                    .replace(containerId, new EditProfileFragment())
                     .addToBackStack(null)
                     .commit();
         });
 
         binding.menuSecurity.getRoot().setOnClickListener(v -> {
+            int containerId = R.id.profile_container;
+            if (getView() != null && getView().getParent() instanceof View) {
+                containerId = ((View) getView().getParent()).getId();
+            }
             getParentFragmentManager().beginTransaction()
-                    .replace(R.id.profile_container, new SettingsFragment())
+                    .replace(containerId, new SettingsFragment())
                     .addToBackStack(null)
                     .commit();
         });
@@ -219,8 +226,12 @@ public class ProfileOverviewFragment extends Fragment {
     }
 
     private void openMembership() {
+        int containerId = R.id.profile_container;
+        if (getView() != null && getView().getParent() instanceof View) {
+            containerId = ((View) getView().getParent()).getId();
+        }
         getParentFragmentManager().beginTransaction()
-                .replace(R.id.profile_container, new com.project.muse_android.membership.MembershipFragment())
+                .replace(containerId, new com.project.muse_android.membership.MembershipFragment())
                 .addToBackStack(null)
                 .commit();
     }
