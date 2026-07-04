@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -50,25 +51,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            // Set badge for notifications
-            var badge = binding.bottomNavigationView.getOrCreateBadge(R.id.navigation_notification);
+            // Badge thông báo
+            var badge = binding.bottomNavigationView
+                    .getOrCreateBadge(R.id.navigation_notification);
+
             badge.setVisible(true);
             badge.setNumber(3);
-
-            // Handle selection state for FAB and ensure others are selected correctly
-            navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                int id = destination.getId();
-                if (id == R.id.navigation_profile) {
-                    binding.bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
-                    for (int i = 0; i < binding.bottomNavigationView.getMenu().size(); i++) {
-                        binding.bottomNavigationView.getMenu().getItem(i).setChecked(false);
-                    }
-                    binding.bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
-                } else {
-                    // NavigationUI handles this, but we can force it if needed
-                    binding.bottomNavigationView.getMenu().findItem(id).setChecked(true);
-                }
-            });
         }
     }
 }

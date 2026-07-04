@@ -35,4 +35,15 @@
         android:label="Thông báo"
         tools:layout="@layout/fragment_notification" />
 
+    <fragment
+        android:id="@+id/navigation_category_products"
+        android:name="com.project.muse_android.product.CategoryProductsFragment"
+        android:label="Sản phẩm theo danh mục"
+        tools:layout="@layout/fragment_category_products">
+        <argument
+            android:name="category_id"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
 </navigation>
