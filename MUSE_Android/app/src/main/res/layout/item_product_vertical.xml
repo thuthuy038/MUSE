@@ -1,154 +1,196 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="6dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    app:strokeWidth="0dp">
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:padding="8dp">
 
-        <!-- Ảnh sản phẩm -->
-        <FrameLayout
-            android:layout_width="match_parent"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardProduct"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <ImageView
+                android:id="@+id/imgProduct"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/image"
+                android:contentDescription="Product Image" />
 
-                <ImageView
-                    android:id="@+id/imgProduct"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/demo_product"
-
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-
-                    app:layout_constraintDimensionRatio="1:1"/>
-
-                <!-- Badge giảm giá -->
-                <TextView
-                    android:id="@+id/txtDiscount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:background="@drawable/bg_discount"
-                    android:gravity="center"
-                    android:minWidth="32dp"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="3dp"
-                    android:text="-3%"
-                    android:textColor="@android:color/white"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-
-                    app:layout_constraintTop_toTopOf="@id/imgProduct"
-                    app:layout_constraintEnd_toEndOf="@id/imgProduct"/>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        </FrameLayout>
-
-        <!-- Thông tin sản phẩm -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
-
-            <!-- Tên sản phẩm -->
             <TextView
-                android:id="@+id/txtName"
+                android:id="@+id/txtSoldOut"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:minHeight="40dp"
-                android:text="Đầm babydoll xếp ly đính nơ lụa ngọt ngào Abeline"
-                android:textColor="#333333"
-                android:textSize="14sp"
-                android:textStyle="bold"/>
+                android:layout_gravity="center"
+                android:background="#80000000"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="HẾT HÀNG"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </androidx.cardview.widget.CardView>
 
-            <!-- Giá -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/txtDiscountPrice"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="₫750.500"
-                    android:textColor="#C00000"
-                    android:textSize="15sp"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:id="@+id/txtPrice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="790.000đ"
-                    android:textColor="#8C8989"
-                    android:textSize="12sp"/>
-
-            </LinearLayout>
-
-            <!-- Rating + Sold + Favorite -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:src="@drawable/ic_star"/>
-
-                <TextView
-                    android:id="@+id/txtRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:text="5.0"
-                    android:textColor="#80000000"
-                    android:textSize="11sp"/>
-
-                <TextView
-                    android:id="@+id/txtSold"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="| Đã bán 123"
-                    android:textColor="#6B6464"
-                    android:textSize="10sp"/>
-
-                <ImageView
-                    android:id="@+id/imgFavorite"
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:src="@drawable/ic_favorite"/>
-            </LinearLayout>
-
+        <LinearLayout
+            android:id="@+id/layoutColors"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toBottomOf="@id/cardProduct"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnFavorite">
+            <!-- Color dots will be added programmatically -->
         </LinearLayout>
 
-    </LinearLayout>
+        <ImageView
+            android:id="@+id/btnFavorite"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/favorite"
+            app:tint="#333333"
+            android:contentDescription="Favorite Button"
+            app:layout_constraintTop_toTopOf="@id/layoutColors"
+            app:layout_constraintBottom_toBottomOf="@id/layoutColors"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-</com.google.android.material.card.MaterialCardView>
+        <TextView
+            android:id="@+id/txtProductName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Tên sản phẩm"
+            android:textColor="#333333"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:minHeight="40dp"
+            app:layout_constraintTop_toBottomOf="@id/layoutColors"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/txtProductSizes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="S-XL"
+            android:textColor="#999999"
+            android:textSize="12sp"
+            app:layout_constraintTop_toBottomOf="@id/txtProductName"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/layoutPrice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:gravity="bottom"
+            app:layout_constraintTop_toBottomOf="@id/txtProductSizes"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/txtPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="500.000 VNĐ"
+                android:textColor="@color/primary_500"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <FrameLayout
+                android:id="@+id/layoutOriginalPrice"
+                android:layout_width="74dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:id="@+id/txtOriginalPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="850.000 VNĐ"
+                    android:textColor="#CCCCCC"
+                    android:textSize="11sp" />
+
+                <View
+                    android:id="@+id/viewStrike"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="#CCCCCC" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtOffer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:minHeight="28dp"
+            android:text="Ưu đãi có hạn"
+            android:textColor="#999999"
+            android:textSize="10sp"
+            android:fontStyle="italic"
+            android:gravity="top"
+            app:layout_constraintTop_toBottomOf="@id/layoutPrice"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/layoutRatingInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/txtOffer"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:id="@+id/txtRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4.9"
+                android:textColor="@color/primary_500"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginStart="2dp"
+                android:src="@drawable/star"
+                app:tint="#FFD93D"
+                android:contentDescription="Star" />
+
+            <TextView
+                android:id="@+id/txtSoldCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="(200 lượt mua)"
+                android:textColor="#FB6F92"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

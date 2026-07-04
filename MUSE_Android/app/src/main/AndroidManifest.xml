@@ -38,6 +38,15 @@
             android:name=".auth.WelcomeScreen"
             android:exported="false" />
         <activity
+            android:name=".product.ProductDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.CategoryProductsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".search.SearchResultActivity"
+            android:exported="false" />
+        <activity
             android:name=".main.MainActivity"
             android:exported="true">
             <intent-filter>
