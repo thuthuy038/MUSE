@@ -41,18 +41,17 @@ public class LoginFragment extends Fragment {
     private LoginScreenBinding binding;
     private boolean isPasswordVisible = false;
     private GoogleSignInClient googleSignInClient;
-    private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                    handleGoogleSignInResult(task);
-                } else {
-                    Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
+private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                        handleGoogleSignInResult(task);
+                    } else {
+                        Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-    );
-
+        );
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -71,12 +70,24 @@ public class LoginFragment extends Fragment {
                 .build();
         googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
 
-        binding.btnGoogleLogin.setOnClickListener(v -> {
-            googleSignInClient.signOut().addOnCompleteListener(task -> {
-                Intent signInIntent = googleSignInClient.getSignInIntent();
-                googleSignInLauncher.launch(signInIntent);
+googleSignInLauncher = registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                            handleGoogleSignInResult(task);
+                        } else {
+                            Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+            );
+
+            binding.btnGoogleLogin.setOnClickListener(v -> {
+                googleSignInClient.signOut().addOnCompleteListener(task -> {
+                    Intent signInIntent = googleSignInClient.getSignInIntent();
+                    googleSignInLauncher.launch(signInIntent);
+                });
             });
-        });
 
         binding.ivShowPassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
