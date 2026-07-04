@@ -12,9 +12,9 @@
         android:title="Khám phá" />
 
     <item
-        android:id="@+id/placeholder"
-        android:title=""
-        android:enabled="false" />
+        android:id="@+id/navigation_profile"
+        android:icon="@drawable/ic_profile_vector"
+        android:title="Tài khoản" />
 
     <item
         android:id="@+id/navigation_cart"
