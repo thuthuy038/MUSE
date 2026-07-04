@@ -71,7 +71,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:contentDescription="Favorite"
-            android:src="@drawable/favorite"
+            android:src="@drawable/ic_favorite"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

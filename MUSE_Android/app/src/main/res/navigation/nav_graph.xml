@@ -19,9 +19,9 @@
 
     <fragment
         android:id="@+id/navigation_profile"
-        android:name="com.project.muse_android.profile.ProfileFragment"
+        android:name="com.project.muse_android.profile.ProfileOverviewFragment"
         android:label="Profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile_overview" />
 
     <fragment
         android:id="@+id/navigation_cart"

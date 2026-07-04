@@ -41,7 +41,17 @@ public class LoginFragment extends Fragment {
     private LoginScreenBinding binding;
     private boolean isPasswordVisible = false;
     private GoogleSignInClient googleSignInClient;
-    private ActivityResultLauncher<Intent> googleSignInLauncher;
+    private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                    handleGoogleSignInResult(task);
+                } else {
+                    Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
 
     @Nullable
     @Override
@@ -60,18 +70,6 @@ public class LoginFragment extends Fragment {
                 .requestEmail()
                 .build();
         googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
-
-        googleSignInLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                        handleGoogleSignInResult(task);
-                    } else {
-                        Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
 
         binding.btnGoogleLogin.setOnClickListener(v -> {
             googleSignInClient.signOut().addOnCompleteListener(task -> {

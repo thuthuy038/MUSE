@@ -35,7 +35,7 @@
             android:name=".policy.TermsOfUseActivity"
             android:exported="false" />
         <activity
-            android:name=".auth.WelcomeScreen"
+            android:name=".auth.AuthActivity"
             android:exported="false" />
         <activity
             android:name=".main.MainActivity"

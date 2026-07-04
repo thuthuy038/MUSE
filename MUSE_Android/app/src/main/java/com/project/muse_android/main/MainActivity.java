@@ -1,8 +1,10 @@
 package com.project.muse_android.main;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import com.project.utils.SessionManager;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -14,12 +16,15 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private NavController navController;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        sessionManager = new SessionManager(this);
 
         NavHostFragment navHostFragment =
                 (NavHostFragment) getSupportFragmentManager()
@@ -34,7 +39,15 @@ public class MainActivity extends AppCompatActivity {
             );
 
             binding.fabProfile.setOnClickListener(v -> {
-                navController.navigate(R.id.navigation_profile);
+                android.util.Log.d("MUSE_NAV", "Profile click: isLoggedIn=" + sessionManager.isLoggedIn());
+                if (sessionManager.isLoggedIn()) {
+                    Intent intent = new Intent(MainActivity.this, com.project.muse_android.profile.ProfileActivity.class);
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(MainActivity.this, com.project.muse_android.auth.AuthActivity.class);
+                    intent.putExtra("from_profile", true);
+                    startActivity(intent);
+                }
             });
 
             // Set badge for notifications

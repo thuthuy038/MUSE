@@ -185,15 +185,23 @@ public class ProfileOverviewFragment extends Fragment {
         });
 
         binding.menuPersonalInfo.getRoot().setOnClickListener(v -> {
+            int containerId = R.id.profile_container;
+            if (getView() != null && getView().getParent() instanceof View) {
+                containerId = ((View) getView().getParent()).getId();
+            }
             getParentFragmentManager().beginTransaction()
-                    .replace(R.id.profile_container, new EditProfileFragment())
+                    .replace(containerId, new EditProfileFragment())
                     .addToBackStack(null)
                     .commit();
         });
 
         binding.menuSecurity.getRoot().setOnClickListener(v -> {
+            int containerId = R.id.profile_container;
+            if (getView() != null && getView().getParent() instanceof View) {
+                containerId = ((View) getView().getParent()).getId();
+            }
             getParentFragmentManager().beginTransaction()
-                    .replace(R.id.profile_container, new SettingsFragment())
+                    .replace(containerId, new SettingsFragment())
                     .addToBackStack(null)
                     .commit();
         });
@@ -205,8 +213,12 @@ public class ProfileOverviewFragment extends Fragment {
     }
 
     private void openMembership() {
+        int containerId = R.id.profile_container;
+        if (getView() != null && getView().getParent() instanceof View) {
+            containerId = ((View) getView().getParent()).getId();
+        }
         getParentFragmentManager().beginTransaction()
-                .replace(R.id.profile_container, new com.project.muse_android.membership.MembershipFragment())
+                .replace(containerId, new com.project.muse_android.membership.MembershipFragment())
                 .addToBackStack(null)
                 .commit();
     }

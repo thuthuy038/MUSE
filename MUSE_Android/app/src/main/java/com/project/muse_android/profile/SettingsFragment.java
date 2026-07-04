@@ -76,9 +76,6 @@ public class SettingsFragment extends Fragment {
 
     private void setupMenuItems() {
         // Section: Bảo mật
-        binding.itemTwoFactor.ivIcon.setImageResource(R.drawable.ic_verified_user);
-        binding.itemTwoFactor.tvTitle.setText("Xác thực hai lớp");
-
         binding.itemChangePassword.ivIcon.setImageResource(R.drawable.ic_lock);
         binding.itemChangePassword.tvTitle.setText("Đổi mật khẩu");
 
@@ -119,8 +116,17 @@ public class SettingsFragment extends Fragment {
         });
 
         binding.itemChangePassword.getRoot().setOnClickListener(v -> {
-            // Navigate to change password or forgot password flow
-            Toast.makeText(getContext(), "Đổi mật khẩu", Toast.LENGTH_SHORT).show();
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.profile_container, new ChangePasswordFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        binding.itemContact.getRoot().setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.profile_container, new ContactFragment())
+                    .addToBackStack(null)
+                    .commit();
         });
     }
 
