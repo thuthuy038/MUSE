@@ -152,6 +152,7 @@ public class SettingsFragment extends Fragment {
                     .error(R.drawable.ic_account_circle)
                     .into(binding.ivAvatar);
         }
+    }
 
     private void setupMenuItems() {
         // Section: Bảo mật

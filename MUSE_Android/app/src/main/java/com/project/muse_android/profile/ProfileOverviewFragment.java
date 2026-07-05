@@ -102,6 +102,7 @@ public class ProfileOverviewFragment extends Fragment {
                             setAvatarImage(cached);
                         }
                     }
+                }
 
                 @Override
                 public void onFailure(Call<User> call, Throwable t) {

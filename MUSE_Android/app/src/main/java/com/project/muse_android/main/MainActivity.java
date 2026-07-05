@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SessionManager sessionManager = new SessionManager(this);
+        sessionManager = new SessionManager(this);
         if (sessionManager.isFirstLaunch()) {
             Intent intent = new Intent(this, AuthActivity.class);
             startActivity(intent);
@@ -34,8 +34,6 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        sessionManager = new SessionManager(this);
 
         NavHostFragment navHostFragment =
                 (NavHostFragment) getSupportFragmentManager()
