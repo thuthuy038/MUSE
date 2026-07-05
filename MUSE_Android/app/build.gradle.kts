@@ -21,7 +21,7 @@ android {
     }
 
     signingConfigs {
-        val keystoreFile = file("../keystore/debug.keystore")
+        val keystoreFile = file("debug.keystore")
         if (keystoreFile.exists()) {
             create("debugShared") {
                 // Chỉ đường dẫn tới file debug.keystore dùng chung ở thư mục gốc dự án
