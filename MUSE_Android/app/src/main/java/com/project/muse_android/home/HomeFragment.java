@@ -68,11 +68,9 @@ public class HomeFragment extends Fragment {
     private HomeApiService homeApiService;
     private ApiService apiService;
 
-    private float dX, dY;
     private final Handler slideHandler = new Handler(Looper.getMainLooper());
     private Runnable sliderRunnable;
     private int selectedTab = 0; // 0: Hot, 1: New, 2: All
-    private ObjectAnimator aiFloatAnim;
 
     private final List<Category> allCategories = new ArrayList<>();
     private boolean isAllCategoriesShown = false;
@@ -94,7 +92,6 @@ public class HomeFragment extends Fragment {
 
         setupRecyclerViews();
         setupViewPager();
-        setupDraggableAI();
         setupClickEffects();
         setupSearchBarInteraction();
         setupTabInteraction();
@@ -124,11 +121,9 @@ public class HomeFragment extends Fragment {
         for (int i = 0; i < contentLayout.getChildCount(); i++) {
             contentLayout.getChildAt(i).setAlpha(0f);
         }
-        binding.btnAIDraggable.setAlpha(0f);
     }
 
     private void playEntranceAnimation() {
-        if (binding == null) return;
         long duration = 600;
         float startY = 40f * getResources().getDisplayMetrics().density;
 
@@ -144,9 +139,6 @@ public class HomeFragment extends Fragment {
         if (content.getChildCount() > 3) animateEntrance(content.getChildAt(3), 500, duration, startY); // Tabs
 
         animateEntrance(binding.rvProducts, 600, duration, startY);
-        animateEntrance(binding.btnAIDraggable, 800, duration, startY);
-
-        new Handler(Looper.getMainLooper()).postDelayed(this::startAIFloatingAnimation, 1800);
     }
 
     private void animateEntrance(View view, long delay, long duration, float startY) {
@@ -274,7 +266,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateProductList() {
-        if (binding == null) return;
         displayProducts.clear();
 
         List<Product> source;
@@ -328,64 +319,15 @@ public class HomeFragment extends Fragment {
 
     private void playBounce(View v) {
         v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() ->
-            v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
+                v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
         ).start();
     }
 
-    private void setupDraggableAI() {
-        binding.btnAIDraggable.setOnTouchListener(new View.OnTouchListener() {
-            private float initialTouchX, initialTouchY;
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        dX = v.getX() - event.getRawX();
-                        dY = v.getY() - event.getRawY();
-                        initialTouchX = event.getRawX();
-                        initialTouchY = event.getRawY();
-                        if (aiFloatAnim != null) aiFloatAnim.pause();
-                        return true;
-                    case MotionEvent.ACTION_MOVE:
-                        v.setX(event.getRawX() + dX);
-                        v.setY(event.getRawY() + dY);
-                        return true;
-                    case MotionEvent.ACTION_UP:
-                        if (aiFloatAnim != null) aiFloatAnim.resume();
-                        float dist = (float) Math.hypot(event.getRawX() - initialTouchX, event.getRawY() - initialTouchY);
-                        if (dist < 10) v.performClick();
-                        else snapToEdges(v);
-                        return true;
-                }
-                return false;
-            }
-        });
-        binding.btnAIDraggable.setOnClickListener(v -> Toast.makeText(getContext(), "AI MUSE sẵn sàng!", Toast.LENGTH_SHORT).show());
-    }
-
-    private void startAIFloatingAnimation() {
-        if (binding == null) return;
-        if (aiFloatAnim != null) aiFloatAnim.cancel();
-        aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", -15f, 15f);
-        aiFloatAnim.setDuration(2000);
-        aiFloatAnim.setRepeatMode(ValueAnimator.REVERSE);
-        aiFloatAnim.setRepeatCount(ValueAnimator.INFINITE);
-        aiFloatAnim.start();
-    }
-
-    private void snapToEdges(View v) {
-        if (binding == null) return;
-        float screenWidth = binding.homeRoot.getWidth();
-        float targetX = (v.getX() + v.getWidth()/2 < screenWidth/2) ? 40 : screenWidth - v.getWidth() - 40;
-        v.animate().x(targetX).setDuration(300).setInterpolator(new DecelerateInterpolator()).start();
-    }
-
     private void loadBanners() {
-        if (binding == null) return;
         binding.vpBanners.setAlpha(0.5f);
         homeApiService.getBanners().enqueue(new Callback<List<Banner>>() {
             @Override
             public void onResponse(Call<List<Banner>> call, Response<List<Banner>> response) {
-                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     bannerList.clear();
                     for (Banner banner : response.body()) {
@@ -403,12 +345,10 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadCategories() {
-        if (binding == null) return;
         binding.rvCategories.setAlpha(0.5f);
         homeApiService.getCategories().enqueue(new Callback<List<Category>>() {
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
-                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     allCategories.clear();
                     for (Category cat : response.body()) {
@@ -427,7 +367,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateCategoryList() {
-        if (binding == null) return;
         categoryList.clear();
         if (isAllCategoriesShown || allCategories.size() <= 6) {
             categoryList.addAll(allCategories);
@@ -440,14 +379,12 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadProducts() {
-        if (binding == null) return;
         binding.rvProducts.setAlpha(1.0f);
 
         // Dùng apiService.getProducts() để lấy toàn bộ sản phẩm
         apiService.getProducts().enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
-                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> products = response.body();
                     Log.d("HomeFragment", "Tải thành công " + products.size() + " sản phẩm");
@@ -475,18 +412,13 @@ public class HomeFragment extends Fragment {
 
                     updateProductList();
                 } else {
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
-                if (binding == null) return;
                 Log.e("HomeFragment", "Lỗi: ", t);
-                if (getContext() != null) {
-                    Toast.makeText(getContext(), "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(getContext(), "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -495,7 +427,6 @@ public class HomeFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         slideHandler.removeCallbacks(sliderRunnable);
-        if (aiFloatAnim != null) aiFloatAnim.cancel();
         binding = null;
     }
 }
