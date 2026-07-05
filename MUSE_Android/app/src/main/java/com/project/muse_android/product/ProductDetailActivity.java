@@ -18,6 +18,7 @@ import com.google.android.material.chip.Chip;
 import com.project.models.Category;
 import com.project.models.Product;
 import com.project.muse_android.R;
+import com.project.muse_android.cart.ProductVariantBottomSheetFragment;
 import com.project.muse_android.databinding.ActivityProductDetailBinding;
 import com.project.network.HomeApiClient;
 import com.project.network.ApiService;
@@ -32,10 +33,15 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import com.project.utils.CartManager;
+
 public class ProductDetailActivity extends AppCompatActivity {
 
     private ActivityProductDetailBinding binding;
     private String productId;
+    private Product currentProduct;
+    private String selectedColor = "";
+    private String selectedSize = "";
     private static final String BASE_URL = "https://server-testing-ymn9.onrender.com";
 
     @Override
@@ -80,6 +86,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void displayProduct(Product product) {
+        this.currentProduct = product;
         // Breadcrumb and Basic Info
         binding.txtProductNameBreadcrumb.setText(product.getName());
         binding.txtProductName.setText(product.getName());
@@ -210,6 +217,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 // Set new selection
                 shape.setStroke((int) (3 * density), Color.BLACK);
                 selectedDot[0] = dot;
+                selectedColor = colorStr;
                 binding.txtSelectedColorLabel.setText(String.format("Màu sắc: %s", colorStr));
             });
 
@@ -246,20 +254,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         int firstAvailableId = -1;
         String firstAvailableSize = "";
 
-        // Create state lists for visual feedback
-        ColorStateList textColors = new ColorStateList(
-                new int[][]{new int[]{android.R.attr.state_checked}, new int[]{}},
-                new int[]{Color.WHITE, Color.BLACK}
-        );
-        ColorStateList bgColors = new ColorStateList(
-                new int[][]{new int[]{android.R.attr.state_checked}, new int[]{}},
-                new int[]{Color.BLACK, Color.WHITE}
-        );
-        ColorStateList strokeColors = new ColorStateList(
-                new int[][]{new int[]{android.R.attr.state_checked}, new int[]{}},
-                new int[]{Color.BLACK, Color.parseColor("#DDDDDD")}
-        );
-
         Set<String> processedSizes = new HashSet<>();
         for (Product.ProductSize sizeObj : sizes) {
             String sizeName = sizeObj.getSize();
@@ -268,25 +262,24 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
             processedSizes.add(sizeName);
 
-            Log.d("ProductDetail", "Size: " + sizeName + ", Qty: " + sizeObj.getQuantity());
-
-            Chip chip = new Chip(this);
+            Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_chip_variant, binding.chipGroupSizes, false);
             int chipId = View.generateViewId();
             chip.setId(chipId);
             chip.setText(sizeName);
+            
+            // Checkable is usually true for Choice style, but let's be explicit
             chip.setCheckable(true);
             chip.setClickable(true);
 
-            chip.setTextColor(textColors);
-            chip.setChipBackgroundColor(bgColors);
-            chip.setChipStrokeColor(strokeColors);
-            chip.setChipStrokeWidth(3f);
-
-            // Square style
-            chip.setShapeAppearanceModel(chip.getShapeAppearanceModel().toBuilder().setAllCornerSizes(0).build());
+            chip.setOnClickListener(v -> {
+                binding.chipGroupSizes.check(chipId);
+                selectedSize = sizeName;
+                binding.txtSelectedSizeLabel.setText(String.format("Kích cỡ: %s", sizeName));
+            });
 
             chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) {
+                    selectedSize = sizeName;
                     binding.txtSelectedSizeLabel.setText(String.format("Kích cỡ: %s", sizeName));
                 }
             });
@@ -295,7 +288,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             if (sizeObj.getQuantity() <= 0) {
                 chip.setEnabled(false);
                 chip.setAlpha(0.3f);
-                chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor("#EEEEEE")));
             } else {
                 if (firstAvailableId == -1) {
                     firstAvailableId = chipId;
@@ -309,6 +301,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         // Select first available size by default using the ID
         if (firstAvailableId != -1) {
             binding.chipGroupSizes.check(firstAvailableId);
+            selectedSize = firstAvailableSize;
             binding.txtSelectedSizeLabel.setText(String.format("Kích cỡ: %s", firstAvailableSize));
         }
     }
@@ -322,8 +315,78 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void setupActionButtons() {
-        binding.btnAddToCart.setOnClickListener(v -> Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show());
-        binding.btnBuyNow.setOnClickListener(v -> Toast.makeText(this, "Chuyển đến màn hình thanh toán", Toast.LENGTH_SHORT).show());
+        binding.btnAddToCart.setOnClickListener(v -> {
+            if (currentProduct == null) return;
+
+            if (!selectedColor.isEmpty() && !selectedSize.isEmpty()) {
+                // Add directly if already selected
+                CartManager.getInstance(this).addToCart(currentProduct, selectedColor, selectedSize, 1, new CartManager.CartCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Toast.makeText(ProductDetailActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                // Otherwise show bottom sheet
+                ProductVariantBottomSheetFragment variantSheet = new ProductVariantBottomSheetFragment(currentProduct);
+                variantSheet.setButtonText("Thêm vào giỏ hàng");
+                variantSheet.setOnVariantSelectedListener((color, size, quantity) -> {
+                    CartManager.getInstance(this).addToCart(currentProduct, color, size, quantity, new CartManager.CartCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            Toast.makeText(ProductDetailActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+                variantSheet.show(getSupportFragmentManager(), "ProductVariantBottomSheet");
+            }
+        });
+
+        binding.btnBuyNow.setOnClickListener(v -> {
+            if (currentProduct == null) return;
+
+            if (!selectedColor.isEmpty() && !selectedSize.isEmpty()) {
+                // Add directly if already selected
+                CartManager.getInstance(this).addToCart(currentProduct, selectedColor, selectedSize, 1, new CartManager.CartCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Toast.makeText(ProductDetailActivity.this, "Đang chuyển đến thanh toán...", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                ProductVariantBottomSheetFragment variantSheet = new ProductVariantBottomSheetFragment(currentProduct);
+                variantSheet.setButtonText("Mua ngay");
+                variantSheet.setOnVariantSelectedListener((color, size, quantity) -> {
+                    CartManager.getInstance(this).addToCart(currentProduct, color, size, quantity, new CartManager.CartCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            Toast.makeText(ProductDetailActivity.this, "Đang chuyển đến thanh toán...", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+                variantSheet.show(getSupportFragmentManager(), "ProductVariantBottomSheet");
+            }
+        });
         binding.btnFavoriteDetail.setOnClickListener(v -> {
             v.setSelected(!v.isSelected());
             ((android.widget.ImageView)v).setColorFilter(v.isSelected() ?

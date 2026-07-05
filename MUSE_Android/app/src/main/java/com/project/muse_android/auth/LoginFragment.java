@@ -127,6 +127,9 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     sessionManager.saveToken(loginResponse.getToken());
                     sessionManager.saveUser(loginResponse.get_id(), loginResponse.getName(), loginResponse.getEmail());
 
+                    // Sync Cart
+                    com.project.utils.CartManager.getInstance(requireContext()).syncLocalCart();
+
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập thành công!");
                     dialog.setOnCloseListener(() -> {
                         Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
@@ -176,6 +179,9 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
                     sessionManager.saveToken(loginResponse.getToken());
                     sessionManager.saveUser(loginResponse.get_id(), loginResponse.getName(), loginResponse.getEmail());
+
+                    // Sync Cart
+                    com.project.utils.CartManager.getInstance(requireContext()).syncLocalCart();
 
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập bằng Google thành công!");
                     dialog.setOnCloseListener(() -> {

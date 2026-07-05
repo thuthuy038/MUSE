@@ -1,5 +1,12 @@
 package com.project.network;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.project.models.Product;
+import com.project.models.ProductImage;
+import com.project.models.ProductImageDeserializer;
+import com.project.models.ProductSizeDeserializer;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -24,10 +31,15 @@ public class ApiClient {
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .build();
 
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Product.ProductSize.class, new ProductSizeDeserializer())
+                .registerTypeAdapter(ProductImage.class, new ProductImageDeserializer())
+                .create();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
         this.apiService = retrofit.create(ApiService.class);
