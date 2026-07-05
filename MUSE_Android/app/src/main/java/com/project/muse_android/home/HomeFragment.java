@@ -128,6 +128,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void playEntranceAnimation() {
+        if (binding == null) return;
         long duration = 600;
         float startY = 40f * getResources().getDisplayMetrics().density;
 
@@ -273,6 +274,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateProductList() {
+        if (binding == null) return;
         displayProducts.clear();
 
         List<Product> source;
@@ -361,6 +363,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void startAIFloatingAnimation() {
+        if (binding == null) return;
         if (aiFloatAnim != null) aiFloatAnim.cancel();
         aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", -15f, 15f);
         aiFloatAnim.setDuration(2000);
@@ -377,10 +380,12 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadBanners() {
+        if (binding == null) return;
         binding.vpBanners.setAlpha(0.5f);
         homeApiService.getBanners().enqueue(new Callback<List<Banner>>() {
             @Override
             public void onResponse(Call<List<Banner>> call, Response<List<Banner>> response) {
+                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     bannerList.clear();
                     for (Banner banner : response.body()) {
@@ -398,10 +403,12 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadCategories() {
+        if (binding == null) return;
         binding.rvCategories.setAlpha(0.5f);
         homeApiService.getCategories().enqueue(new Callback<List<Category>>() {
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     allCategories.clear();
                     for (Category cat : response.body()) {
@@ -420,6 +427,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateCategoryList() {
+        if (binding == null) return;
         categoryList.clear();
         if (isAllCategoriesShown || allCategories.size() <= 6) {
             categoryList.addAll(allCategories);
@@ -432,12 +440,14 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadProducts() {
+        if (binding == null) return;
         binding.rvProducts.setAlpha(1.0f);
 
         // Dùng apiService.getProducts() để lấy toàn bộ sản phẩm
         apiService.getProducts().enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> products = response.body();
                     Log.d("HomeFragment", "Tải thành công " + products.size() + " sản phẩm");
@@ -465,13 +475,18 @@ public class HomeFragment extends Fragment {
 
                     updateProductList();
                 } else {
-                    Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
+                if (binding == null) return;
                 Log.e("HomeFragment", "Lỗi: ", t);
-                Toast.makeText(getContext(), "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

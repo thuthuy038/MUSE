@@ -18,23 +18,27 @@
         <activity android:name=".search.SearchActivity" android:exported="false"/>
 
         <activity
-            android:name=".profile.ProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name=".notification.NotificationScreenActivity"
-            android:exported="false" />
-        <activity
-            android:name=".policy.PrivacyPolicyActivity"
-            android:exported="false" />
-        <activity
-            android:name=".policy.TermsOfUseActivity"
+            android:name="com.project.muse_android.search.SearchResultActivity"
             android:exported="false" />
 
         <activity
-            android:name=".product.ProductDetailActivity"
+            android:name="com.project.muse_android.auth.AuthActivity"
             android:exported="false" />
+
         <activity
-            android:name=".product.CategoryProductsActivity"
+            android:name="com.project.muse_android.product.ProductDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.project.muse_android.product.CategoryProductsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.project.muse_android.notification.NotificationScreenActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.project.muse_android.policy.PrivacyPolicyActivity"
             android:exported="false" />
 
         <activity

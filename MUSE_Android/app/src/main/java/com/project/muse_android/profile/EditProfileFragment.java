@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.project.muse_android.R;
@@ -26,12 +27,17 @@ import com.project.models.District;
 import com.project.models.Ward;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -49,12 +55,14 @@ public class EditProfileFragment extends Fragment {
     private int currentDistrictCode = -1;
 
     private String tempAvatarBase64 = null;
+    private Uri selectedImageUri = null;
 
     private final ActivityResultLauncher<String> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null && isAdded()) {
                     Glide.with(EditProfileFragment.this).load(uri).into(binding.ivProfile);
-                    tempAvatarBase64 = convertUriToBase64(uri);
+                    selectedImageUri = uri;
+                    tempAvatarBase64 = null; // Clear base64 since we have raw URI now
                 }
             });
 
@@ -70,9 +78,59 @@ public class EditProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         sessionManager = new SessionManager(requireContext());
 
-        binding.ivBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        binding.ivBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
         binding.btnEditAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
+
+        binding.tvChangePassword.setOnClickListener(v -> {
+            String newPassword = binding.etPassword.getText().toString().trim();
+            if (newPassword.isEmpty() || newPassword.equals("**********")) {
+                Toast.makeText(getContext(), "Vui lòng nhập mật khẩu mới trước khi đổi", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (newPassword.length() < 8) {
+                Toast.makeText(getContext(), "Mật khẩu phải có ít nhất 8 ký tự", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String token = sessionManager.getToken();
+            String userId = sessionManager.getUserId();
+
+            if (token != null && userId != null) {
+                binding.tvChangePassword.setEnabled(false);
+                binding.tvChangePassword.setText("Đang đổi...");
+
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("password", newPassword);
+
+                com.project.network.ApiClient.INSTANCE.getInstance().updateUser(userId, "Bearer " + token, userData).enqueue(new Callback<User>() {
+                    @Override
+                    public void onResponse(Call<User> call, Response<User> response) {
+                        if (!isAdded()) return;
+                        binding.tvChangePassword.setEnabled(true);
+                        binding.tvChangePassword.setText(getString(R.string.change_password));
+
+                        if (response.isSuccessful()) {
+                            binding.etPassword.setText("**********"); // Đặt lại placeholder
+                            Toast.makeText(getContext(), "Đổi mật khẩu thành công!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getContext(), "Đổi mật khẩu thất bại: " + response.message(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<User> call, Throwable t) {
+                        if (!isAdded()) return;
+                        binding.tvChangePassword.setEnabled(true);
+                        binding.tvChangePassword.setText(getString(R.string.change_password));
+                        Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Toast.makeText(getContext(), "Không tìm thấy phiên đăng nhập", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         binding.btnSave.setOnClickListener(v -> {
             String newName = binding.etName.getText().toString().trim();
@@ -88,59 +146,14 @@ public class EditProfileFragment extends Fragment {
             String userId = sessionManager.getUserId();
 
             if (token != null && userId != null) {
-                Map<String, Object> userData = new HashMap<>();
-                userData.put("name", newName);
-                userData.put("email", newEmail);
-                userData.put("phone", newPhone);
+                binding.btnSave.setEnabled(false);
+                binding.btnSave.setText("Đang xử lý...");
 
-                if (tempAvatarBase64 != null) {
-                    userData.put("avatar", tempAvatarBase64);
+                if (selectedImageUri != null) {
+                    uploadAvatarAndSaveProfile(userId, token, newName, newEmail, newPhone);
+                } else {
+                    saveUserProfile(userId, token, newName, newEmail, newPhone);
                 }
-
-                // Prepare address data
-                Map<String, Object> addressMap = new HashMap<>();
-                addressMap.put("street", binding.etStreet.getText().toString().trim());
-                addressMap.put("ward", binding.spinnerWard.getSelectedItem() != null ? binding.spinnerWard.getSelectedItem().toString() : "");
-                addressMap.put("district", binding.spinnerDistrict.getSelectedItem() != null ? binding.spinnerDistrict.getSelectedItem().toString() : "");
-                addressMap.put("province", binding.spinnerCity.getSelectedItem() != null ? binding.spinnerCity.getSelectedItem().toString() : "");
-                addressMap.put("addressNote", binding.etAddressNote.getText().toString().trim());
-                addressMap.put("isDefault", true);
-
-                List<Map<String, Object>> addressList = new ArrayList<>();
-                addressList.add(addressMap);
-                userData.put("addresses", addressList);
-
-                // Prepare payment data
-                Map<String, Object> paymentMap = new HashMap<>();
-                paymentMap.put("accountNumber", binding.etAccountNumber.getText().toString().trim());
-                paymentMap.put("accountName", binding.etAccountName.getText().toString().trim());
-                paymentMap.put("bank", binding.etBank.getText().toString().trim());
-                userData.put("payment", paymentMap);
-
-                com.project.network.ApiClient.INSTANCE.getInstance().updateUser(userId, "Bearer " + token, userData).enqueue(new Callback<User>() {
-                    @Override
-                    public void onResponse(Call<User> call, Response<User> response) {
-                        if (!isAdded()) return;
-                        if (response.isSuccessful() && response.body() != null) {
-                            User user = response.body();
-                            // Update local session
-                            sessionManager.saveUser(user.get_id(), user.getName(), user.getEmail());
-                            if (tempAvatarBase64 != null) {
-                                sessionManager.saveAvatar(user.get_id(), tempAvatarBase64);
-                            }
-                            Toast.makeText(getContext(), "Thông tin đã được lưu thành công", Toast.LENGTH_SHORT).show();
-                            getParentFragmentManager().popBackStack();
-                        } else {
-                            Toast.makeText(getContext(), "Không thể cập nhật thông tin: " + response.message(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<User> call, Throwable t) {
-                        if (!isAdded()) return;
-                        Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
             } else {
                 Toast.makeText(getContext(), "Không tìm thấy phiên đăng nhập", Toast.LENGTH_SHORT).show();
             }
@@ -177,30 +190,132 @@ public class EditProfileFragment extends Fragment {
         binding.etAccountName.setText("");
         binding.etBank.setText("");
 
-        // Load local cached avatar if exists
-        String cachedAvatar = sessionManager.getAvatar(sessionManager.getUserId());
-        if (cachedAvatar != null) {
-            if (cachedAvatar.startsWith("http") || cachedAvatar.startsWith("/")) {
-                String fullUrl = cachedAvatar;
-                if (cachedAvatar.startsWith("/")) {
-                    fullUrl = "https://server-testing-ymn9.onrender.com" + cachedAvatar;
-                }
-                Glide.with(this).load(fullUrl).into(binding.ivProfile);
-            } else {
-                try {
-                    byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
-                    Glide.with(this).load(decodedString).into(binding.ivProfile);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
-                }
-            }
-        } else {
-            binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
-        }
-
         loadLocations();
         loadUserProfile();
+    }
+
+    private void uploadAvatarAndSaveProfile(String userId, String token, String name, String email, String phone) {
+        okhttp3.MultipartBody.Part avatarPart = prepareImagePart(selectedImageUri);
+        if (avatarPart == null) {
+            Toast.makeText(getContext(), "Không thể chuẩn bị file ảnh", Toast.LENGTH_SHORT).show();
+            binding.btnSave.setEnabled(true);
+            binding.btnSave.setText("Lưu");
+            return;
+        }
+
+        com.project.network.ApiClient.INSTANCE.getInstance().uploadAvatar(userId, avatarPart).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    // Save new avatar URL to cache
+                    if (user.getAvatar() != null && user.getAvatar().getUrl() != null) {
+                        String avatarUrl = user.getAvatar().getUrl();
+                        if (avatarUrl.startsWith("/")) {
+                            avatarUrl = "https://server-testing-ymn9.onrender.com" + avatarUrl;
+                        }
+                        sessionManager.saveAvatar(userId, avatarUrl);
+                    }
+                    // Step 2: Save the rest of the profile info
+                    saveUserProfile(userId, token, name, email, phone);
+                } else {
+                    Toast.makeText(getContext(), "Không thể tải lên ảnh đại diện: " + response.message(), Toast.LENGTH_SHORT).show();
+                    binding.btnSave.setEnabled(true);
+                    binding.btnSave.setText("Lưu");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(getContext(), "Lỗi tải ảnh lên: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                binding.btnSave.setEnabled(true);
+                binding.btnSave.setText("Lưu");
+            }
+        });
+    }
+
+    private void saveUserProfile(String userId, String token, String name, String email, String phone) {
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("name", name);
+        userData.put("email", email);
+        userData.put("phone", phone);
+
+        // Prepare address data
+        Map<String, Object> addressMap = new HashMap<>();
+        addressMap.put("street", binding.etStreet.getText().toString().trim());
+        addressMap.put("ward", binding.spinnerWard.getSelectedItem() != null ? binding.spinnerWard.getSelectedItem().toString() : "");
+        addressMap.put("district", binding.spinnerDistrict.getSelectedItem() != null ? binding.spinnerDistrict.getSelectedItem().toString() : "");
+        addressMap.put("province", binding.spinnerCity.getSelectedItem() != null ? binding.spinnerCity.getSelectedItem().toString() : "");
+        addressMap.put("addressNote", binding.etAddressNote.getText().toString().trim());
+        addressMap.put("isDefault", true);
+
+        List<Map<String, Object>> addressList = new ArrayList<>();
+        addressList.add(addressMap);
+        userData.put("addresses", addressList);
+
+        // Prepare payment data
+        Map<String, Object> paymentMap = new HashMap<>();
+        paymentMap.put("accountNumber", binding.etAccountNumber.getText().toString().trim());
+        paymentMap.put("accountName", binding.etAccountName.getText().toString().trim());
+        paymentMap.put("bank", binding.etBank.getText().toString().trim());
+        userData.put("payment", paymentMap);
+
+        com.project.network.ApiClient.INSTANCE.getInstance().updateUser(userId, "Bearer " + token, userData).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (!isAdded()) return;
+                binding.btnSave.setEnabled(true);
+                binding.btnSave.setText("Lưu");
+
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    // Update local session
+                    sessionManager.saveUser(user.get_id(), user.getName(), user.getEmail());
+                    Toast.makeText(getContext(), "Thông tin đã được lưu thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack();
+                } else {
+                    Toast.makeText(getContext(), "Không thể cập nhật thông tin: " + response.message(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                if (!isAdded()) return;
+                binding.btnSave.setEnabled(true);
+                binding.btnSave.setText("Lưu");
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private okhttp3.MultipartBody.Part prepareImagePart(Uri uri) {
+        try {
+            if (getContext() == null) return null;
+            InputStream inputStream = getContext().getContentResolver().openInputStream(uri);
+            if (inputStream == null) return null;
+
+            File tempFile = new File(getContext().getCacheDir(), "temp_avatar.jpg");
+            FileOutputStream outputStream = new FileOutputStream(tempFile);
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            outputStream.close();
+            inputStream.close();
+
+            RequestBody requestFile = RequestBody.create(
+                    tempFile,
+                    MediaType.parse(getContext().getContentResolver().getType(uri))
+            );
+
+            return okhttp3.MultipartBody.Part.createFormData("avatar", tempFile.getName(), requestFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private void loadLocations() {
@@ -337,6 +452,10 @@ public class EditProfileFragment extends Fragment {
             binding.etEmail.setText(cachedEmail);
         }
 
+        // Load cached avatar immediately for better UX
+        String cachedAvatar = sessionManager.getAvatar(sessionManager.getUserId());
+        setAvatarImage(cachedAvatar);
+
         if (token != null) {
             com.project.network.ApiClient.INSTANCE.getInstance().getProfile("Bearer " + token).enqueue(new Callback<User>() {
                 @Override
@@ -352,27 +471,22 @@ public class EditProfileFragment extends Fragment {
 
                         if (user.getAvatar() != null && user.getAvatar().getUrl() != null && !user.getAvatar().getUrl().isEmpty()) {
                             String avatarUrl = user.getAvatar().getUrl();
-                            if (avatarUrl.startsWith("http") || avatarUrl.startsWith("/")) {
-                                String fullUrl = avatarUrl;
+                            setAvatarImage(avatarUrl);
+                            
+                            // Cache the full URL
+                            String fullCacheUrl = avatarUrl;
+                            if (!avatarUrl.startsWith("http")) {
                                 if (avatarUrl.startsWith("/")) {
-                                    fullUrl = "https://server-testing-ymn9.onrender.com" + avatarUrl;
-                                }
-                                Glide.with(EditProfileFragment.this).load(fullUrl).into(binding.ivProfile);
-                                sessionManager.saveAvatar(user.get_id(), fullUrl);
-                            } else {
-                                try {
-                                    byte[] decodedString = Base64.decode(avatarUrl, Base64.DEFAULT);
-                                    Glide.with(EditProfileFragment.this).load(decodedString).into(binding.ivProfile);
-                                    sessionManager.saveAvatar(user.get_id(), avatarUrl);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
+                                    fullCacheUrl = "https://server-testing-ymn9.onrender.com" + avatarUrl;
+                                } else {
+                                    fullCacheUrl = "https://server-testing-ymn9.onrender.com/" + avatarUrl;
                                 }
                             }
+                            sessionManager.saveAvatar(user.get_id(), fullCacheUrl);
                         } else {
-                            if (sessionManager.getAvatar(user.get_id()) == null) {
-                                binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
-                            }
+                            // Try local cache if server doesn't have it
+                            String cached = sessionManager.getAvatar(user.get_id());
+                            setAvatarImage(cached);
                         }
 
                         // Parse Address (filter default, otherwise take first one)
@@ -430,6 +544,51 @@ public class EditProfileFragment extends Fragment {
                     // Fail silently, fall back to cached preferences
                 }
             });
+        }
+    }
+
+    private void setAvatarImage(String avatar) {
+        if (avatar == null || avatar.isEmpty()) {
+            binding.ivProfile.setImageResource(R.drawable.ic_account_circle);
+            return;
+        }
+
+        if (avatar.startsWith("http") || avatar.startsWith("/")) {
+            String fullUrl = avatar;
+            if (avatar.startsWith("/")) {
+                fullUrl = "https://server-testing-ymn9.onrender.com" + avatar;
+            }
+            Glide.with(this)
+                    .load(fullUrl)
+                    .placeholder(R.drawable.ic_account_circle)
+                    .error(R.drawable.ic_account_circle)
+                    .into(binding.ivProfile);
+        } else if (avatar.length() > 200 || !avatar.contains("/")) {
+            // Likely Base64 or a weird relative path without slash
+            try {
+                byte[] decodedString = Base64.decode(avatar, Base64.DEFAULT);
+                Glide.with(this)
+                        .load(decodedString)
+                        .placeholder(R.drawable.ic_account_circle)
+                        .error(R.drawable.ic_account_circle)
+                        .into(binding.ivProfile);
+            } catch (Exception e) {
+                // If Base64 fails, try treating it as relative path without leading slash
+                String fullUrl = "https://server-testing-ymn9.onrender.com/" + avatar;
+                Glide.with(this)
+                        .load(fullUrl)
+                        .placeholder(R.drawable.ic_account_circle)
+                        .error(R.drawable.ic_account_circle)
+                        .into(binding.ivProfile);
+            }
+        } else {
+            // Likely relative path without leading slash
+            String fullUrl = "https://server-testing-ymn9.onrender.com/" + avatar;
+            Glide.with(this)
+                    .load(fullUrl)
+                    .placeholder(R.drawable.ic_account_circle)
+                    .error(R.drawable.ic_account_circle)
+                    .into(binding.ivProfile);
         }
     }
 

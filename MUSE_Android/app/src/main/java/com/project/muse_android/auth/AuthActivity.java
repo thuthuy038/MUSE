@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivityAuthScreenBinding;
 import com.project.muse_android.profile.ProfileActivity;
+import com.project.muse_android.main.MainActivity;
 import com.project.utils.SessionManager;
 
 public class AuthActivity extends AppCompatActivity {
@@ -22,17 +23,21 @@ public class AuthActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
 
-        // 1. If already logged in, redirect directly to ProfileActivity
-        if (sessionManager.isLoggedIn()) {
-            Intent intent = new Intent(this, ProfileActivity.class);
+        boolean fromProfile = getIntent().getBooleanExtra("from_profile", false);
+        android.util.Log.d("MUSE_NAV", "AuthActivity onCreate: fromProfile=" + fromProfile + ", isFirstLaunch=" + sessionManager.isFirstLaunch() + ", isLoggedIn=" + sessionManager.isLoggedIn());
+
+        // 1. If not first launch and not opened from the profile button, redirect to MainActivity (homepage)
+        if (!fromProfile && !sessionManager.isFirstLaunch()) {
+            android.util.Log.d("MUSE_NAV", "Redirecting to MainActivity from AuthActivity");
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
             return;
         }
 
-        // 2. If first launch, show WelcomeFragment; otherwise skip to LoginFragment
+        // 2. Otherwise, load fragments
         if (savedInstanceState == null) {
-            if (sessionManager.isFirstLaunch()) {
+            if (!fromProfile && sessionManager.isFirstLaunch()) {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.auth_container, new WelcomeFragment())
                         .commit();

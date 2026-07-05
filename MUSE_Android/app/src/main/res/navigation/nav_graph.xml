@@ -36,6 +36,36 @@
         tools:layout="@layout/fragment_notification" />
 
     <fragment
+        android:id="@+id/navigation_edit_profile"
+        android:name="com.project.muse_android.profile.EditProfileFragment"
+        android:label="Chỉnh sửa thông tin"
+        tools:layout="@layout/edit_profile_screen" />
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="com.project.muse_android.profile.SettingsFragment"
+        android:label="Cài đặt"
+        tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/navigation_membership"
+        android:name="com.project.muse_android.membership.MembershipFragment"
+        android:label="Thành viên"
+        tools:layout="@layout/fragment_membership" />
+
+    <fragment
+        android:id="@+id/navigation_change_password"
+        android:name="com.project.muse_android.profile.ChangePasswordFragment"
+        android:label="Đổi mật khẩu"
+        tools:layout="@layout/fragment_change_password" />
+
+    <fragment
+        android:id="@+id/navigation_contact"
+        android:name="com.project.muse_android.profile.ContactFragment"
+        android:label="Liên hệ"
+        tools:layout="@layout/fragment_contact" />
+
+    <fragment
         android:id="@+id/navigation_category_products"
         android:name="com.project.muse_android.product.CategoryProductsFragment"
         android:label="Sản phẩm theo danh mục"

@@ -1,7 +1,8 @@
 package com.project.muse_android.profile;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,26 +16,30 @@ import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.project.muse_android.R;
-import com.project.muse_android.databinding.FragmentSettingsBinding;
-import com.project.muse_android.dialog.LogoutDialog;
-import com.project.muse_android.auth.AuthActivity;
+import com.project.muse_android.databinding.FragmentChangePasswordBinding;
+import com.project.muse_android.dialog.SuccessDialog;
 import com.project.utils.SessionManager;
 import com.project.network.ApiClient;
 import com.project.models.User;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SettingsFragment extends Fragment {
+public class ChangePasswordFragment extends Fragment {
 
-    private FragmentSettingsBinding binding;
+    private FragmentChangePasswordBinding binding;
     private SessionManager sessionManager;
+    private boolean isNewPasswordVisible = false;
+    private boolean isConfirmPasswordVisible = false;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentSettingsBinding.inflate(inflater, container, false);
+        binding = FragmentChangePasswordBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -43,7 +48,6 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         sessionManager = new SessionManager(requireContext());
 
-        setupMenuItems();
         setupClickListeners();
     }
 
@@ -154,54 +158,101 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    private void setupMenuItems() {
-        // Section: Bảo mật
-        binding.itemChangePassword.ivIcon.setImageResource(R.drawable.ic_lock);
-        binding.itemChangePassword.tvTitle.setText("Đổi mật khẩu");
-
-        // Section: Hỗ trợ
-        binding.itemHelpCenter.ivIcon.setImageResource(R.drawable.ic_help_outline);
-        binding.itemHelpCenter.tvTitle.setText("Trung tâm hỗ trợ");
-
-        binding.itemContact.ivIcon.setImageResource(R.drawable.ic_help_outline);
-        binding.itemContact.tvTitle.setText("Liên hệ");
-
-        binding.itemFeedback.ivIcon.setImageResource(R.drawable.ic_help_outline);
-        binding.itemFeedback.tvTitle.setText("Feedback");
-
-        // Section: Thông tin ứng dụng
-        binding.itemVersion.ivIcon.setImageResource(R.drawable.ic_info);
-        binding.itemVersion.tvTitle.setText("Version");
-        binding.itemVersion.tvValue.setVisibility(View.VISIBLE);
-        binding.itemVersion.tvValue.setText("1.1.1");
-        binding.itemVersion.ivChevron.setVisibility(View.GONE);
-
-        binding.itemPrivacyPolicy.ivIcon.setImageResource(R.drawable.ic_gavel);
-        binding.itemPrivacyPolicy.tvTitle.setText("Chính sách bảo mật & pháp lý");
-    }
-
     private void setupClickListeners() {
         binding.ivBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
-        binding.btnLogout.setOnClickListener(v -> {
-            LogoutDialog dialog = new LogoutDialog();
-            dialog.setOnLogoutListener(() -> {
-                sessionManager.clearSession();
-                Intent intent = new Intent(getActivity(), AuthActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                if (getActivity() != null) getActivity().finish();
-            });
-            dialog.show(getParentFragmentManager(), "logout_dialog");
+        binding.ivShowNewPassword.setOnClickListener(v -> {
+            isNewPasswordVisible = !isNewPasswordVisible;
+            if (isNewPasswordVisible) {
+                binding.etNewPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            } else {
+                binding.etNewPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
+            binding.etNewPassword.setSelection(binding.etNewPassword.getText().length());
         });
 
-        binding.itemChangePassword.getRoot().setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.navigation_change_password);
+        binding.ivShowConfirmPassword.setOnClickListener(v -> {
+            isConfirmPasswordVisible = !isConfirmPasswordVisible;
+            if (isConfirmPasswordVisible) {
+                binding.etConfirmPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            } else {
+                binding.etConfirmPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
+            binding.etConfirmPassword.setSelection(binding.etConfirmPassword.getText().length());
         });
 
-        binding.itemContact.getRoot().setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.navigation_contact);
+        binding.btnConfirm.setOnClickListener(v -> validateAndChangePassword());
+    }
+
+    private void validateAndChangePassword() {
+        String newPassword = binding.etNewPassword.getText().toString().trim();
+        String confirmPassword = binding.etConfirmPassword.getText().toString().trim();
+
+        if (newPassword.isEmpty()) {
+            Toast.makeText(getContext(), "Vui lòng nhập mật khẩu mới", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (newPassword.length() < 8) {
+            Toast.makeText(getContext(), "Mật khẩu phải có ít nhất 8 ký tự", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            Toast.makeText(getContext(), "Mật khẩu nhập lại không khớp", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        changePassword(newPassword);
+    }
+
+    private void changePassword(String newPassword) {
+        String userId = sessionManager.getUserId();
+        String token = "Bearer " + sessionManager.getToken();
+
+        if (userId == null) {
+            Toast.makeText(getContext(), "Lỗi: Không tìm thấy ID người dùng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("password", newPassword);
+
+        binding.btnConfirm.setEnabled(false);
+        binding.btnConfirm.setText("Đang xử lý...");
+
+        ApiClient.INSTANCE.getInstance().updateUser(userId, token, updateData).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (!isAdded()) return;
+                binding.btnConfirm.setEnabled(true);
+                binding.btnConfirm.setText("Xác nhận");
+
+                if (response.isSuccessful()) {
+                    showSuccessDialog();
+                } else {
+                    Toast.makeText(getContext(), "Đổi mật khẩu thất bại", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                if (!isAdded()) return;
+                binding.btnConfirm.setEnabled(true);
+                binding.btnConfirm.setText("Xác nhận");
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
+    }
+
+    private void showSuccessDialog() {
+        SuccessDialog dialog = SuccessDialog.newInstance("Đổi mật khẩu thành công!");
+        dialog.setOnCloseListener(() -> {
+            if (getView() != null) {
+                Navigation.findNavController(getView()).popBackStack();
+            }
+        });
+        dialog.show(getParentFragmentManager(), "success_dialog");
     }
 
     @Override

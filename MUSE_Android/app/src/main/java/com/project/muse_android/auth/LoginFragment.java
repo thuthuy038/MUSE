@@ -41,8 +41,17 @@ public class LoginFragment extends Fragment {
     private LoginScreenBinding binding;
     private boolean isPasswordVisible = false;
     private GoogleSignInClient googleSignInClient;
-    private ActivityResultLauncher<Intent> googleSignInLauncher;
-
+private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                        handleGoogleSignInResult(task);
+                    } else {
+                        Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -61,24 +70,14 @@ public class LoginFragment extends Fragment {
                 .build();
         googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
 
-        googleSignInLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                        handleGoogleSignInResult(task);
-                    } else {
-                        Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
 
-        binding.btnGoogleLogin.setOnClickListener(v -> {
-            googleSignInClient.signOut().addOnCompleteListener(task -> {
-                Intent signInIntent = googleSignInClient.getSignInIntent();
-                googleSignInLauncher.launch(signInIntent);
+
+            binding.btnGoogleLogin.setOnClickListener(v -> {
+                googleSignInClient.signOut().addOnCompleteListener(task -> {
+                    Intent signInIntent = googleSignInClient.getSignInIntent();
+                    googleSignInLauncher.launch(signInIntent);
+                });
             });
-        });
 
         binding.ivShowPassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
@@ -133,7 +132,9 @@ public class LoginFragment extends Fragment {
 
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập thành công!");
                     dialog.setOnCloseListener(() -> {
-                        Intent intent = new Intent(getActivity(), ProfileActivity.class);
+                        Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
+                        intent.putExtra("select_profile", true);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         if (getActivity() != null) {
                             getActivity().finish();
@@ -184,7 +185,9 @@ public class LoginFragment extends Fragment {
 
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập bằng Google thành công!");
                     dialog.setOnCloseListener(() -> {
-                        Intent intent = new Intent(getActivity(), ProfileActivity.class);
+                        Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
+                        intent.putExtra("select_profile", true);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         if (getActivity() != null) {
                             getActivity().finish();

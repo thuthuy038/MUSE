@@ -1,12 +1,12 @@
 package com.project.muse_android.profile;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,9 +15,7 @@ import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.project.muse_android.R;
-import com.project.muse_android.databinding.FragmentSettingsBinding;
-import com.project.muse_android.dialog.LogoutDialog;
-import com.project.muse_android.auth.AuthActivity;
+import com.project.muse_android.databinding.FragmentContactBinding;
 import com.project.utils.SessionManager;
 import com.project.network.ApiClient;
 import com.project.models.User;
@@ -26,15 +24,15 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SettingsFragment extends Fragment {
+public class ContactFragment extends Fragment {
 
-    private FragmentSettingsBinding binding;
+    private FragmentContactBinding binding;
     private SessionManager sessionManager;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentSettingsBinding.inflate(inflater, container, false);
+        binding = FragmentContactBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -43,7 +41,6 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         sessionManager = new SessionManager(requireContext());
 
-        setupMenuItems();
         setupClickListeners();
     }
 
@@ -154,53 +151,19 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    private void setupMenuItems() {
-        // Section: Bảo mật
-        binding.itemChangePassword.ivIcon.setImageResource(R.drawable.ic_lock);
-        binding.itemChangePassword.tvTitle.setText("Đổi mật khẩu");
-
-        // Section: Hỗ trợ
-        binding.itemHelpCenter.ivIcon.setImageResource(R.drawable.ic_help_outline);
-        binding.itemHelpCenter.tvTitle.setText("Trung tâm hỗ trợ");
-
-        binding.itemContact.ivIcon.setImageResource(R.drawable.ic_help_outline);
-        binding.itemContact.tvTitle.setText("Liên hệ");
-
-        binding.itemFeedback.ivIcon.setImageResource(R.drawable.ic_help_outline);
-        binding.itemFeedback.tvTitle.setText("Feedback");
-
-        // Section: Thông tin ứng dụng
-        binding.itemVersion.ivIcon.setImageResource(R.drawable.ic_info);
-        binding.itemVersion.tvTitle.setText("Version");
-        binding.itemVersion.tvValue.setVisibility(View.VISIBLE);
-        binding.itemVersion.tvValue.setText("1.1.1");
-        binding.itemVersion.ivChevron.setVisibility(View.GONE);
-
-        binding.itemPrivacyPolicy.ivIcon.setImageResource(R.drawable.ic_gavel);
-        binding.itemPrivacyPolicy.tvTitle.setText("Chính sách bảo mật & pháp lý");
-    }
-
     private void setupClickListeners() {
         binding.ivBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
-        binding.btnLogout.setOnClickListener(v -> {
-            LogoutDialog dialog = new LogoutDialog();
-            dialog.setOnLogoutListener(() -> {
-                sessionManager.clearSession();
-                Intent intent = new Intent(getActivity(), AuthActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                if (getActivity() != null) getActivity().finish();
-            });
-            dialog.show(getParentFragmentManager(), "logout_dialog");
+        binding.btnFacebook.setOnClickListener(v -> {
+            String facebookUrl = "https://www.facebook.com/muse.inc";
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(facebookUrl));
+            startActivity(intent);
         });
 
-        binding.itemChangePassword.getRoot().setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.navigation_change_password);
-        });
-
-        binding.itemContact.getRoot().setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.navigation_contact);
+        binding.btnMessenger.setOnClickListener(v -> {
+            String messengerUrl = "https://m.me/muse.inc";
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(messengerUrl));
+            startActivity(intent);
         });
     }
 
