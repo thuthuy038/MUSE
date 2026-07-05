@@ -37,7 +37,7 @@ public class AuthActivity extends AppCompatActivity {
 
         // 2. Otherwise, load fragments
         if (savedInstanceState == null) {
-            if (sessionManager.isFirstLaunch()) {
+            if (!fromProfile && sessionManager.isFirstLaunch()) {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.auth_container, new WelcomeFragment())
                         .commit();

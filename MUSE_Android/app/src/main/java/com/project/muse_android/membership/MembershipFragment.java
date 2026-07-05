@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.FragmentMembershipBinding;
@@ -42,11 +43,7 @@ public class MembershipFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         sessionManager = new SessionManager(requireContext());
 
-        binding.ivBack.setOnClickListener(v -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
-            }
-        });
+        binding.ivBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
         loadMembershipData();
         setupBenefitStaticUI();
