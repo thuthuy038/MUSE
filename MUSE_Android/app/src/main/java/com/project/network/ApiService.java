@@ -74,6 +74,13 @@ public interface ApiService {
         @Body Map<String, Object> userData
     );
 
+    @retrofit2.http.Multipart
+    @POST("api/users/{id}/avatar")
+    Call<User> uploadAvatar(
+        @Path("id") String userId,
+        @retrofit2.http.Part okhttp3.MultipartBody.Part avatar
+    );
+
     @GET
     Call<java.util.List<com.project.models.Province>> getProvinces(
         @retrofit2.http.Url String url

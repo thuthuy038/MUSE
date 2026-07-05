@@ -10,7 +10,9 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.project.muse_android.R;
+import com.project.muse_android.auth.AuthActivity;
 import com.project.muse_android.databinding.ActivityMainBinding;
+import com.project.utils.SessionManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +23,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SessionManager sessionManager = new SessionManager(this);
+        if (sessionManager.isFirstLaunch()) {
+            Intent intent = new Intent(this, AuthActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -38,37 +49,43 @@ public class MainActivity extends AppCompatActivity {
                     navController
             );
 
-            binding.fabProfile.setOnClickListener(v -> {
-                android.util.Log.d("MUSE_NAV", "Profile click: isLoggedIn=" + sessionManager.isLoggedIn());
-                if (sessionManager.isLoggedIn()) {
-                    Intent intent = new Intent(MainActivity.this, com.project.muse_android.profile.ProfileActivity.class);
-                    startActivity(intent);
-                } else {
-                    Intent intent = new Intent(MainActivity.this, com.project.muse_android.auth.AuthActivity.class);
-                    intent.putExtra("from_profile", true);
-                    startActivity(intent);
+            // Chặn sự kiện click vào Profile để kiểm tra đăng nhập
+            binding.bottomNavigationView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navigation_profile) {
+                    if (!sessionManager.isLoggedIn()) {
+                        Intent intent = new Intent(MainActivity.this, AuthActivity.class);
+                        intent.putExtra("from_profile", true);
+                        startActivity(intent);
+                        return false;
+                    }
                 }
+                return NavigationUI.onNavDestinationSelected(item, navController);
             });
 
-            // Set badge for notifications
-            var badge = binding.bottomNavigationView.getOrCreateBadge(R.id.navigation_notification);
+            // Badge thông báo
+            var badge = binding.bottomNavigationView
+                    .getOrCreateBadge(R.id.navigation_notification);
+
             badge.setVisible(true);
             badge.setNumber(3);
 
-            // Handle selection state for FAB and ensure others are selected correctly
-            navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                int id = destination.getId();
-                if (id == R.id.navigation_profile) {
-                    binding.bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
-                    for (int i = 0; i < binding.bottomNavigationView.getMenu().size(); i++) {
-                        binding.bottomNavigationView.getMenu().getItem(i).setChecked(false);
-                    }
-                    binding.bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
-                } else {
-                    // NavigationUI handles this, but we can force it if needed
-                    binding.bottomNavigationView.getMenu().findItem(id).setChecked(true);
-                }
-            });
+            handleIntent(getIntent());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("select_profile", false)) {
+            if (navController != null) {
+                navController.navigate(R.id.navigation_profile);
+            }
         }
     }
 }

@@ -70,17 +70,7 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                 .build();
         googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
 
-googleSignInLauncher = registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                            handleGoogleSignInResult(task);
-                        } else {
-                            Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-            );
+
 
             binding.btnGoogleLogin.setOnClickListener(v -> {
                 googleSignInClient.signOut().addOnCompleteListener(task -> {
@@ -139,7 +129,9 @@ googleSignInLauncher = registerForActivityResult(
 
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập thành công!");
                     dialog.setOnCloseListener(() -> {
-                        Intent intent = new Intent(getActivity(), ProfileActivity.class);
+                        Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
+                        intent.putExtra("select_profile", true);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         if (getActivity() != null) {
                             getActivity().finish();
@@ -187,7 +179,9 @@ googleSignInLauncher = registerForActivityResult(
 
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập bằng Google thành công!");
                     dialog.setOnCloseListener(() -> {
-                        Intent intent = new Intent(getActivity(), ProfileActivity.class);
+                        Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
+                        intent.putExtra("select_profile", true);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         if (getActivity() != null) {
                             getActivity().finish();
