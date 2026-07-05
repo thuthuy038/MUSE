@@ -20,6 +20,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        val keystoreFile = file("../keystore/debug.keystore")
+        if (keystoreFile.exists()) {
+            create("debugShared") {
+                // Chỉ đường dẫn tới file debug.keystore dùng chung ở thư mục gốc dự án
+                storeFile = keystoreFile
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -27,6 +40,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        getByName("debug") {
+            val debugShared = signingConfigs.findByName("debugShared")
+            if (debugShared != null) {
+                signingConfig = debugShared
+            }
         }
     }
     compileOptions {
