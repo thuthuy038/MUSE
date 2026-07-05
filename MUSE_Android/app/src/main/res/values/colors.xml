@@ -9,7 +9,6 @@
     <color name="neutral_50">#FCFAFA</color>
     <color name="neutral_100">#FFE5EC</color>   <!-- theo bảng, nhưng có thể #FFF0F0 -->
     <color name="neutral_300">#DDD8D8</color>
-    <color name="neutral_500">#9E9898</color>
     <color name="neutral_400">#A6A6A6</color>
     <color name="neutral_800">#332F2F</color>
     <color name="neutral_900">#1F1C1C</color>
