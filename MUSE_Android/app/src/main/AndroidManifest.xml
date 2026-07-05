@@ -13,38 +13,41 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MUSE_Android">
+
         <activity
-            android:name=".auth.ForgotPasswordActivity"
+            android:name="com.project.muse_android.search.SearchActivity"
             android:exported="false" />
+
         <activity
-            android:name=".auth.VerifyOtpActivity"
+            android:name="com.project.muse_android.search.SearchResultActivity"
             android:exported="false" />
+
         <activity
-            android:name=".auth.ResetPasswordActivity"
+            android:name="com.project.muse_android.auth.AuthActivity"
             android:exported="false" />
+
         <activity
-            android:name=".profile.ProfileActivity"
+            android:name="com.project.muse_android.product.ProductDetailActivity"
             android:exported="false" />
+
         <activity
-            android:name=".notification.NotificationScreenActivity"
+            android:name="com.project.muse_android.product.CategoryProductsActivity"
             android:exported="false" />
+
         <activity
-            android:name=".policy.PrivacyPolicyActivity"
+            android:name="com.project.muse_android.profile.ProfileActivity"
             android:exported="false" />
+
         <activity
-            android:name=".policy.TermsOfUseActivity"
+            android:name="com.project.muse_android.notification.NotificationScreenActivity"
             android:exported="false" />
+
         <activity
-            android:name=".auth.WelcomeScreen"
+            android:name="com.project.muse_android.policy.PrivacyPolicyActivity"
             android:exported="false" />
+
         <activity
-            android:name=".product.ProductDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".product.CategoryProductsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".search.SearchResultActivity"
+            android:name="com.project.muse_android.policy.TermsOfUseActivity"
             android:exported="false" />
         <activity
             android:name=".main.MainActivity"

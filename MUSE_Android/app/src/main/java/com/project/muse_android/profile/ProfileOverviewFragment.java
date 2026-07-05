@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.project.muse_android.R;
@@ -63,25 +64,7 @@ public class ProfileOverviewFragment extends Fragment {
 
         // Load cached avatar immediately for better UX
         String cachedAvatar = sessionManager.getAvatar(sessionManager.getUserId());
-        if (cachedAvatar != null) {
-            if (cachedAvatar.startsWith("http") || cachedAvatar.startsWith("/")) {
-                String fullUrl = cachedAvatar;
-                if (cachedAvatar.startsWith("/")) {
-                    fullUrl = "https://server-testing-ymn9.onrender.com" + cachedAvatar;
-                }
-                Glide.with(this).load(fullUrl).into(binding.ivAvatar);
-            } else {
-                try {
-                    byte[] decodedString = Base64.decode(cachedAvatar, Base64.DEFAULT);
-                    Glide.with(this).load(decodedString).into(binding.ivAvatar);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
-                }
-            }
-        } else {
-            binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
-        }
+        setAvatarImage(cachedAvatar);
 
         // Fetch fresh user profile from API
         if (token != null) {
@@ -101,30 +84,23 @@ public class ProfileOverviewFragment extends Fragment {
 
                         if (user.getAvatar() != null && user.getAvatar().getUrl() != null && !user.getAvatar().getUrl().isEmpty()) {
                             String avatarUrl = user.getAvatar().getUrl();
-                            if (avatarUrl.startsWith("http") || avatarUrl.startsWith("/")) {
-                                String fullUrl = avatarUrl;
+                            setAvatarImage(avatarUrl);
+                            
+                            // Save to cache (handle relative path)
+                            String fullCacheUrl = avatarUrl;
+                            if (!avatarUrl.startsWith("http")) {
                                 if (avatarUrl.startsWith("/")) {
-                                    fullUrl = "https://server-testing-ymn9.onrender.com" + avatarUrl;
-                                }
-                                Glide.with(ProfileOverviewFragment.this).load(fullUrl).into(binding.ivAvatar);
-                                sessionManager.saveAvatar(user.get_id(), fullUrl);
-                            } else {
-                                try {
-                                    byte[] decodedString = Base64.decode(avatarUrl, Base64.DEFAULT);
-                                    Glide.with(ProfileOverviewFragment.this).load(decodedString).into(binding.ivAvatar);
-                                    sessionManager.saveAvatar(user.get_id(), avatarUrl);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+                                    fullCacheUrl = "https://server-testing-ymn9.onrender.com" + avatarUrl;
+                                } else {
+                                    fullCacheUrl = "https://server-testing-ymn9.onrender.com/" + avatarUrl;
                                 }
                             }
+                            sessionManager.saveAvatar(user.get_id(), fullCacheUrl);
                         } else {
-                            if (sessionManager.getAvatar(user.get_id()) == null) {
-                                binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
-                            }
+                            // Try local cache if server doesn't have it
+                            String cached = sessionManager.getAvatar(user.get_id());
+                            setAvatarImage(cached);
                         }
-                    } else {
-                        Toast.makeText(getContext(), "Không thể tải thông tin mới nhất", Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -134,6 +110,51 @@ public class ProfileOverviewFragment extends Fragment {
                     Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+        }
+    }
+
+    private void setAvatarImage(String avatar) {
+        if (avatar == null || avatar.isEmpty()) {
+            binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+            return;
+        }
+
+        if (avatar.startsWith("http") || avatar.startsWith("/")) {
+            String fullUrl = avatar;
+            if (avatar.startsWith("/")) {
+                fullUrl = "https://server-testing-ymn9.onrender.com" + avatar;
+            }
+            Glide.with(this)
+                    .load(fullUrl)
+                    .placeholder(R.drawable.ic_account_circle)
+                    .error(R.drawable.ic_account_circle)
+                    .into(binding.ivAvatar);
+        } else if (avatar.length() > 200 || !avatar.contains("/")) {
+            // Likely Base64 or a weird relative path without slash
+            try {
+                byte[] decodedString = Base64.decode(avatar, Base64.DEFAULT);
+                Glide.with(this)
+                        .load(decodedString)
+                        .placeholder(R.drawable.ic_account_circle)
+                        .error(R.drawable.ic_account_circle)
+                        .into(binding.ivAvatar);
+            } catch (Exception e) {
+                // If Base64 fails, try treating it as relative path without leading slash
+                String fullUrl = "https://server-testing-ymn9.onrender.com/" + avatar;
+                Glide.with(this)
+                        .load(fullUrl)
+                        .placeholder(R.drawable.ic_account_circle)
+                        .error(R.drawable.ic_account_circle)
+                        .into(binding.ivAvatar);
+            }
+        } else {
+            // Likely relative path without leading slash
+            String fullUrl = "https://server-testing-ymn9.onrender.com/" + avatar;
+            Glide.with(this)
+                    .load(fullUrl)
+                    .placeholder(R.drawable.ic_account_circle)
+                    .error(R.drawable.ic_account_circle)
+                    .into(binding.ivAvatar);
         }
     }
 
@@ -185,30 +206,32 @@ public class ProfileOverviewFragment extends Fragment {
         });
 
         binding.menuPersonalInfo.getRoot().setOnClickListener(v -> {
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.profile_container, new EditProfileFragment())
-                    .addToBackStack(null)
-                    .commit();
+            Navigation.findNavController(v).navigate(R.id.navigation_edit_profile);
         });
 
         binding.menuSecurity.getRoot().setOnClickListener(v -> {
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.profile_container, new SettingsFragment())
-                    .addToBackStack(null)
-                    .commit();
+            Navigation.findNavController(v).navigate(R.id.navigation_settings);
         });
 
-        binding.menuMembership.getRoot().setOnClickListener(v -> openMembership());
+        binding.menuMembership.getRoot().setOnClickListener(v -> openMembership(v));
 
-        binding.ivAvatar.setOnClickListener(v -> openMembership());
-        binding.tvUserName.setOnClickListener(v -> openMembership());
+        binding.llMembershipBadge.setOnClickListener(v -> openMembership(v));
+
+        binding.ivAvatar.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_edit_profile);
+        });
+
+        binding.btnEditAvatar.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_edit_profile);
+        });
+
+        binding.tvUserName.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_edit_profile);
+        });
     }
 
-    private void openMembership() {
-        getParentFragmentManager().beginTransaction()
-                .replace(R.id.profile_container, new com.project.muse_android.membership.MembershipFragment())
-                .addToBackStack(null)
-                .commit();
+    private void openMembership(View v) {
+        Navigation.findNavController(v).navigate(R.id.navigation_membership);
     }
 
     private String formatPoints(int points) {

@@ -19,9 +19,9 @@
 
     <fragment
         android:id="@+id/navigation_profile"
-        android:name="com.project.muse_android.profile.ProfileFragment"
+        android:name="com.project.muse_android.profile.ProfileOverviewFragment"
         android:label="Profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile_overview" />
 
     <fragment
         android:id="@+id/navigation_cart"
@@ -34,6 +34,36 @@
         android:name="com.project.muse_android.notification.NotificationFragment"
         android:label="Thông báo"
         tools:layout="@layout/fragment_notification" />
+
+    <fragment
+        android:id="@+id/navigation_edit_profile"
+        android:name="com.project.muse_android.profile.EditProfileFragment"
+        android:label="Chỉnh sửa thông tin"
+        tools:layout="@layout/edit_profile_screen" />
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="com.project.muse_android.profile.SettingsFragment"
+        android:label="Cài đặt"
+        tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/navigation_membership"
+        android:name="com.project.muse_android.membership.MembershipFragment"
+        android:label="Thành viên"
+        tools:layout="@layout/fragment_membership" />
+
+    <fragment
+        android:id="@+id/navigation_change_password"
+        android:name="com.project.muse_android.profile.ChangePasswordFragment"
+        android:label="Đổi mật khẩu"
+        tools:layout="@layout/fragment_change_password" />
+
+    <fragment
+        android:id="@+id/navigation_contact"
+        android:name="com.project.muse_android.profile.ContactFragment"
+        android:label="Liên hệ"
+        tools:layout="@layout/fragment_contact" />
 
     <fragment
         android:id="@+id/navigation_category_products"

@@ -54,23 +54,24 @@
                     android:id="@+id/ivAvatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="2dp"
+                    android:scaleType="centerCrop"
                     android:src="@drawable/ic_account_circle"
-                    app:shapeAppearanceOverlay="@style/CircleImage"
-                    app:strokeColor="@color/primary_500"
-                    app:strokeWidth="2dp" />
+                    app:shapeAppearanceOverlay="@style/CircleImage" />
 
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fabEdit"
+                <FrameLayout
+                    android:id="@+id/btnEditAvatar"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_gravity="bottom|end"
-                    android:layout_margin="4dp"
-                    android:backgroundTint="#4285F4"
-                    android:src="@drawable/ic_edit"
-                    android:visibility="gone"
-                    app:fabCustomSize="32dp"
-                    app:tint="@android:color/white" />
+                    android:background="@drawable/circle_indicator_active"
+                    android:padding="6dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="Edit Picture"
+                        android:src="@drawable/ic_edit" />
+                </FrameLayout>
             </FrameLayout>
 
             <TextView
@@ -85,6 +86,7 @@
                 android:textStyle="bold" />
 
             <LinearLayout
+                android:id="@+id/llMembershipBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
