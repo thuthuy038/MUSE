@@ -49,6 +49,7 @@
         <activity
             android:name="com.project.muse_android.policy.TermsOfUseActivity"
             android:exported="false" />
+
         <activity
             android:name=".main.MainActivity"
             android:exported="true">

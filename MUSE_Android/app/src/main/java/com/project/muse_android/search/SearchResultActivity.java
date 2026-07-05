@@ -18,8 +18,11 @@ import com.project.models.Product;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivitySearchResultBinding;
 import com.project.muse_android.product.ProductDetailActivity;
+import com.project.network.ApiResponse;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
+import com.project.utils.SessionManager;
+
 import android.content.Intent;
 
 import java.text.Normalizer;
@@ -39,6 +42,8 @@ public class SearchResultActivity extends AppCompatActivity {
     private ProductAdapter productAdapter;
     private List<Product> productList = new ArrayList<>();
     private HomeApiService apiService;
+    private SearchHistoryManager historyManager;
+    private SessionManager sessionManager;
     private String query;
 
     @Override
@@ -52,6 +57,8 @@ public class SearchResultActivity extends AppCompatActivity {
 
         binding.edtSearchQuery.setText(query);
         apiService = HomeApiClient.getHomeApiService();
+        historyManager = new SearchHistoryManager(this);
+        sessionManager = new SessionManager(this);
 
         setupUI();
         setupRecyclerView();
@@ -85,9 +92,9 @@ public class SearchResultActivity extends AppCompatActivity {
             }
             return false;
         });
-        
+
         binding.imgCart.setOnClickListener(v -> Toast.makeText(this, "Giỏ hàng", Toast.LENGTH_SHORT).show());
-        
+
         binding.btnOpenFilter.setOnClickListener(v -> showFilterBottomSheet());
         binding.btnFilterPrice.setOnClickListener(v -> showFilterBottomSheet());
         binding.btnFilterColor.setOnClickListener(v -> showFilterBottomSheet());
@@ -130,7 +137,7 @@ public class SearchResultActivity extends AppCompatActivity {
             final int index = i;
             headers[i].setOnClickListener(v -> {
                 boolean isExpanded = contents[index].getVisibility() == View.VISIBLE;
-                
+
                 // Close all
                 for (int j = 0; j < contents.length; j++) {
                     contents[j].setVisibility(View.GONE);
@@ -178,15 +185,38 @@ public class SearchResultActivity extends AppCompatActivity {
     }
 
     private void performSearch(String searchQuery) {
+        if (!searchQuery.isEmpty()) {
+            historyManager.addHistory(searchQuery);
+            String userId = sessionManager.getUserId();
+            String currentUserId = (userId != null) ? userId : "guest";
+
+            Log.d("SearchResult", "Recording search: " + searchQuery + " for user: " + currentUserId);
+            apiService.recordSearch(searchQuery, currentUserId).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    if (response.isSuccessful()) {
+                        Log.d("SearchResult", "Search recorded successfully");
+                    } else {
+                        Log.e("SearchResult", "Failed to record search: " + response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    Log.e("SearchResult", "Error recording search", t);
+                }
+            });
+        }
+
         apiService.searchProducts(searchQuery).enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> results = response.body();
-                    
+
                     List<Product> relevantProducts = new ArrayList<>();
                     String normalizedQuery = removeAccents(searchQuery).trim();
-                    
+
                     for (Product p : results) {
                         // Only show active products. Skip hidden, inactive, disabled, etc.
                         if (p.getStatus() == null || !p.getStatus().equalsIgnoreCase("active")) {
@@ -195,35 +225,35 @@ public class SearchResultActivity extends AppCompatActivity {
 
                         if (p.getName() != null) {
                             String normalizedName = removeAccents(p.getName());
-                            
+
                             // High priority: Word boundary match
                             if (isWordMatch(normalizedName, normalizedQuery)) {
                                 relevantProducts.add(p);
                             }
                         }
                     }
-                    
+
                     // Rank results:
                     // 1. Starts with query (e.g. searching "quần" matches "Quần jean")
                     // 2. Exact word match earlier in the name
                     Collections.sort(relevantProducts, (p1, p2) -> {
                         String n1 = removeAccents(p1.getName());
                         String n2 = removeAccents(p2.getName());
-                        
+
                         boolean s1 = n1.startsWith(normalizedQuery);
                         boolean s2 = n2.startsWith(normalizedQuery);
-                        
+
                         if (s1 && !s2) return -1;
                         if (!s1 && s2) return 1;
-                        
+
                         // Otherwise, sort by position of the word
                         int i1 = n1.indexOf(normalizedQuery);
                         int i2 = n2.indexOf(normalizedQuery);
                         if (i1 != i2) return Integer.compare(i1, i2);
-                        
+
                         return n1.compareTo(n2);
                     });
-                    
+
                     productList.clear();
                     productList.addAll(relevantProducts);
                     productAdapter.notifyDataSetChanged();
@@ -238,7 +268,7 @@ public class SearchResultActivity extends AppCompatActivity {
                 Log.e("SearchResult", "Search failed: " + t.getMessage());
                 Toast.makeText(SearchResultActivity.this, "Lỗi kết nối server: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
-            
+
             private void handleEmptyResult() {
                 productList.clear();
                 productAdapter.notifyDataSetChanged();
@@ -251,9 +281,9 @@ public class SearchResultActivity extends AppCompatActivity {
         int index = text.indexOf(query);
         while (index >= 0) {
             boolean startOk = (index == 0 || !Character.isLetterOrDigit(text.charAt(index - 1)));
-            boolean endOk = (index + query.length() == text.length() || 
+            boolean endOk = (index + query.length() == text.length() ||
                              !Character.isLetterOrDigit(text.charAt(index + query.length())));
-            
+
             if (startOk && endOk) return true;
             index = text.indexOf(query, index + 1);
         }

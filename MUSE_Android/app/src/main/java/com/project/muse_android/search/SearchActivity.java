@@ -17,6 +17,7 @@ import com.project.muse_android.databinding.ActivitySearchBinding;
 import com.project.network.ApiResponse;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
+import com.project.utils.SessionManager;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class SearchActivity extends AppCompatActivity {
     private SearchHistoryAdapter historyAdapter;
     private List<String> historyList;
     private HomeApiService apiService;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,19 +42,25 @@ public class SearchActivity extends AppCompatActivity {
 
         historyManager = new SearchHistoryManager(this);
         apiService = HomeApiClient.getHomeApiService();
+        sessionManager = new SessionManager(this);
 
         setupUI();
         loadPopularSearches();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         loadHistory();
     }
 
     private void setupUI() {
         binding.btnBack.setOnClickListener(v -> finish());
-        
+
         binding.imgCart.setOnClickListener(v -> Toast.makeText(this, "Giỏ hàng", Toast.LENGTH_SHORT).show());
-        
+
         binding.txtSearchAction.setOnClickListener(v -> performSearch());
-        
+
         binding.edtSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 performSearch();
@@ -71,9 +79,9 @@ public class SearchActivity extends AppCompatActivity {
         binding.btnViewCategories.setOnClickListener(v -> finish()); // Go back to Home
 
         binding.imgVoiceSearch.setOnClickListener(v -> Toast.makeText(this, "Đang nghe giọng nói...", Toast.LENGTH_SHORT).show());
-        
+
         binding.imgCameraSearch.setOnClickListener(v -> Toast.makeText(this, "Mở Camera tìm kiếm", Toast.LENGTH_SHORT).show());
-        
+
         // Auto focus and show keyboard
         binding.edtSearch.requestFocus();
     }
@@ -82,6 +90,25 @@ public class SearchActivity extends AppCompatActivity {
         String query = binding.edtSearch.getText().toString().trim();
         if (!query.isEmpty()) {
             historyManager.addHistory(query);
+            String userId = sessionManager.getUserId();
+            String currentUserId = (userId != null) ? userId : "guest";
+          // Record search query on server for popular searches logic
+          Log.d("SearchActivity", "Recording search: " + query + " for user: " + currentUserId);
+          apiService.recordSearch(query, currentUserId).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+              if (response.isSuccessful()) {
+                Log.d("SearchActivity", "Search recorded successfully");
+              } else {
+                Log.e("SearchActivity", "Failed to record search: " + response.code() + " " + response.message());
+              }
+            }
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+              Log.e("SearchActivity", "Error recording search", t);
+            }
+            });
+
             android.content.Intent intent = new android.content.Intent(this, SearchResultActivity.class);
             intent.putExtra("query", query);
             startActivity(intent);
@@ -116,7 +143,10 @@ public class SearchActivity extends AppCompatActivity {
         binding.txtNoPopular.setVisibility(View.GONE);
         binding.chipGroupPopular.setVisibility(View.VISIBLE);
 
-        for (String search : searches) {
+        // Limit to top 5 popular searches
+        List<String> displayList = searches.size() > 5 ? searches.subList(0, 5) : searches;
+
+        for (String search : displayList) {
             Chip chip = new Chip(this);
             chip.setText(search);
             chip.setChipBackgroundColorResource(android.R.color.white);
@@ -125,12 +155,12 @@ public class SearchActivity extends AppCompatActivity {
             chip.setTextColor(ResourcesCompat.getColor(getResources(), R.color.primary_500, getTheme()));
             chip.setChipIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_search, getTheme()));
             chip.setChipIconTintResource(R.color.primary_500);
-            
+
             chip.setOnClickListener(v -> {
                 binding.edtSearch.setText(search);
                 performSearch();
             });
-            
+
             binding.chipGroupPopular.addView(chip);
         }
     }

@@ -23,6 +23,7 @@ import com.project.adapters.VerticalProductAdapter;
 import com.project.models.Product;
 import com.project.models.enums.HorizontalProductMode;
 import com.project.muse_android.product.ProductDetailActivity;
+import com.project.muse_android.dialog.ConfirmDeleteDialog;
 import com.project.network.ApiClient;
 import com.project.network.ApiService;
 import com.project.muse_android.R;
@@ -150,22 +151,25 @@ public class CartFragment extends Fragment {
             return;
         }
 
-        for (Product p : toDelete) {
-            CartManager.getInstance(requireContext()).removeFromCart(p.getId(), new CartManager.CartCallback<Void>() {
-                @Override
-                public void onSuccess(Void result) {
-                    cartProducts.remove(p);
-                    cartAdapter.notifyDataSetChanged();
-                    updateCartUI();
-                }
+        ConfirmDeleteDialog dialog = new ConfirmDeleteDialog(toDelete.size(), () -> {
+            for (Product p : toDelete) {
+                CartManager.getInstance(requireContext()).removeFromCart(p.getId(), new CartManager.CartCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        cartProducts.remove(p);
+                        cartAdapter.notifyDataSetChanged();
+                        updateCartUI();
+                    }
 
-                @Override
-                public void onError(String message) {
-                    Log.e(TAG, "Lỗi xóa: " + message);
-                }
-            });
-        }
-        Toast.makeText(getContext(), "Đã xóa " + toDelete.size() + " sản phẩm", Toast.LENGTH_SHORT).show();
+                    @Override
+                    public void onError(String message) {
+                        Log.e(TAG, "Lỗi xóa: " + message);
+                    }
+                });
+            }
+            Toast.makeText(getContext(), "Đã xóa " + toDelete.size() + " sản phẩm", Toast.LENGTH_SHORT).show();
+        });
+        dialog.show(getParentFragmentManager(), "ConfirmDeleteDialog");
     }
 
     private void saveSelectedToFavorites() {
