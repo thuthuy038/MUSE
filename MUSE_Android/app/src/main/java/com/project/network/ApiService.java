@@ -7,12 +7,18 @@ import com.project.models.RegisterRequest;
 import com.project.models.RegisterResponse;
 import com.project.models.User;
 import com.project.models.GoogleLoginRequest;
+import com.project.models.Promotion;
+import com.project.models.Voucher;
+import com.project.models.ApplyVoucherRequest;
+import com.project.models.ApplyVoucherResponse;
+import com.project.models.CartRequest;
 
 import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
@@ -59,6 +65,60 @@ public interface ApiService {
     @GET("api/products/{id}")
     Call<Product> getProductDetail(
         @Path("id") String productId
+    );
+
+    // ========== CART ==========
+    @GET("api/cart")
+    Call<List<Product>> getCart(
+            @Header("Authorization") String token
+    );
+
+    @POST("api/cart/add")
+    Call<Void> addToCart(
+            @Header("Authorization") String token,
+            @Body CartRequest request
+    );
+
+    @PUT("api/cart/update-quantity")
+    Call<Void> updateCartQuantity(
+            @Header("Authorization") String token,
+            @Body CartRequest request
+    );
+
+    @DELETE("api/cart/remove/{productId}")
+    Call<Void> removeFromCart(
+            @Header("Authorization") String token,
+            @Path("productId") String productId
+    );
+
+    @POST("api/cart/sync")
+    Call<Void> syncCart(
+            @Header("Authorization") String token,
+            @Body List<CartRequest> requests
+    );
+
+    // ======================
+    // PROMOTION
+    // ======================
+    @GET("api/promotions")
+    Call<List<Promotion>> getPromotions();
+
+    @GET("api/promotions/{id}")
+    Call<Promotion> getPromotionById(
+            @Path("id") String promotionId
+    );
+
+    // ======================
+    // VOUCHER
+    // ======================
+    @GET("api/vouchers/promotion/{promotionId}")
+    Call<List<Voucher>> getVouchersByPromotion(
+            @Path("promotionId") String promotionId
+    );
+
+    @POST("api/vouchers/apply")
+    Call<ApplyVoucherResponse> applyVoucher(
+            @Body ApplyVoucherRequest request
     );
 
     // ========== USER ==========

@@ -31,7 +31,7 @@ public class Product {
     })
     private List<String> colors;
 
-    @SerializedName(value = "variants", alternate = {"sizes", "size_list"})
+    @SerializedName(value = "product_sizes", alternate = {"sizes", "size_list"})
     private List<ProductSize> sizes;
 
     @SerializedName(value = "rating", alternate = {
@@ -59,6 +59,36 @@ public class Product {
     private boolean isBestSeller;
     private String sku;
     private boolean isFavorite;
+
+    // Local UI State
+    private boolean isSelected;
+    private int quantity; // For Cart
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
+    }
+
+    private List<ProductVariant> variants;
+
+    public List<ProductVariant> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(List<ProductVariant> variants) {
+        this.variants = variants;
+    }
 
     // ==========================
     // Inner Classes
@@ -163,14 +193,18 @@ public class Product {
     }
 
     public double getPrice() {
-        if (discountPrice != null && discountPrice > 0 && discountPrice < price) {
-            return discountPrice;
-        }
         return price;
     }
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public double getFinalPrice() {
+        if (discountPrice != null && discountPrice > 0) {
+            return discountPrice;
+        }
+        return price;
     }
 
     public Double getDiscountPrice() {
