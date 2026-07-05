@@ -80,9 +80,18 @@ public class Product {
         private String size;
         private int quantity;
 
-        public String getSize() {
-            return size;
-        }
+    // Local UI State
+    private boolean isSelected;
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
+    }
+
+    // getter setter
 
         public void setSize(String size) {
             this.size = size;
