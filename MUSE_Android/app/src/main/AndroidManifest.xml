@@ -13,15 +13,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MUSE_Android">
-        <activity
-            android:name=".auth.ForgotPasswordActivity"
-            android:exported="false" />
-        <activity
-            android:name=".auth.VerifyOtpActivity"
-            android:exported="false" />
-        <activity
-            android:name=".auth.ResetPasswordActivity"
-            android:exported="false" />
+
+        <activity android:name=".search.SearchResultActivity" android:exported="false"/>
+        <activity android:name=".search.SearchActivity" android:exported="false"/>
+
         <activity
             android:name=".profile.ProfileActivity"
             android:exported="false" />
@@ -34,18 +29,14 @@
         <activity
             android:name=".policy.TermsOfUseActivity"
             android:exported="false" />
-        <activity
-            android:name=".auth.WelcomeScreen"
-            android:exported="false" />
+
         <activity
             android:name=".product.ProductDetailActivity"
             android:exported="false" />
         <activity
             android:name=".product.CategoryProductsActivity"
             android:exported="false" />
-        <activity
-            android:name=".search.SearchResultActivity"
-            android:exported="false" />
+
         <activity
             android:name=".main.MainActivity"
             android:exported="true">
