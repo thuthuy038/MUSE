@@ -2,10 +2,17 @@ package com.project.adapters;
 
 import android.content.Context;
 import android.graphics.Paint;
+import android.util.DisplayMetrics;
+import android.view.MotionEvent;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.CheckBox;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -36,6 +43,8 @@ public class HorizontalProductAdapter extends RecyclerView.Adapter<HorizontalPro
         void onCheckedChanged(Product product, int position, boolean checked);
 
         void onQuantityChanged(Product product, int position, int quantity);
+
+        void onVariantClick(Product product, int position);
     }
 
     private final Context context;
@@ -96,6 +105,43 @@ public class HorizontalProductAdapter extends RecyclerView.Adapter<HorizontalPro
     ) {
 
         Product product = products.get(position);
+
+        // ====================================
+        // RESPONSIVE WIDTH FOR SWIPE
+        // ====================================
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        wm.getDefaultDisplay().getMetrics(displayMetrics);
+        int screenWidth = displayMetrics.widthPixels;
+        
+        // Trừ đi: Fragment padding (10dp * 2) + Item margin (0dp * 2) + Buffer = 24dp
+        float density = context.getResources().getDisplayMetrics().density;
+        int totalMarginPx = (int) (24 * density);
+        int contentWidth = screenWidth - totalMarginPx;
+
+        ViewGroup.LayoutParams params = holder.layoutMainContent.getLayoutParams();
+        params.width = contentWidth;
+        holder.layoutMainContent.setLayoutParams(params);
+
+        // Reset scroll position
+        holder.horizontalScrollView.scrollTo(0, 0);
+
+        // Snap behavior for swipe reveal
+        holder.horizontalScrollView.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                int scrollX = holder.horizontalScrollView.getScrollX();
+                int actionsWidth = holder.layoutActions.getWidth();
+                
+                if (scrollX > actionsWidth / 3) { // Chỉ cần vuốt 1/3 là snap để dễ mở hơn
+                    holder.horizontalScrollView.smoothScrollTo(actionsWidth, 0);
+                } else {
+                    holder.horizontalScrollView.smoothScrollTo(0, 0);
+                }
+                v.performClick();
+                return true;
+            }
+            return false;
+        });
 
         holder.txtName.setText(product.getName());
 
@@ -205,9 +251,15 @@ public class HorizontalProductAdapter extends RecyclerView.Adapter<HorizontalPro
          * CLICK ITEM
          */
 
-        holder.itemView.setOnClickListener(v -> {
+        holder.layoutMainContent.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onProductClick(product);
+            }
+        });
+
+        holder.layoutVariant.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onVariantClick(product, holder.getAdapterPosition());
             }
         });
 
@@ -242,9 +294,11 @@ public class HorizontalProductAdapter extends RecyclerView.Adapter<HorizontalPro
          */
 
         holder.cbSelect.setOnCheckedChangeListener(null);
+        holder.cbSelect.setChecked(product.isSelected());
 
         holder.cbSelect.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> {
+                    product.setSelected(isChecked);
                     if (listener != null) {
                         listener.onCheckedChanged(
                                 product,
@@ -370,14 +424,21 @@ public class HorizontalProductAdapter extends RecyclerView.Adapter<HorizontalPro
         TextView txtReadonlyQuantity;
 
         /*
-         * ACTIONS
+         * ACTIONS & SWIPE
          */
 
+        HorizontalScrollView horizontalScrollView;
+        View layoutMainContent;
+        View layoutActions;
         LinearLayout layoutDelete;
         LinearLayout layoutSimilar;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+
+            horizontalScrollView = itemView.findViewById(R.id.horizontalScrollView);
+            layoutMainContent = itemView.findViewById(R.id.layoutMainContent);
+            layoutActions = itemView.findViewById(R.id.layoutActions);
 
             imgProduct = itemView.findViewById(R.id.imgProduct);
 

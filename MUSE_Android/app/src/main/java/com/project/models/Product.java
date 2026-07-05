@@ -44,6 +44,17 @@ public class Product {
 
     private String category;
 
+    // Local UI State
+    private boolean isSelected;
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
+    }
+
     // getter setter
 
     public String getMongoId() {
