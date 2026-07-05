@@ -21,15 +21,12 @@ android {
     }
 
     signingConfigs {
-        val keystoreFile = file("../keystore/debug.keystore")
-        if (keystoreFile.exists()) {
-            create("debugShared") {
-                // Chỉ đường dẫn tới file debug.keystore dùng chung ở thư mục gốc dự án
-                storeFile = keystoreFile
-                storePassword = "android"
-                keyAlias = "androiddebugkey"
-                keyPassword = "android"
-            }
+        create("debugShared") {
+            // Trỏ đúng tới file debug.keystore dùng chung ở trong thư mục app
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
     }
 
