@@ -28,10 +28,13 @@ import com.project.network.ApiClient;
 import com.project.network.ApiService;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.FragmentCartBinding;
+import com.project.utils.ViewUtils;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -82,6 +85,9 @@ public class CartFragment extends Fragment {
 
         // Gọi API lấy dữ liệu sản phẩm
         fetchDataFromServer();
+
+        // Sử dụng Helper để tự động đẩy Header xuống dưới Status Bar
+        ViewUtils.applySystemBarsPadding(binding.header, true, false);
 
         // Điều chỉnh Buy Bar theo Bottom Navigation
         setupBottomSectionAdjustment();
@@ -265,7 +271,9 @@ public class CartFragment extends Fragment {
 
                     @Override
                     public void onQuantityChanged(Product product, int position, int quantity) {
-                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, new CartManager.CartCallback<Void>() {
+                        double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
+                                ? product.getDiscountPrice() : product.getPrice();
+                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, new CartManager.CartCallback<Void>() {
                             @Override
                             public void onSuccess(Void result) {
                                 updateCheckoutButtonState();
@@ -308,8 +316,11 @@ public class CartFragment extends Fragment {
                                         product.setQuantity(quantity);
                                         cartAdapter.notifyItemChanged(position);
                                         
+                                        double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
+                                                ? product.getDiscountPrice() : product.getPrice();
+
                                         // Update in Manager (Room/API)
-                                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, new CartManager.CartCallback<Void>() {
+                                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, new CartManager.CartCallback<Void>() {
                                             @Override
                                             public void onSuccess(Void result) {
                                                 updateCheckoutButtonState();
@@ -494,9 +505,10 @@ public class CartFragment extends Fragment {
     }
 
     private String formatPrice(double price) {
-
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        return formatter.format(price).replace(",", ".") + "đ";
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
     }
 
     @Override

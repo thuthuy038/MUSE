@@ -19,6 +19,8 @@ import com.project.muse_android.R;
 import com.project.muse_android.databinding.ItemProductHorizontalBinding;
 import com.project.muse_android.databinding.ItemProductVerticalBinding;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,7 +38,7 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void onFavoriteClick(Product product);
     }
 
-    private List<Product> products;
+    protected List<Product> products;
     private final int viewType;
     private final OnProductClickListener listener;
     private OnFavoriteClickListener favoriteListener;
@@ -110,13 +112,14 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         public void bind(Product product) {
             binding.txtProductName.setText(product.getName());
             binding.txtProductSizes.setText(product.getSizeRange());
-            binding.txtPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", product.getPrice()));
 
-            double originalPrice = product.getOriginalPrice();
-            if (originalPrice > product.getPrice()) {
-                binding.txtOriginalPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", originalPrice));
+            Double dPrice = product.getDiscountPrice();
+            if (dPrice != null && dPrice > 0) {
+                binding.txtPrice.setText(formatPrice(dPrice));
+                binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
                 binding.layoutOriginalPrice.setVisibility(View.VISIBLE);
             } else {
+                binding.txtPrice.setText(formatPrice(product.getPrice()));
                 binding.layoutOriginalPrice.setVisibility(View.GONE);
             }
 
@@ -174,13 +177,14 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         public void bind(Product product) {
             binding.txtProductName.setText(product.getName());
             binding.txtProductSizes.setText(product.getSizeRange());
-            binding.txtPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", product.getPrice()));
 
-            double originalPrice = product.getOriginalPrice();
-            if (originalPrice > product.getPrice()) {
-                binding.txtOriginalPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", originalPrice));
+            Double dPrice = product.getDiscountPrice();
+            if (dPrice != null && dPrice > 0) {
+                binding.txtPrice.setText(formatPrice(dPrice));
+                binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
                 binding.layoutOriginalPrice.setVisibility(View.VISIBLE);
             } else {
+                binding.txtPrice.setText(formatPrice(product.getPrice()));
                 binding.layoutOriginalPrice.setVisibility(View.GONE);
             }
 
@@ -227,12 +231,19 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    private String formatPrice(double price) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
+    }
+
     private void updateFavoriteIcon(ImageView imageView, boolean isFavorite) {
         if (isFavorite) {
-            imageView.setImageResource(R.drawable.ic_favorite);
+            imageView.setImageResource(R.drawable.ic_favorite_filled);
             imageView.setImageTintList(null);
         } else {
-            imageView.setImageResource(R.drawable.favorite);
+            imageView.setImageResource(R.drawable.ic_favorite);
             imageView.setImageTintList(ColorStateList.valueOf(Color.parseColor("#333333")));
         }
     }

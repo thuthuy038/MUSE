@@ -17,7 +17,9 @@ import com.project.muse_android.R;
 import com.project.muse_android.databinding.FragmentProductVariantBottomSheetBinding;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.Locale;
 
 public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment {
 
@@ -173,8 +175,10 @@ public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment
     }
 
     private String formatPrice(double price) {
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        return formatter.format(price).replace(",", ".") + "đ";
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
     }
 
     @Override
