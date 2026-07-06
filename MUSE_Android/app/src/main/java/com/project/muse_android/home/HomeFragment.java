@@ -42,7 +42,6 @@ import com.project.muse_android.search.SearchActivity;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
 import com.project.network.ApiService;
-import com.project.utils.ViewUtils;
 import com.project.utils.SessionManager;
 import com.project.muse_android.dialog.NewMemberOfferBottomSheet;
 
