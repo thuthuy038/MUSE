@@ -9,6 +9,7 @@ import android.view.animation.DecelerateInterpolator;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
+import android.content.Intent;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -16,6 +17,9 @@ import androidx.navigation.ui.NavigationUI;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivityMainBinding;
 import com.project.utils.ViewUtils;
+import com.project.utils.SessionManager;
+import com.project.utils.ViewUtils;
+import com.project.muse_android.auth.AuthActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private NavController navController;
     private float dX, dY;
     private ObjectAnimator aiFloatAnim;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +35,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Edge-to-edge support (Dùng chuẩn Android mới)
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        sessionManager = new SessionManager(this);
+        if (sessionManager.isFirstLaunch()) {
+            android.util.Log.d("MUSE_NAV", "First launch! Redirecting to AuthActivity from MainActivity");
+            Intent intent = new Intent(this, AuthActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -49,6 +62,30 @@ public class MainActivity extends AppCompatActivity {
                     navController
             );
 
+            // Chặn sự kiện click vào Profile để kiểm tra đăng nhập
+            binding.bottomNavigationView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navigation_profile) {
+                    if (!sessionManager.isLoggedIn()) {
+                        Intent intent = new Intent(MainActivity.this, AuthActivity.class);
+                        intent.putExtra("from_profile", true);
+                        startActivity(intent);
+                        return false;
+                    }
+                }
+                
+                // Sử dụng NavigationUI để xử lý chuyển trang và quản lý backstack
+                boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+                
+                // Nếu là trang chủ và đã ở trang chủ, ta có thể thêm logic cuộn lên đầu (tùy chọn)
+                if (!handled && itemId == R.id.navigation_home) {
+                    // Đã ở trang chủ hoặc không thể navigate, trả về true để giữ selection
+                    return true;
+                }
+                
+                return handled;
+            });
+
             // Badge thông báo
             var badge = binding.bottomNavigationView
                     .getOrCreateBadge(R.id.navigation_notification);
@@ -59,14 +96,34 @@ public class MainActivity extends AppCompatActivity {
             setupDraggableAI();
             startAIFloatingAnimation();
 
-            // Ẩn/hiện bong bóng AI tùy theo fragment (tùy chọn)
+            // Ẩn/hiện bong bóng AI tùy theo fragment và đảm bảo hiện lại Bottom Nav
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 if (destination.getId() == R.id.navigation_ai) {
                     binding.btnAIDraggable.setVisibility(View.GONE);
                 } else {
                     binding.btnAIDraggable.setVisibility(View.VISIBLE);
                 }
+                
+                // Đảm bảo hiện lại Bottom Navigation khi chuyển trang (tránh bị kẹt do HideBottomViewOnScrollBehavior)
+                binding.bottomNavigationView.animate().translationY(0).setDuration(300).start();
             });
+
+            handleIntent(getIntent());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("select_profile", false)) {
+            if (navController != null) {
+                navController.navigate(R.id.navigation_profile);
+            }
         }
     }
 
