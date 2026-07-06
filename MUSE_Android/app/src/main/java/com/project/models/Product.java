@@ -1,16 +1,12 @@
 package com.project.models;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-public class Product implements Serializable, Parcelable {
+public class Product {
 
     @SerializedName("_id")
     private String _id;
@@ -95,127 +91,11 @@ public class Product implements Serializable, Parcelable {
     }
 
     // ==========================
-    // Parcelable Implementation
-    // ==========================
-
-    protected Product(Parcel in) {
-        _id = in.readString();
-        code = in.readString();
-        name = in.readString();
-        price = in.readDouble();
-        if (in.readByte() == 0) {
-            discountPrice = null;
-        } else {
-            discountPrice = in.readDouble();
-        }
-        discountPercent = in.readInt();
-        stock = in.readInt();
-        description = in.readString();
-        images = in.createTypedArrayList(ProductImage.CREATOR);
-        colors = in.createStringArrayList();
-        sizes = in.createTypedArrayList(ProductSize.CREATOR);
-        rating = in.readDouble();
-        reviewCount = in.readInt();
-        soldCount = in.readInt();
-        offerDescription = in.readString();
-        status = in.readString();
-        category = in.readString();
-        material = in.readString();
-        isNew = in.readByte() != 0;
-        isBestSeller = in.readByte() != 0;
-        sku = in.readString();
-        isFavorite = in.readByte() != 0;
-        isSelected = in.readByte() != 0;
-        quantity = in.readInt();
-        variants = in.createTypedArrayList(ProductVariant.CREATOR);
-    }
-
-    public static final Creator<Product> CREATOR = new Creator<Product>() {
-        @Override
-        public Product createFromParcel(Parcel in) {
-            return new Product(in);
-        }
-
-        @Override
-        public Product[] newArray(int size) {
-            return new Product[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(_id);
-        dest.writeString(code);
-        dest.writeString(name);
-        dest.writeDouble(price);
-        if (discountPrice == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeDouble(discountPrice);
-        }
-        dest.writeInt(discountPercent);
-        dest.writeInt(stock);
-        dest.writeString(description);
-        dest.writeTypedList(images);
-        dest.writeStringList(colors);
-        dest.writeTypedList(sizes);
-        dest.writeDouble(rating);
-        dest.writeInt(reviewCount);
-        dest.writeInt(soldCount);
-        dest.writeString(offerDescription);
-        dest.writeString(status);
-        dest.writeString(category);
-        dest.writeString(material);
-        dest.writeByte((byte) (isNew ? 1 : 0));
-        dest.writeByte((byte) (isBestSeller ? 1 : 0));
-        dest.writeString(sku);
-        dest.writeByte((byte) (isFavorite ? 1 : 0));
-        dest.writeByte((byte) (isSelected ? 1 : 0));
-        dest.writeInt(quantity);
-        dest.writeTypedList(variants);
-    }
-
-    // ==========================
     // Inner Classes
     // ==========================
 
-    public static class ProductImage implements Serializable, Parcelable {
+    public static class ProductImage {
         private String url;
-
-        public ProductImage() {
-        }
-
-        protected ProductImage(Parcel in) {
-            url = in.readString();
-        }
-
-        public static final Creator<ProductImage> CREATOR = new Creator<ProductImage>() {
-            @Override
-            public ProductImage createFromParcel(Parcel in) {
-                return new ProductImage(in);
-            }
-
-            @Override
-            public ProductImage[] newArray(int size) {
-                return new ProductImage[size];
-            }
-        };
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(url);
-        }
 
         public String getUrl() {
             return url;
@@ -226,40 +106,9 @@ public class Product implements Serializable, Parcelable {
         }
     }
 
-    public static class ProductSize implements Serializable, Parcelable {
+    public static class ProductSize {
         private String size;
         private int quantity;
-
-        public ProductSize() {
-        }
-
-        protected ProductSize(Parcel in) {
-            size = in.readString();
-            quantity = in.readInt();
-        }
-
-        public static final Creator<ProductSize> CREATOR = new Creator<ProductSize>() {
-            @Override
-            public ProductSize createFromParcel(Parcel in) {
-                return new ProductSize(in);
-            }
-
-            @Override
-            public ProductSize[] newArray(int size) {
-                return new ProductSize[size];
-            }
-        };
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(size);
-            dest.writeInt(quantity);
-        }
 
         public String getSize() {
             return size;

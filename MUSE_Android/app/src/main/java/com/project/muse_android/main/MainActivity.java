@@ -16,7 +16,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivityMainBinding;
-import com.project.utils.ViewUtils;
 import com.project.utils.SessionManager;
 import com.project.utils.ViewUtils;
 import com.project.muse_android.auth.AuthActivity;
@@ -33,8 +32,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Edge-to-edge support (Dùng chuẩn Android mới)
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         sessionManager = new SessionManager(this);
         if (sessionManager.isFirstLaunch()) {
             android.util.Log.d("MUSE_NAV", "First launch! Redirecting to AuthActivity from MainActivity");
