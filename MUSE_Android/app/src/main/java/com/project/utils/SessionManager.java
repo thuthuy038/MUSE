@@ -68,6 +68,16 @@ public class SessionManager {
         prefs.edit().putBoolean(KEY_IS_FIRST_LAUNCH, isFirstLaunch).apply();
     }
 
+    private static final String KEY_DONT_SHOW_OFFER_AGAIN = "dont_show_offer_again";
+
+    public boolean isDontShowOfferAgain() {
+        return prefs.getBoolean(KEY_DONT_SHOW_OFFER_AGAIN, false);
+    }
+
+    public void setDontShowOfferAgain(boolean dontShow) {
+        prefs.edit().putBoolean(KEY_DONT_SHOW_OFFER_AGAIN, dontShow).apply();
+    }
+
     public boolean isLoggedIn() {
         return prefs.getBoolean(KEY_IS_LOGGED_IN, false);
     }

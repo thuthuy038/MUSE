@@ -42,6 +42,9 @@ import com.project.muse_android.search.SearchActivity;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
 import com.project.network.ApiService;
+import com.project.utils.ViewUtils;
+import com.project.utils.SessionManager;
+import com.project.muse_android.dialog.NewMemberOfferBottomSheet;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +55,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
+
+    private static boolean isOfferDialogShownInSession = false;
 
     private FragmentHomeBinding binding;
     private CategoryAdapter categoryAdapter;
@@ -113,6 +118,7 @@ public class HomeFragment extends Fragment {
         loadProducts();
 
         new Handler(Looper.getMainLooper()).postDelayed(this::playEntranceAnimation, 300);
+        new Handler(Looper.getMainLooper()).postDelayed(this::checkAndShowNewMemberOffer, 2000);
     }
 
     private void setInitialStates() {
@@ -489,6 +495,17 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private void checkAndShowNewMemberOffer() {
+        if (isAdded() && getContext() != null) {
+            SessionManager sessionManager = new SessionManager(requireContext());
+            if (!sessionManager.isLoggedIn() && !sessionManager.isDontShowOfferAgain() && !isOfferDialogShownInSession) {
+                isOfferDialogShownInSession = true;
+                NewMemberOfferBottomSheet offerBottomSheet = NewMemberOfferBottomSheet.newInstance();
+                offerBottomSheet.show(getParentFragmentManager(), "NewMemberOfferBottomSheet");
+            }
+        }
     }
 
     @Override

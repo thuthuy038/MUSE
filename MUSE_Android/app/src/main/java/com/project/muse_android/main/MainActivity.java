@@ -12,7 +12,6 @@ import androidx.navigation.ui.NavigationUI;
 import com.project.muse_android.R;
 import com.project.muse_android.auth.AuthActivity;
 import com.project.muse_android.databinding.ActivityMainBinding;
-import com.project.utils.SessionManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         if (sessionManager.isFirstLaunch()) {
+            android.util.Log.d("MUSE_NAV", "First launch! Redirecting to AuthActivity from MainActivity");
             Intent intent = new Intent(this, AuthActivity.class);
             startActivity(intent);
             finish();
