@@ -50,7 +50,11 @@ public class CartManager {
         if (sessionManager.isLoggedIn()) {
             // Call API
             String token = sessionManager.getToken();
-            CartRequest request = new CartRequest(product.getId(), quantity, color, size);
+            String userId = sessionManager.getUserId();
+            double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
+                    ? product.getDiscountPrice() : product.getPrice();
+            
+            CartRequest request = new CartRequest(userId, product.getId(), quantity, color, size, price);
             apiService.addToCart("Bearer " + token, request).enqueue(new Callback<Void>() {
                 @Override
                 public void onResponse(Call<Void> call, Response<Void> response) {
@@ -167,12 +171,13 @@ public class CartManager {
         }
     }
 
-    public void updateQuantity(String productId, int quantity, CartCallback<Void> callback) {
+    public void updateQuantity(String productId, int quantity, double price, CartCallback<Void> callback) {
         if (sessionManager.isLoggedIn()) {
             String token = sessionManager.getToken();
+            String userId = sessionManager.getUserId();
             // We need color and size for API? The API definition had CartRequest.
             // Let's assume we update by productId for simplicity or find existing info.
-            CartRequest request = new CartRequest(productId, quantity, null, null);
+            CartRequest request = new CartRequest(userId, productId, quantity, null, null, price);
             apiService.updateCartQuantity("Bearer " + token, request).enqueue(new Callback<Void>() {
                 @Override
                 public void onResponse(Call<Void> call, Response<Void> response) {
@@ -201,9 +206,10 @@ public class CartManager {
         List<CartItem> localItems = cartDao.getAll();
         if (localItems.isEmpty()) return;
 
+        String userId = sessionManager.getUserId();
         List<CartRequest> requests = new ArrayList<>();
         for (CartItem item : localItems) {
-            requests.add(new CartRequest(item.getProductId(), item.getQuantity(), item.getColor(), item.getSize()));
+            requests.add(new CartRequest(userId, item.getProductId(), item.getQuantity(), item.getColor(), item.getSize(), item.getDiscountPrice() > 0 ? item.getDiscountPrice() : item.getPrice()));
         }
 
         String token = sessionManager.getToken();

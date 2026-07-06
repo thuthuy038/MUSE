@@ -8,12 +8,14 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivityMainBinding;
+import com.project.utils.ViewUtils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,8 +28,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Edge-to-edge support (Dùng chuẩn Android mới)
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Sử dụng Helper để tự động đẩy Bottom Nav lên trên Navigation Bar của hệ thống
+        ViewUtils.applySystemBarsPadding(binding.bottomNavigationView, false, true);
 
         NavHostFragment navHostFragment =
                 (NavHostFragment) getSupportFragmentManager()

@@ -5,25 +5,29 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
 import com.project.models.Category;
 import com.project.models.Product;
+import com.project.models.ProductVariant;
 import com.project.muse_android.R;
 import com.project.muse_android.cart.ProductVariantBottomSheetFragment;
 import com.project.muse_android.databinding.ActivityProductDetailBinding;
 import com.project.network.HomeApiClient;
 import com.project.network.ApiService;
 import com.project.network.HomeApiService;
+import com.project.utils.ViewUtils;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -47,8 +51,15 @@ public class ProductDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Edge-to-edge support
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
         binding = ActivityProductDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Đẩy Header (nút Back) xuống dưới Status Bar
+        ViewUtils.applySystemBarsPadding(binding.header, true, false);
 
         productId = getIntent().getStringExtra("product_id");
 
@@ -90,14 +101,16 @@ public class ProductDetailActivity extends AppCompatActivity {
         // Breadcrumb and Basic Info
         binding.txtProductNameBreadcrumb.setText(product.getName());
         binding.txtProductName.setText(product.getName());
-        binding.txtPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", product.getPrice()));
 
-        // Original Price
-        double originalPrice = product.getOriginalPrice();
-        if (originalPrice > product.getPrice()) {
-            binding.txtOriginalPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", originalPrice));
+        // Price Logic
+        Double dPrice = product.getDiscountPrice();
+        if (dPrice != null && dPrice > 0) {
+            binding.txtPrice.setText(formatPrice(dPrice));
+            binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
             binding.txtOriginalPrice.setVisibility(View.VISIBLE);
+            binding.txtOriginalPrice.setPaintFlags(binding.txtOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         } else {
+            binding.txtPrice.setText(formatPrice(product.getPrice()));
             binding.txtOriginalPrice.setVisibility(View.GONE);
         }
 
@@ -134,7 +147,9 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         // Colors & Sizes
         setupColors(product.getColors());
-        setupSizes(product.getSizes());
+        
+        // Use variants for sizes as requested
+        setupSizes(product.getVariants());
 
         updateFavoriteUI(product.isFavorite());
         binding.btnFavoriteDetail.setOnClickListener(v -> {
@@ -146,10 +161,10 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private void updateFavoriteUI(boolean isFavorite) {
         if (isFavorite) {
-            binding.btnFavoriteDetail.setImageResource(R.drawable.ic_favorite);
+            binding.btnFavoriteDetail.setImageResource(R.drawable.ic_favorite_filled);
             binding.btnFavoriteDetail.setImageTintList(null);
         } else {
-            binding.btnFavoriteDetail.setImageResource(R.drawable.favorite);
+            binding.btnFavoriteDetail.setImageResource(R.drawable.ic_favorite);
             binding.btnFavoriteDetail.setImageTintList(ColorStateList.valueOf(Color.parseColor("#333333")));
         }
     }
@@ -242,40 +257,32 @@ public class ProductDetailActivity extends AppCompatActivity {
         return "#E0E0E0";
     }
 
-    private void setupSizes(List<Product.ProductSize> sizes) {
+    private void setupSizes(List<com.project.models.ProductVariant> variants) {
         binding.chipGroupSizes.removeAllViews();
-        if (sizes == null || sizes.isEmpty()) {
+        if (variants == null || variants.isEmpty()) {
             binding.txtSelectedSizeLabel.setVisibility(View.GONE);
             return;
         }
 
         binding.txtSelectedSizeLabel.setVisibility(View.VISIBLE);
         binding.txtSelectedSizeLabel.setText("Kích cỡ");
+
+        Set<String> processedSizes = new HashSet<>();
         int firstAvailableId = -1;
         String firstAvailableSize = "";
 
-        Set<String> processedSizes = new HashSet<>();
-        for (Product.ProductSize sizeObj : sizes) {
-            String sizeName = sizeObj.getSize();
+        for (com.project.models.ProductVariant variant : variants) {
+            String sizeName = variant.getSize();
             if (sizeName == null || processedSizes.contains(sizeName)) {
                 continue;
             }
             processedSizes.add(sizeName);
 
             Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_chip_variant, binding.chipGroupSizes, false);
-            int chipId = View.generateViewId();
-            chip.setId(chipId);
             chip.setText(sizeName);
             
-            // Checkable is usually true for Choice style, but let's be explicit
-            chip.setCheckable(true);
-            chip.setClickable(true);
-
-            chip.setOnClickListener(v -> {
-                binding.chipGroupSizes.check(chipId);
-                selectedSize = sizeName;
-                binding.txtSelectedSizeLabel.setText(String.format("Kích cỡ: %s", sizeName));
-            });
+            int chipId = View.generateViewId();
+            chip.setId(chipId);
 
             chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) {
@@ -284,8 +291,8 @@ public class ProductDetailActivity extends AppCompatActivity {
                 }
             });
 
-            // Logic for quantity > 0
-            if (sizeObj.getQuantity() <= 0) {
+            // Handle stock
+            if (variant.getQuantity() <= 0) {
                 chip.setEnabled(false);
                 chip.setAlpha(0.3f);
             } else {
@@ -298,11 +305,12 @@ public class ProductDetailActivity extends AppCompatActivity {
             binding.chipGroupSizes.addView(chip);
         }
 
-        // Select first available size by default using the ID
+        // Auto-select first available size
         if (firstAvailableId != -1) {
-            binding.chipGroupSizes.check(firstAvailableId);
-            selectedSize = firstAvailableSize;
-            binding.txtSelectedSizeLabel.setText(String.format("Kích cỡ: %s", firstAvailableSize));
+            final int idToCheck = firstAvailableId;
+            binding.chipGroupSizes.post(() -> {
+                binding.chipGroupSizes.check(idToCheck);
+            });
         }
     }
 
@@ -312,6 +320,13 @@ public class ProductDetailActivity extends AppCompatActivity {
             binding.imgSizeGuideContent.setVisibility(isVisible ? View.GONE : View.VISIBLE);
             binding.imgSizeGuideArrow.setRotation(isVisible ? 0 : 90);
         });
+    }
+
+    private String formatPrice(double price) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
     }
 
     private void setupActionButtons() {
@@ -333,7 +348,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 });
             } else {
                 // Otherwise show bottom sheet
-                ProductVariantBottomSheetFragment variantSheet = new ProductVariantBottomSheetFragment(currentProduct);
+                ProductVariantBottomSheetFragment variantSheet = new ProductVariantBottomSheetFragment(currentProduct, selectedColor, selectedSize, 1);
                 variantSheet.setButtonText("Thêm vào giỏ hàng");
                 variantSheet.setOnVariantSelectedListener((color, size, quantity) -> {
                     CartManager.getInstance(this).addToCart(currentProduct, color, size, quantity, new CartManager.CartCallback<Void>() {
@@ -369,7 +384,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                     }
                 });
             } else {
-                ProductVariantBottomSheetFragment variantSheet = new ProductVariantBottomSheetFragment(currentProduct);
+                ProductVariantBottomSheetFragment variantSheet = new ProductVariantBottomSheetFragment(currentProduct, selectedColor, selectedSize, 1);
                 variantSheet.setButtonText("Mua ngay");
                 variantSheet.setOnVariantSelectedListener((color, size, quantity) -> {
                     CartManager.getInstance(this).addToCart(currentProduct, color, size, quantity, new CartManager.CartCallback<Void>() {
@@ -388,11 +403,10 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         });
         binding.btnFavoriteDetail.setOnClickListener(v -> {
-            v.setSelected(!v.isSelected());
-            ((android.widget.ImageView)v).setColorFilter(v.isSelected() ?
-                    ContextCompat.getColor(this, R.color.primary_500) :
-                    Color.parseColor("#999999"));
-            Toast.makeText(this, v.isSelected() ? "Đã thêm vào yêu thích" : "Đã bỏ yêu thích", Toast.LENGTH_SHORT).show();
+            if (currentProduct == null) return;
+            currentProduct.setFavorite(!currentProduct.isFavorite());
+            updateFavoriteUI(currentProduct.isFavorite());
+            Toast.makeText(this, currentProduct.isFavorite() ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
         });
     }
 }

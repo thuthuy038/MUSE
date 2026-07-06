@@ -42,6 +42,7 @@ import com.project.muse_android.search.SearchActivity;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
 import com.project.network.ApiService;
+import com.project.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +97,9 @@ public class HomeFragment extends Fragment {
         setupSearchBarInteraction();
         setupTabInteraction();
         setupScrollBehavior();
+
+        // Sử dụng Helper để tự động đẩy Header xuống dưới Status Bar
+        ViewUtils.applySystemBarsPadding(binding.header, true, false);
 
         binding.btnViewAllCategories.setOnClickListener(v -> {
             isAllCategoriesShown = true;
