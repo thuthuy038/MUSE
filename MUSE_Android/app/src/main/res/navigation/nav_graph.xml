@@ -75,5 +75,10 @@
             app:argType="string"
             app:nullable="true" />
     </fragment>
+    <fragment
+        android:id="@+id/navigation_ai"
+        android:name="com.project.muse_android.ai.AIFragment"
+        android:label="AI Stylist"
+        tools:layout="@layout/fragment_ai" />
 
 </navigation>

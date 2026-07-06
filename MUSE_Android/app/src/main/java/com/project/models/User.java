@@ -20,6 +20,30 @@ public class User {
     private String createdAt = null;
     private int orderCount = 0;
 
+    @com.google.gson.annotations.SerializedName("gender")
+    private String gender = "other";
+
+    @com.google.gson.annotations.SerializedName("height")
+    private int height = 0;
+
+    @com.google.gson.annotations.SerializedName("weight")
+    private float weight = 0f;
+
+    @com.google.gson.annotations.SerializedName("favoriteStyles")
+    private List<String> favoriteStyles = new java.util.ArrayList<>();
+
+    @com.google.gson.annotations.SerializedName("favoriteColors")
+    private List<String> favoriteColors = new java.util.ArrayList<>();
+
+    @com.google.gson.annotations.SerializedName("fashionPurpose")
+    private List<String> fashionPurpose = new java.util.ArrayList<>();
+
+    @com.google.gson.annotations.SerializedName("preferredCategories")
+    private List<String> preferredCategories = new java.util.ArrayList<>();
+
+    @com.google.gson.annotations.SerializedName("profileCompleted")
+    private boolean profileCompleted = false;
+
     public static class Address {
         private String street;
         private String ward;
@@ -231,6 +255,70 @@ public class User {
 
     public void setOrderCount(int orderCount) {
         this.orderCount = orderCount;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public float getWeight() {
+        return weight;
+    }
+
+    public void setWeight(float weight) {
+        this.weight = weight;
+    }
+
+    public List<String> getFavoriteStyles() {
+        return favoriteStyles;
+    }
+
+    public void setFavoriteStyles(List<String> favoriteStyles) {
+        this.favoriteStyles = favoriteStyles;
+    }
+
+    public List<String> getFavoriteColors() {
+        return favoriteColors;
+    }
+
+    public void setFavoriteColors(List<String> favoriteColors) {
+        this.favoriteColors = favoriteColors;
+    }
+
+    public List<String> getFashionPurpose() {
+        return fashionPurpose;
+    }
+
+    public void setFashionPurpose(List<String> fashionPurpose) {
+        this.fashionPurpose = fashionPurpose;
+    }
+
+    public List<String> getPreferredCategories() {
+        return preferredCategories;
+    }
+
+    public void setPreferredCategories(List<String> preferredCategories) {
+        this.preferredCategories = preferredCategories;
+    }
+
+    public boolean isProfileCompleted() {
+        return profileCompleted;
+    }
+
+    public void setProfileCompleted(boolean profileCompleted) {
+        this.profileCompleted = profileCompleted;
     }
 
     @Override

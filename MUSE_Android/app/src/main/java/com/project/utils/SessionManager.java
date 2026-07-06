@@ -11,6 +11,7 @@ public class SessionManager {
     private static final String KEY_USER_NAME = "user_name";
     private static final String KEY_USER_EMAIL = "user_email";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
+    private static final String KEY_PROFILE_COMPLETED = "profile_completed";
 
     public SessionManager(Context context) {
         this.prefs = context.getSharedPreferences("MUSE_PREFS", Context.MODE_PRIVATE);
@@ -72,12 +73,21 @@ public class SessionManager {
         return prefs.getBoolean(KEY_IS_LOGGED_IN, false);
     }
 
+    public void saveProfileCompleted(boolean completed) {
+        prefs.edit().putBoolean(KEY_PROFILE_COMPLETED, completed).apply();
+    }
+
+    public boolean isProfileCompleted() {
+        return prefs.getBoolean(KEY_PROFILE_COMPLETED, false);
+    }
+
     public void clearSession() {
         prefs.edit()
                 .remove(KEY_TOKEN)
                 .remove(KEY_USER_ID)
                 .remove(KEY_USER_NAME)
                 .remove(KEY_USER_EMAIL)
+                .remove(KEY_PROFILE_COMPLETED)
                 .putBoolean(KEY_IS_LOGGED_IN, false)
                 .apply();
     }
