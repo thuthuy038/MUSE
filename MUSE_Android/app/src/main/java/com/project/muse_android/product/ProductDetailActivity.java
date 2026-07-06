@@ -1,5 +1,6 @@
 package com.project.muse_android.product;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -20,6 +21,7 @@ import com.project.models.Product;
 import com.project.models.ProductVariant;
 import com.project.muse_android.R;
 import com.project.muse_android.cart.ProductVariantBottomSheetFragment;
+import com.project.muse_android.checkout.CheckoutActivity;
 import com.project.muse_android.databinding.ActivityProductDetailBinding;
 import com.project.network.HomeApiClient;
 import com.project.network.ApiService;
@@ -28,6 +30,7 @@ import com.project.utils.ViewUtils;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -371,42 +374,48 @@ public class ProductDetailActivity extends AppCompatActivity {
             if (currentProduct == null) return;
 
             if (!selectedColor.isEmpty() && !selectedSize.isEmpty()) {
-                // Add directly if already selected
-                CartManager.getInstance(this).addToCart(currentProduct, selectedColor, selectedSize, 1, new CartManager.CartCallback<Void>() {
-                    @Override
-                    public void onSuccess(Void result) {
-                        Toast.makeText(ProductDetailActivity.this, "Đang chuyển đến thanh toán...", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
-                    }
-                });
+                navigateToCheckout(currentProduct, selectedColor, selectedSize, 1);
             } else {
                 ProductVariantBottomSheetFragment variantSheet = new ProductVariantBottomSheetFragment(currentProduct, selectedColor, selectedSize, 1);
                 variantSheet.setButtonText("Mua ngay");
                 variantSheet.setOnVariantSelectedListener((color, size, quantity) -> {
-                    CartManager.getInstance(this).addToCart(currentProduct, color, size, quantity, new CartManager.CartCallback<Void>() {
-                        @Override
-                        public void onSuccess(Void result) {
-                            Toast.makeText(ProductDetailActivity.this, "Đang chuyển đến thanh toán...", Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onError(String message) {
-                            Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    navigateToCheckout(currentProduct, color, size, quantity);
                 });
                 variantSheet.show(getSupportFragmentManager(), "ProductVariantBottomSheet");
             }
         });
+
         binding.btnFavoriteDetail.setOnClickListener(v -> {
             if (currentProduct == null) return;
             currentProduct.setFavorite(!currentProduct.isFavorite());
             updateFavoriteUI(currentProduct.isFavorite());
             Toast.makeText(this, currentProduct.isFavorite() ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
         });
+    }
+
+    private void navigateToCheckout(Product product, String color, String size, int quantity) {
+        // Create a copy of the product for checkout
+        Product checkoutProduct = new Product();
+        checkoutProduct.setId(product.getId());
+        checkoutProduct.setName(product.getName());
+        checkoutProduct.setPrice(product.getPrice());
+        checkoutProduct.setDiscountPrice(product.getDiscountPrice());
+        checkoutProduct.setImages(product.getImages());
+        checkoutProduct.setQuantity(quantity);
+
+        // Set only the selected variant for correct display in Checkout adapter
+        ProductVariant selectedVariant = new ProductVariant();
+        selectedVariant.setColor(color);
+        selectedVariant.setSize(size);
+        List<ProductVariant> variants = new ArrayList<>();
+        variants.add(selectedVariant);
+        checkoutProduct.setVariants(variants);
+
+        ArrayList<Product> productList = new ArrayList<>();
+        productList.add(checkoutProduct);
+
+        Intent intent = new Intent(this, CheckoutActivity.class);
+        intent.putParcelableArrayListExtra("products", productList);
+        startActivity(intent);
     }
 }
