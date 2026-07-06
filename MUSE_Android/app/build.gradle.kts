@@ -21,15 +21,12 @@ android {
     }
 
     signingConfigs {
-        val keystoreFile = file("debug.keystore")
-        if (keystoreFile.exists()) {
-            create("debugShared") {
-                // Chỉ đường dẫn tới file debug.keystore dùng chung ở thư mục gốc dự án
-                storeFile = keystoreFile
-                storePassword = "android"
-                keyAlias = "androiddebugkey"
-                keyPassword = "android"
-            }
+        create("debugShared") {
+            // Chỉ đường dẫn tới file debug.keystore trong thư mục app
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
     }
 
@@ -42,16 +39,15 @@ android {
             )
         }
         getByName("debug") {
-            val debugShared = signingConfigs.findByName("debugShared")
-            if (debugShared != null) {
-                signingConfig = debugShared
-            }
+            signingConfig = signingConfigs.getByName("debugShared")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         viewBinding = true
     }

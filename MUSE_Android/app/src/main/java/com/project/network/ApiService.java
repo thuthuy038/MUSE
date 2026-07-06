@@ -58,6 +58,11 @@ public interface ApiService {
         @Header("Authorization") String token
     );
 
+    @GET("api/orders/user")
+    Call<List<com.project.models.Order>> getOrders(
+        @Header("Authorization") String token
+    );
+
     // ========== PRODUCTS ==========
     @GET("api/products")
     Call<List<Product>> getProducts();
