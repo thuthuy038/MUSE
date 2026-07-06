@@ -106,22 +106,6 @@ public class HorizontalProductAdapter extends ProductAdapter {
             // Reset scroll position
             binding.horizontalScrollView.scrollTo(0, 0);
 
-            // Snap behavior
-            binding.horizontalScrollView.setOnTouchListener((v, event) -> {
-                if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                    int scrollX = binding.horizontalScrollView.getScrollX();
-                    int actionsWidth = binding.layoutActions.getWidth();
-                    if (scrollX > actionsWidth / 3) {
-                        binding.horizontalScrollView.smoothScrollTo(actionsWidth, 0);
-                    } else {
-                        binding.horizontalScrollView.smoothScrollTo(0, 0);
-                    }
-                    v.performClick();
-                    return true;
-                }
-                return false;
-            });
-
             binding.txtProductName.setText(product.getName());
 
             // Load Image
@@ -154,23 +138,44 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 binding.layoutQuantityEditor.setVisibility(View.VISIBLE);
                 binding.txtCartPrice.setVisibility(View.VISIBLE);
                 binding.layoutReadOnly.setVisibility(View.GONE);
+                binding.layoutActions.setVisibility(View.VISIBLE);
 
                 binding.txtProductSizes.setText(color + " | " + size);
                 double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 ? product.getDiscountPrice() : product.getPrice();
                 binding.txtPrice.setText(formatPrice(price));
                 binding.txtQuantity.setText(String.valueOf(quantity));
+
+                // Snap behavior for CART mode
+                binding.horizontalScrollView.setOnTouchListener((v, event) -> {
+                    if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                        int scrollX = binding.horizontalScrollView.getScrollX();
+                        int actionsWidth = binding.layoutActions.getWidth();
+                        if (scrollX > actionsWidth / 3) {
+                            binding.horizontalScrollView.smoothScrollTo(actionsWidth, 0);
+                        } else {
+                            binding.horizontalScrollView.smoothScrollTo(0, 0);
+                        }
+                        v.performClick();
+                        return true;
+                    }
+                    return false;
+                });
             } else {
                 binding.cbSelect.setVisibility(View.GONE);
                 binding.layoutVariant.setVisibility(View.GONE);
                 binding.layoutQuantityEditor.setVisibility(View.GONE);
                 binding.txtPrice.setVisibility(View.GONE);
                 binding.layoutReadOnly.setVisibility(View.VISIBLE);
+                binding.layoutActions.setVisibility(View.GONE);
 
                 binding.txtVariantReadOnly.setText(color + ", " + size);
                 binding.txtDiscountPriceReadOnly.setText(formatPrice(product.getDiscountPrice() != null ? product.getDiscountPrice() : 0));
                 binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
                 binding.txtOriginalPrice.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
                 binding.txtReadonlyQuantity.setText("x" + quantity);
+
+                // Disable scroll for READ_ONLY mode
+                binding.horizontalScrollView.setOnTouchListener((v, event) -> true);
             }
 
             // Click Listeners

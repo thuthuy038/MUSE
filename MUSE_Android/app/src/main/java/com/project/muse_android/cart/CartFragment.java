@@ -116,6 +116,20 @@ public class CartFragment extends Fragment {
             showPromotionDetails();
         });
 
+        binding.btnCheckout.setOnClickListener(v -> {
+            ArrayList<Product> selectedProducts = new ArrayList<>();
+            for (Product p : cartProducts) {
+                if (p.isSelected()) {
+                    selectedProducts.add(p);
+                }
+            }
+            if (!selectedProducts.isEmpty()) {
+                Intent intent = new Intent(getContext(), com.project.muse_android.checkout.CheckoutActivity.class);
+                intent.putExtra("products", selectedProducts);
+                startActivity(intent);
+            }
+        });
+
         // Xử lý nút Sửa
         binding.tvEdit.setOnClickListener(v -> toggleEditMode());
     }

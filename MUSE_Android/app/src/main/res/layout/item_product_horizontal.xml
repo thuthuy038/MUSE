@@ -75,7 +75,13 @@
                     app:layout_constraintTop_toTopOf="@id/imgProduct" />
 
                 <!-- Compatibility IDs for ProductAdapter -->
-                <TextView android:id="@+id/txtName" android:visibility="gone" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView
+                    android:id="@+id/txtName"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <!-- ================= CART MODE UI ================= -->
                 <LinearLayout
@@ -193,6 +199,16 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
+                        <TextView
+                            android:id="@+id/txtDiscountPriceReadOnly"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="690.000đ"
+                            android:textColor="@color/primary_500"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
                         <FrameLayout
                             android:id="@+id/layoutOriginalPrice"
                             android:layout_width="wrap_content"
@@ -210,15 +226,7 @@
                         <!-- Compatibility IDs for ProductAdapter -->
                         <TextView android:id="@+id/txtOriginalPriceReadOnly" android:visibility="gone" android:layout_width="0dp" android:layout_height="0dp" />
 
-                        <TextView
-                            android:id="@+id/txtDiscountPriceReadOnly"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:text="690.000đ"
-                            android:textColor="@color/primary_500"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+
 
                         <View
                             android:layout_width="0dp"
