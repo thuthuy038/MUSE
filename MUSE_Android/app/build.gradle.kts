@@ -22,8 +22,8 @@ android {
 
     signingConfigs {
         create("debugShared") {
-            // Chỉ đường dẫn tới file debug.keystore dùng chung ở thư mục gốc dự án
-            storeFile = file("../keystore/debug.keystore")
+            // Chỉ đường dẫn tới file debug.keystore trong thư mục app
+            storeFile = file("debug.keystore")
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"

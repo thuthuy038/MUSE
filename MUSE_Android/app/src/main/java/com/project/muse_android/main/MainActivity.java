@@ -70,7 +70,17 @@ public class MainActivity extends AppCompatActivity {
                         return false;
                     }
                 }
-                return NavigationUI.onNavDestinationSelected(item, navController);
+                
+                // Sử dụng NavigationUI để xử lý chuyển trang và quản lý backstack
+                boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+                
+                // Nếu là trang chủ và đã ở trang chủ, ta có thể thêm logic cuộn lên đầu (tùy chọn)
+                if (!handled && itemId == R.id.navigation_home) {
+                    // Đã ở trang chủ hoặc không thể navigate, trả về true để giữ selection
+                    return true;
+                }
+                
+                return handled;
             });
 
             // Badge thông báo
@@ -83,13 +93,16 @@ public class MainActivity extends AppCompatActivity {
             setupDraggableAI();
             startAIFloatingAnimation();
 
-            // Ẩn/hiện bong bóng AI tùy theo fragment (tùy chọn)
+            // Ẩn/hiện bong bóng AI tùy theo fragment và đảm bảo hiện lại Bottom Nav
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 if (destination.getId() == R.id.navigation_ai) {
                     binding.btnAIDraggable.setVisibility(View.GONE);
                 } else {
                     binding.btnAIDraggable.setVisibility(View.VISIBLE);
                 }
+                
+                // Đảm bảo hiện lại Bottom Navigation khi chuyển trang (tránh bị kẹt do HideBottomViewOnScrollBehavior)
+                binding.bottomNavigationView.animate().translationY(0).setDuration(300).start();
             });
 
             handleIntent(getIntent());

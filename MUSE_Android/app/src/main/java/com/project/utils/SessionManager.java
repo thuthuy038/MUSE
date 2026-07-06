@@ -12,6 +12,7 @@ public class SessionManager {
     private static final String KEY_USER_EMAIL = "user_email";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_PROFILE_COMPLETED = "profile_completed";
+    private static final String KEY_SHOULD_SHOW_OFFER = "should_show_offer";
 
     public SessionManager(Context context) {
         this.prefs = context.getSharedPreferences("MUSE_PREFS", Context.MODE_PRIVATE);
@@ -89,6 +90,14 @@ public class SessionManager {
 
     public boolean isProfileCompleted() {
         return prefs.getBoolean(KEY_PROFILE_COMPLETED, false);
+    }
+
+    public void setShouldShowOffer(boolean shouldShow) {
+        prefs.edit().putBoolean(KEY_SHOULD_SHOW_OFFER, shouldShow).apply();
+    }
+
+    public boolean shouldShowOffer() {
+        return prefs.getBoolean(KEY_SHOULD_SHOW_OFFER, false);
     }
 
     public void clearSession() {

@@ -32,6 +32,13 @@ public class NotificationScreenActivity extends AppCompatActivity {
     }
 
     private void navigateToHome() {
+        // Đảm bảo đánh dấu đã qua lần đầu chạy để không bị MainActivity redirect ngược lại AuthActivity
+        com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(this);
+        sessionManager.setFirstLaunch(false);
+        
+        // Đánh dấu cần hiện thông báo chào mừng thành viên mới ở trang chủ
+        sessionManager.setShouldShowOffer(true);
+
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
