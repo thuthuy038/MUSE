@@ -60,6 +60,9 @@
             android:name=".product.CategoryProductsActivity"
             android:exported="false" />
         <activity
+            android:name=".search.SearchActivity"
+            android:exported="false" />
+        <activity
             android:name=".search.SearchResultActivity"
             android:exported="false" />
         <activity

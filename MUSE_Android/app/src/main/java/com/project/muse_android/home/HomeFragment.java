@@ -71,7 +71,7 @@ public class HomeFragment extends Fragment {
 
     private final Handler slideHandler = new Handler(Looper.getMainLooper());
     private Runnable sliderRunnable;
-    private int selectedTab = 0; // 0: Hot, 1: New, 2: All
+    private int selectedTab = 0; // 0: Hot, 1: New
 
     private final List<Category> allCategories = new ArrayList<>();
     private boolean isAllCategoriesShown = false;
@@ -119,7 +119,6 @@ public class HomeFragment extends Fragment {
     private void setInitialStates() {
         binding.header.setAlpha(0f);
         binding.searchBar.setAlpha(0f);
-        binding.imgCart.setAlpha(0f);
 
         LinearLayout contentLayout = (LinearLayout) binding.rvCategories.getParent();
         for (int i = 0; i < contentLayout.getChildCount(); i++) {
@@ -133,7 +132,6 @@ public class HomeFragment extends Fragment {
 
         animateEntrance(binding.header, 0, duration, startY);
         animateEntrance(binding.searchBar, 100, duration, startY);
-        animateEntrance(binding.imgCart, 150, duration, startY);
 
         LinearLayout content = (LinearLayout) binding.rvCategories.getParent();
         // Indices based on fragment_home.xml: 0:Banner, 1:Title, 2:rvCategories, 3:Tabs, 4:rvProducts
@@ -236,7 +234,6 @@ public class HomeFragment extends Fragment {
     private void setupTabInteraction() {
         binding.tabHot.setOnClickListener(v -> switchTab(0));
         binding.tabNew.setOnClickListener(v -> switchTab(1));
-        binding.tabAll.setOnClickListener(v -> switchTab(2));
 
         // Initial state
         binding.tabHot.setScaleX(1.1f);
@@ -245,14 +242,13 @@ public class HomeFragment extends Fragment {
         binding.tabHot.setTypeface(null, android.graphics.Typeface.BOLD);
 
         binding.tabNew.setAlpha(0.6f);
-        binding.tabAll.setAlpha(0.6f);
     }
 
     private void switchTab(int index) {
         if (index == selectedTab) return;
         selectedTab = index;
 
-        TextView[] tabs = {binding.tabHot, binding.tabNew, binding.tabAll};
+        TextView[] tabs = {binding.tabHot, binding.tabNew};
 
         for (int i = 0; i < tabs.length; i++) {
             if (i == index) {
@@ -273,10 +269,10 @@ public class HomeFragment extends Fragment {
         displayProducts.clear();
 
         List<Product> source;
-        switch (selectedTab) {
-            case 0: source = hotProducts; break;
-            case 1: source = newProducts; break;
-            default: source = allProducts; break;
+        if (selectedTab == 0) {
+            source = hotProducts;
+        } else {
+            source = newProducts;
         }
 
         displayProducts.addAll(source);
@@ -306,25 +302,16 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupClickEffects() {
-        binding.imgCart.setOnClickListener(v -> playBounce(v));
-
         View.OnClickListener toSearch = v -> startActivity(new Intent(getContext(), SearchActivity.class));
         binding.searchBar.setOnClickListener(toSearch);
         binding.edtSearch.setOnClickListener(toSearch);
 
-        applyRipple(binding.imgCart);
         applyRipple(binding.searchBar);
     }
 
     private void applyRipple(View view) {
         if (view == null) return;
         view.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.ripple_primary_light));
-    }
-
-    private void playBounce(View v) {
-        v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() ->
-                v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
-        ).start();
     }
 
     private void loadBanners() {
@@ -394,7 +381,12 @@ public class HomeFragment extends Fragment {
                     Log.d("HomeFragment", "Tải thành công " + products.size() + " sản phẩm");
 
                     allProducts.clear();
-                    allProducts.addAll(products);
+                    for (Product p : products) {
+                        // Chỉ lấy sản phẩm có trạng thái "active"
+                        if (p.getStatus() == null || "active".equalsIgnoreCase(p.getStatus())) {
+                            allProducts.add(p);
+                        }
+                    }
 
                     // 1. Sắp xếp NỔI BẬT (theo lượt bán) - Lấy tối đa 10 sản phẩm
                     hotProducts.clear();
