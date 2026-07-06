@@ -4,7 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <application
@@ -16,6 +18,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MUSE_Android">
+        <activity
+            android:name=".checkout.CheckoutActivity"
+            android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -26,18 +31,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-        <activity
-            android:name=".auth.ForgotPasswordActivity"
-            android:exported="false" />
-        <activity
-            android:name=".auth.AISetupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".auth.VerifyOtpActivity"
-            android:exported="false" />
-        <activity
-            android:name=".auth.ResetPasswordActivity"
-            android:exported="false" />
+
         <activity
             android:name=".profile.ProfileActivity"
             android:exported="false" />
@@ -50,9 +44,7 @@
         <activity
             android:name=".policy.TermsOfUseActivity"
             android:exported="false" />
-        <activity
-            android:name=".auth.WelcomeScreen"
-            android:exported="false" />
+
         <activity
             android:name=".product.ProductDetailActivity"
             android:exported="false" />
