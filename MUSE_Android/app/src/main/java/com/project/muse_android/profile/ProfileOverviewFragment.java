@@ -180,7 +180,7 @@ public class ProfileOverviewFragment extends Fragment {
         binding.menuOrders.tvTitle.setText(R.string.profile_my_orders);
 
         // Favorites
-        binding.menuFavorites.ivIcon.setImageResource(R.drawable.ic_favorite);
+        binding.menuFavorites.ivIcon.setImageResource(R.drawable.ic_favorite_filled);
         binding.menuFavorites.tvTitle.setText(R.string.profile_favorites);
     }
 
