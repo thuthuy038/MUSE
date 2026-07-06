@@ -20,9 +20,11 @@ import com.project.muse_android.R;
 import com.project.muse_android.databinding.ItemProductHorizontalBinding;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class HorizontalProductAdapter extends ProductAdapter {
 
@@ -37,7 +39,6 @@ public class HorizontalProductAdapter extends ProductAdapter {
     private final Context context;
     private final HorizontalProductMode mode;
     private final OnProductActionListener actionListener;
-    private final List<Product> products = new ArrayList<>();
     private final HashMap<String, Integer> quantityMap = new HashMap<>();
 
     public HorizontalProductAdapter(
@@ -53,9 +54,7 @@ public class HorizontalProductAdapter extends ProductAdapter {
 
     @Override
     public void setData(List<Product> data) {
-        products.clear();
         if (data != null) {
-            products.addAll(data);
             for (Product product : data) {
                 if (!quantityMap.containsKey(product.getId())) {
                     quantityMap.put(product.getId(), 1);
@@ -82,12 +81,14 @@ public class HorizontalProductAdapter extends ProductAdapter {
 
     @Override
     public int getItemCount() {
-        return products.size();
+        return super.getItemCount();
     }
 
     private String formatPrice(double price) {
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        return formatter.format(price).replace(",", ".") + "đ";
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
     }
 
     public class CustomHorizontalViewHolder extends RecyclerView.ViewHolder {

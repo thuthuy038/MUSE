@@ -1,0 +1,786 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fitsSystemWindows="true">
+
+    <!-- Header Section -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutHeader"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:paddingHorizontal="16dp"
+        android:background="@color/white"
+        android:elevation="4dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/btnBackHeader"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_arrow_back"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/neutral_900"
+            android:contentDescription="@string/btn_prev" />
+
+        <ImageView
+            android:id="@+id/ivLogoHeader"
+            android:layout_width="80dp"
+            android:layout_height="32dp"
+            android:src="@drawable/logo"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/app_name" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/layoutFooter"
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- STEP 1 -->
+            <LinearLayout
+                android:id="@+id/layoutStep1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:id="@+id/txtStepIndicator1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat"
+                    android:text="STEP 01 / 03"
+                    android:textColor="@color/primary_500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/pbStep1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:progress="33"
+                    app:indicatorColor="@color/primary_500"
+                    app:trackColor="@color/primary_100"
+                    app:trackThickness="4dp"
+                    app:trackCornerRadius="2dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="Chúng mình muốn hiểu bạn hơn một chút 💖"
+                    android:textColor="@color/neutral_900"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="Hãy chia sẻ vài thông tin cd bản để tụi mình gợi ý những món đồ thật phù hợp với vóc dáng và phong cách của bạn nhé!"
+                    android:textColor="@color/neutral_600"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="GIỚI TÍNH"
+                    android:textColor="@color/neutral_900"
+                    android:textSize="14sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_segmented_control"
+                    android:orientation="horizontal"
+                    android:padding="4dp">
+
+                    <TextView
+                        android:id="@+id/btnGenderFemale"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/dialog_background"
+                        android:fontFamily="@font/montserrat"
+                        android:gravity="center"
+                        android:text="Nữ"
+                        android:textColor="@color/primary_500"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/btnGenderMale"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/montserrat"
+                        android:gravity="center"
+                        android:text="Nam"
+                        android:textColor="@color/neutral_600"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/btnGenderOther"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/montserrat"
+                        android:gravity="center"
+                        android:text="Khác"
+                        android:textColor="@color/neutral_600"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="CHIỀU CAO"
+                        android:textColor="@color/neutral_900"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/txtHeightDisplay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="170 CM"
+                        android:textColor="@color/primary_500"
+                        android:textSize="20sp" />
+                </RelativeLayout>
+
+                <SeekBar
+                    android:id="@+id/sbHeight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:max="70"
+                    android:progress="30"
+                    android:progressTint="@color/primary_500"
+                    android:thumbTint="@color/primary_500" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="140cm"
+                        android:textSize="10sp"
+                        android:textColor="@color/neutral_600" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:text="210cm"
+                        android:textSize="10sp"
+                        android:textColor="@color/neutral_600" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="CÂN NẶNG"
+                        android:textColor="@color/neutral_900"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/txtWeightDisplay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="62 KG"
+                        android:textColor="@color/primary_500"
+                        android:textSize="20sp" />
+                </RelativeLayout>
+
+                <SeekBar
+                    android:id="@+id/sbWeight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:max="110"
+                    android:progress="22"
+                    android:progressTint="@color/primary_500"
+                    android:thumbTint="@color/primary_500" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="40kg"
+                        android:textSize="10sp"
+                        android:textColor="@color/neutral_600" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:text="150kg"
+                        android:textSize="10sp"
+                        android:textColor="@color/neutral_600" />
+                </RelativeLayout>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cvStep1Banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_marginTop="32dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/vpBannersStep1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#40000000" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|start"
+                        android:layout_margin="16dp"
+                        android:background="@android:color/white"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/tvBannerLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:text="@string/label_seasonal_inspo"
+                            android:textColor="@color/primary_500"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tvBannerContent"
+                            android:layout_width="200dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_italic"
+                            android:text="@string/content_seasonal_inspo"
+                            android:textColor="@color/neutral_900"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+            <!-- STEP 2 -->
+            <LinearLayout
+                android:id="@+id/layoutStep2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/txtStepIndicator2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat"
+                    android:text="STEP 02 / 03"
+                    android:textColor="@color/primary_500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/pbStep2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:progress="66"
+                    app:indicatorColor="@color/primary_500"
+                    app:trackColor="@color/primary_100"
+                    app:trackThickness="4dp"
+                    app:trackCornerRadius="2dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="Hoàn thiện số đo của bạn ✨"
+                    android:textColor="@color/neutral_900"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="Cung cấp số đo nếu bạn muốn nhận được những gợi ý kích cỡ chính xác hơn từ MUSE AI nhé."
+                    android:textColor="@color/neutral_600"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="VÒNG 1 (CM)"
+                    android:textColor="@color/neutral_600"
+                    android:textSize="11sp" />
+
+                <EditText
+                    android:id="@+id/etStep2Vong1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/montserrat"
+                    android:hint="Không bắt buộc"
+                    android:inputType="number"
+                    android:paddingVertical="12dp"
+                    android:textColor="@color/primary_500"
+                    android:textColorHint="@color/primary_100"
+                    android:textSize="16sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/neutral_300" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="VÒNG 2 (CM)"
+                    android:textColor="@color/neutral_600"
+                    android:textSize="11sp" />
+
+                <EditText
+                    android:id="@+id/etStep2Vong2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/montserrat"
+                    android:hint="Không bắt buộc"
+                    android:inputType="number"
+                    android:paddingVertical="12dp"
+                    android:textColor="@color/primary_500"
+                    android:textColorHint="@color/primary_100"
+                    android:textSize="16sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/neutral_300" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="VÒNG 3 (CM)"
+                    android:textColor="@color/neutral_600"
+                    android:textSize="11sp" />
+
+                <EditText
+                    android:id="@+id/etStep2Vong3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/montserrat"
+                    android:hint="Không bắt buộc"
+                    android:inputType="number"
+                    android:paddingVertical="12dp"
+                    android:textColor="@color/primary_500"
+                    android:textColorHint="@color/primary_100"
+                    android:textSize="16sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/neutral_300" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/bg_segmented_control"
+                    android:orientation="horizontal"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_info"
+                        app:tint="@color/primary_500"
+                        android:contentDescription="Info" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:fontFamily="@font/montserrat_italic"
+                        android:text="✨ MUSE AI đã dự đoán số đo cơ bản từ ảnh của bạn. Việc bổ sung thông tin sẽ giúp các đề xuất phù hợp hơn với vóc dáng thực tế."
+                        android:textColor="@color/neutral_600"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnUploadImage"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="TẢI ẢNH LÊN"
+                        android:textColor="@color/primary_500"
+                        app:strokeColor="@color/primary_500" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTakePhoto"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/primary_500"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="CHUP ẢNH"
+                        android:textColor="@color/white" />
+                </LinearLayout>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <ImageView
+                        android:id="@+id/ivStep2Preview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_aitaianh"
+                        android:contentDescription="Preview" />
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+            <!-- STEP 3 -->
+            <LinearLayout
+                android:id="@+id/layoutStep3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/txtStepIndicator3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat"
+                    android:text="STEP 03 / 03"
+                    android:textColor="@color/primary_500"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/pbStep3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:progress="100"
+                    app:indicatorColor="@color/primary_500"
+                    app:trackColor="@color/primary_100"
+                    app:trackThickness="4dp"
+                    app:trackCornerRadius="2dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="Phong cách mang dấu ấn riêng của bạn ✨"
+                    android:textColor="@color/neutral_900"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="Hãy chọn những phong cách khiến bạn cảm thấy là chính mình nhất. MUSE AI sẽ dựa vào đó để tạo nên tủ đồ phù hợp với gu của bạn."
+                    android:textColor="@color/neutral_600"
+                    android:textSize="13sp" />
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:columnCount="2"
+                    android:alignmentMode="alignMargins"
+                    android:useDefaultMargins="true">
+
+                    <!-- Thanh Lịch -->
+                    <LinearLayout
+                        android:id="@+id/btnStyleThanhLich"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_selectable_item"
+                        android:padding="4dp">
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/img_aiphongcach" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:text="THANH LỊCH"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:textColor="@color/neutral_900"
+                            android:textSize="12sp"
+                            android:gravity="center" />
+                    </LinearLayout>
+
+                    <!-- Đường Phố -->
+                    <LinearLayout
+                        android:id="@+id/btnStyleDuongPho"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_selectable_item"
+                        android:padding="4dp">
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/img_aiphongcach1" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:text="ĐƯỜNG PHỐ"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:textColor="@color/neutral_900"
+                            android:textSize="12sp"
+                            android:gravity="center" />
+                    </LinearLayout>
+
+                    <!-- Cổ Điển -->
+                    <LinearLayout
+                        android:id="@+id/btnStyleCoDien"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_selectable_item"
+                        android:padding="4dp">
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/img_aiphongcach2" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:text="CỔ ĐIỂN"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:textColor="@color/neutral_900"
+                            android:textSize="12sp"
+                            android:gravity="center" />
+                    </LinearLayout>
+
+                    <!-- Tối Giản -->
+                    <LinearLayout
+                        android:id="@+id/btnStyleToiGian"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_selectable_item"
+                        android:padding="4dp">
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/img_aiphongcach3" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:text="TỐI GIẢN"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:textColor="@color/neutral_900"
+                            android:textSize="12sp"
+                            android:gravity="center" />
+                    </LinearLayout>
+
+                </GridLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="Tinh chỉnh theo tông da của bạn 🌹"
+                    android:textColor="@color/neutral_900"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="MUSE AI sẽ ưu tiên những gam màu giúp tôn lên vẻ đẹp tự nhiên và hài hòa với tông da của bạn."
+                    android:textColor="@color/neutral_600"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center_vertical"
+                    android:weightSum="5">
+
+                    <ImageView
+                        android:id="@+id/btnSkin1"
+                        android:layout_width="0dp"
+                        android:layout_height="60dp"
+                        android:layout_weight="1"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/bg_selectable_item"
+                        android:padding="4dp"
+                        android:src="@drawable/btn_aida" />
+
+                    <ImageView
+                        android:id="@+id/btnSkin2"
+                        android:layout_width="0dp"
+                        android:layout_height="60dp"
+                        android:layout_weight="1"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/bg_selectable_item"
+                        android:padding="4dp"
+                        android:src="@drawable/btn_aida1" />
+
+                    <ImageView
+                        android:id="@+id/btnSkin3"
+                        android:layout_width="0dp"
+                        android:layout_height="60dp"
+                        android:layout_weight="1"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/bg_selectable_item"
+                        android:padding="4dp"
+                        android:src="@drawable/btn_aida2" />
+
+                    <ImageView
+                        android:id="@+id/btnSkin4"
+                        android:layout_width="0dp"
+                        android:layout_height="60dp"
+                        android:layout_weight="1"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/bg_selectable_item"
+                        android:padding="4dp"
+                        android:src="@drawable/btn_aida3" />
+
+                    <ImageView
+                        android:id="@+id/btnSkin5"
+                        android:layout_width="0dp"
+                        android:layout_height="60dp"
+                        android:layout_weight="1"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/bg_selectable_item"
+                        android:padding="4dp"
+                        android:src="@drawable/btn_aida4" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </FrameLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/layoutFooter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNextStep"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:backgroundTint="@color/primary_500"
+            android:fontFamily="@font/montserrat_bold"
+            android:text="TIẾP THEO"
+            android:textColor="@color/white"
+            app:cornerRadius="8dp" />
+
+        <TextView
+            android:id="@+id/btnSkipStep"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/montserrat"
+            android:gravity="center"
+            android:text="BỎ QUA"
+            android:textColor="@color/neutral_600"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

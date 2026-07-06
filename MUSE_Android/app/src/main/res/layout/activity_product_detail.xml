@@ -202,7 +202,7 @@
                         android:layout_height="24dp"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:src="@drawable/favorite"
+                        android:src="@drawable/ic_favorite"
                         app:tint="@color/primary_500" />
                 </RelativeLayout>
 
@@ -248,8 +248,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    app:singleSelection="true"
-                    app:selectionRequired="true" />
+                    app:singleSelection="true" />
 
             </LinearLayout>
 
