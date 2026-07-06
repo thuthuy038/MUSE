@@ -9,12 +9,16 @@ import android.view.animation.DecelerateInterpolator;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
+import android.content.Intent;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivityMainBinding;
+import com.project.utils.SessionManager;
+import com.project.utils.ViewUtils;
+import com.project.muse_android.auth.AuthActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private NavController navController;
     private float dX, dY;
     private ObjectAnimator aiFloatAnim;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +59,20 @@ public class MainActivity extends AppCompatActivity {
                     navController
             );
 
+            // Chặn sự kiện click vào Profile để kiểm tra đăng nhập
+            binding.bottomNavigationView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navigation_profile) {
+                    if (!sessionManager.isLoggedIn()) {
+                        Intent intent = new Intent(MainActivity.this, AuthActivity.class);
+                        intent.putExtra("from_profile", true);
+                        startActivity(intent);
+                        return false;
+                    }
+                }
+                return NavigationUI.onNavDestinationSelected(item, navController);
+            });
+
             // Badge thông báo
             var badge = binding.bottomNavigationView
                     .getOrCreateBadge(R.id.navigation_notification);
@@ -72,6 +91,23 @@ public class MainActivity extends AppCompatActivity {
                     binding.btnAIDraggable.setVisibility(View.VISIBLE);
                 }
             });
+
+            handleIntent(getIntent());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("select_profile", false)) {
+            if (navController != null) {
+                navController.navigate(R.id.navigation_profile);
+            }
         }
     }
 
