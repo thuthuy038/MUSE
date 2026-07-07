@@ -226,17 +226,46 @@ public class HorizontalProductAdapter extends ProductAdapter {
         }
 
         private void setupSwipeWidth() {
+            // Get screen metrics
             WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             DisplayMetrics displayMetrics = new DisplayMetrics();
             wm.getDefaultDisplay().getMetrics(displayMetrics);
             int screenWidth = displayMetrics.widthPixels;
             float density = context.getResources().getDisplayMetrics().density;
-            int totalMarginPx = (int) (24 * density);
+
+            if (mode == HorizontalProductMode.READ_ONLY) {
+                // Completely disable any programmatic width/height for READ_ONLY
+                // This lets the ConstraintLayout use wrap_content from XML
+                binding.horizontalScrollView.setOnTouchListener(null);
+                
+                ViewGroup.LayoutParams params = binding.layoutMainContent.getLayoutParams();
+                params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                //params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                params.height = (int) (110 * context.getResources().getDisplayMetrics().density);
+                binding.layoutMainContent.setLayoutParams(params);
+
+                View parentLinear = (View) binding.layoutMainContent.getParent();
+                if (parentLinear != null) {
+                    parentLinear.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                    parentLinear.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                }
+                return;
+            }
+
+            // For CART mode, strictly set width to screen - margin
+            int totalMarginPx = (int) (24 * density); 
             int contentWidth = screenWidth - totalMarginPx;
 
-            ViewGroup.LayoutParams params = binding.layoutMainContent.getLayoutParams();
-            params.width = contentWidth;
-            binding.layoutMainContent.setLayoutParams(params);
+            binding.layoutMainContent.getLayoutParams().width = contentWidth;
+            binding.layoutMainContent.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+            View parentLinear = (View) binding.layoutMainContent.getParent();
+            if (parentLinear != null) {
+                parentLinear.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                parentLinear.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            }
+            
+            binding.layoutMainContent.requestLayout();
         }
     }
 }
