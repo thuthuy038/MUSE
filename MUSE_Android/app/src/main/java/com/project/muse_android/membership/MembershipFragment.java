@@ -107,7 +107,7 @@ public class MembershipFragment extends Fragment {
                     if (response.isSuccessful() && response.body() != null) {
                         for (com.project.models.Order order : response.body()) {
                             // Only count completed orders if possible, here assuming all in list are valid
-                            totalSpending += order.getTotalPrice();
+                            totalSpending += order.getTotalAmount();
                         }
                     }
                     updateUI(user, totalSpending);

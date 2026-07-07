@@ -196,25 +196,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleIntent(Intent intent) {
-            if (intent == null || navController == null) return;
-    
-            if (intent.getBooleanExtra("select_profile", false)) {
-                navController.navigate(R.id.navigation_profile);
+        if (intent == null || navController == null) return;
+
+        if (intent.getBooleanExtra("select_profile", false)) {
+            if (binding != null) {
+                binding.bottomNavigationView.setSelectedItemId(R.id.navigation_profile);
                 intent.removeExtra("select_profile");
-            } else if (intent.getBooleanExtra("open_cart", false)) {
-                navController.navigate(R.id.navigation_cart);
+            }
+        } else if (intent.getBooleanExtra("open_cart", false)) {
+            if (binding != null) {
+                binding.bottomNavigationView.setSelectedItemId(R.id.navigation_cart);
                 intent.removeExtra("open_cart");
-            } else if (intent.hasExtra("category_id")) {
-                String categoryId = intent.getStringExtra("category_id");
-                if (categoryId != null) {
-                    Bundle args = new Bundle();
-                    args.putString("category_id", categoryId);
-                    try {
-                        navController.navigate(R.id.navigation_category_products, args);
-                    } catch (Exception e) {
-                        android.util.Log.e("MainActivity", "Navigation failed", e);
-                    }
-                    intent.removeExtra("category_id");
+            }
+        } else if (intent.hasExtra("category_id")) {
+            String categoryId = intent.getStringExtra("category_id");
+            if (categoryId != null) {
+                Bundle args = new Bundle();
+                args.putString("category_id", categoryId);
+                try {
+                    navController.navigate(R.id.navigation_category_products, args);
+                } catch (Exception e) {
+                    android.util.Log.e("MainActivity", "Navigation failed", e);
                 }
             }
         }
