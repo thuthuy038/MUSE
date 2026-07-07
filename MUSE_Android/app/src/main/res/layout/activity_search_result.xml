@@ -104,15 +104,16 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp"
-        android:gravity="center_vertical"
+        android:gravity="top"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/searchArea">
 
         <ImageView
             android:id="@+id/btnOpenFilter"
             android:layout_width="28dp"
-            android:layout_height="28dp"
+            android:layout_height="36dp"
             android:src="@drawable/ic_filter_sliders"
+            android:scaleType="centerInside"
             app:tint="#333333" />
 
         <HorizontalScrollView
@@ -171,7 +172,6 @@
                         android:textColor="#333333"
                         android:textSize="12sp" />
                 </LinearLayout>
-
 
                 <LinearLayout
                     android:id="@+id/btnFilterSize"

@@ -249,11 +249,11 @@
             android:orientation="vertical"
             android:padding="8dp"
             android:visibility="gone">
-            <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1 - 2 ⭐" android:buttonTint="#FB6F92" android:checked="true"/>
-            <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2 - 3 ⭐" android:buttonTint="#FB6F92" />
-            <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="3 - 4 ⭐" android:buttonTint="#FB6F92" />
-            <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4 - 5 ⭐" android:buttonTint="#FB6F92" />
-            <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5 ⭐" android:buttonTint="#FB6F92" />
+            <CheckBox android:layout_width="match_parent" android:layout_height="48dp" android:text="Từ 1 sao" android:button="@drawable/ic_custom_checkbox" android:paddingStart="12dp" android:paddingEnd="12dp" android:gravity="center_vertical" android:textSize="14sp" android:textColor="#333333"/>
+            <CheckBox android:layout_width="match_parent" android:layout_height="48dp" android:text="Từ 2 sao" android:button="@drawable/ic_custom_checkbox" android:paddingStart="12dp" android:paddingEnd="12dp" android:gravity="center_vertical" android:textSize="14sp" android:textColor="#333333"/>
+            <CheckBox android:layout_width="match_parent" android:layout_height="48dp" android:text="Từ 3 sao" android:button="@drawable/ic_custom_checkbox" android:paddingStart="12dp" android:paddingEnd="12dp" android:gravity="center_vertical" android:textSize="14sp" android:textColor="#333333"/>
+            <CheckBox android:layout_width="match_parent" android:layout_height="48dp" android:text="Từ 4 sao" android:button="@drawable/ic_custom_checkbox" android:paddingStart="12dp" android:paddingEnd="12dp" android:gravity="center_vertical" android:textSize="14sp" android:textColor="#333333"/>
+            <CheckBox android:layout_width="match_parent" android:layout_height="48dp" android:text="5 sao" android:button="@drawable/ic_custom_checkbox" android:paddingStart="12dp" android:paddingEnd="12dp" android:gravity="center_vertical" android:textSize="14sp" android:textColor="#333333"/>
         </LinearLayout>
     </LinearLayout>
 
