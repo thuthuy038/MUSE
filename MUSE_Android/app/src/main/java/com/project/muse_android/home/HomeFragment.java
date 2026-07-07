@@ -42,7 +42,9 @@ import com.project.muse_android.search.SearchActivity;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
 import com.project.network.ApiService;
+import com.project.utils.SessionManager;
 import com.project.utils.ViewUtils;
+import com.project.muse_android.dialog.NewMemberOfferBottomSheet;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +55,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
+
+    private static boolean isOfferDialogShownInSession = false;
 
     private FragmentHomeBinding binding;
     private CategoryAdapter categoryAdapter;
@@ -114,33 +118,53 @@ public class HomeFragment extends Fragment {
         loadProducts();
 
         new Handler(Looper.getMainLooper()).postDelayed(this::playEntranceAnimation, 300);
+        new Handler(Looper.getMainLooper()).postDelayed(this::checkAndShowNewMemberOffer, 2000);
     }
 
     private void setInitialStates() {
+        if (binding == null) return;
         binding.header.setAlpha(0f);
         binding.searchBar.setAlpha(0f);
 
-        LinearLayout contentLayout = (LinearLayout) binding.rvCategories.getParent();
-        for (int i = 0; i < contentLayout.getChildCount(); i++) {
-            contentLayout.getChildAt(i).setAlpha(0f);
+        if (binding.rvCategories != null && binding.rvCategories.getParent() instanceof LinearLayout) {
+            LinearLayout contentLayout = (LinearLayout) binding.rvCategories.getParent();
+            for (int i = 0; i < contentLayout.getChildCount(); i++) {
+                contentLayout.getChildAt(i).setAlpha(0f);
+            }
+        } else {
+            // Fallback: nếu không tìm thấy parent hoặc không phải LinearLayout, 
+            // đảm bảo rvProducts vẫn được ẩn để animate sau
+            binding.rvProducts.setAlpha(0f);
         }
     }
 
     private void playEntranceAnimation() {
+        if (binding == null) return;
         long duration = 600;
         float startY = 40f * getResources().getDisplayMetrics().density;
 
         animateEntrance(binding.header, 0, duration, startY);
         animateEntrance(binding.searchBar, 100, duration, startY);
 
-        LinearLayout content = (LinearLayout) binding.rvCategories.getParent();
-        // Indices based on fragment_home.xml: 0:Banner, 1:Title, 2:rvCategories, 3:Tabs, 4:rvProducts
-        if (content.getChildCount() > 0) animateEntrance(content.getChildAt(0), 200, duration, startY); // Banner
-        if (content.getChildCount() > 1) animateEntrance(content.getChildAt(1), 300, duration, startY); // Title
-        if (content.getChildCount() > 2) animateEntrance(content.getChildAt(2), 400, duration, startY); // rvCategories
-        if (content.getChildCount() > 3) animateEntrance(content.getChildAt(3), 500, duration, startY); // Tabs
+        if (binding.rvCategories != null && binding.rvCategories.getParent() instanceof LinearLayout) {
+            LinearLayout content = (LinearLayout) binding.rvCategories.getParent();
+            // Indices based on fragment_home.xml: 0:Banner, 1:Title, 2:rvCategories, 3:Tabs, 4:rvProducts
+            if (content.getChildCount() > 0) animateEntrance(content.getChildAt(0), 200, duration, startY); // Banner
+            if (content.getChildCount() > 1) animateEntrance(content.getChildAt(1), 300, duration, startY); // Title
+            if (content.getChildCount() > 2) animateEntrance(content.getChildAt(2), 400, duration, startY); // rvCategories
+            if (content.getChildCount() > 3) animateEntrance(content.getChildAt(3), 500, duration, startY); // Tabs
+        }
 
         animateEntrance(binding.rvProducts, 600, duration, startY);
+        
+        // Cảnh báo: Nếu sau 1.5s mà vẫn có view bị ẩn (alpha=0), hiện nó lên ngay
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (binding != null) {
+                binding.header.setAlpha(1f);
+                binding.rvProducts.setAlpha(1f);
+                // v.v... đảm bảo UI không bị "chết" ở trạng thái alpha=0
+            }
+        }, 1500);
     }
 
     private void animateEntrance(View view, long delay, long duration, float startY) {
@@ -266,6 +290,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateProductList() {
+        if (binding == null) return;
         displayProducts.clear();
 
         List<Product> source;
@@ -362,6 +387,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateCategoryList() {
+        if (binding == null) return;
         categoryList.clear();
         if (isAllCategoriesShown || allCategories.size() <= 6) {
             categoryList.addAll(allCategories);
@@ -380,6 +406,7 @@ public class HomeFragment extends Fragment {
         apiService.getProducts().enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> products = response.body();
                     Log.d("HomeFragment", "Tải thành công " + products.size() + " sản phẩm");
@@ -417,10 +444,35 @@ public class HomeFragment extends Fragment {
             }
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
+                if (binding == null) return;
                 Log.e("HomeFragment", "Lỗi: ", t);
                 Toast.makeText(getContext(), "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void checkAndShowNewMemberOffer() {
+        if (isAdded() && getContext() != null) {
+            SessionManager sessionManager = new SessionManager(requireContext());
+            
+            // Chỉ hiện nếu: 
+            // 1. Chưa đăng nhập
+            // 2. Chưa tick "Không hiện lại"
+            // 3. Vừa mới hoàn thành onboarding (lần đầu tải app)
+            // 4. Chưa hiện trong session này
+            if (!sessionManager.isLoggedIn() 
+                    && !sessionManager.isDontShowOfferAgain() 
+                    && sessionManager.shouldShowOffer() 
+                    && !isOfferDialogShownInSession) {
+                
+                isOfferDialogShownInSession = true;
+                // Sau khi chuẩn bị hiện thì tắt flag đi để lần sau vào lại Home không hiện nữa
+                sessionManager.setShouldShowOffer(false);
+
+                NewMemberOfferBottomSheet offerBottomSheet = NewMemberOfferBottomSheet.newInstance();
+                offerBottomSheet.show(getParentFragmentManager(), "NewMemberOfferBottomSheet");
+            }
+        }
     }
 
     @Override

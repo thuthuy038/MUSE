@@ -21,7 +21,6 @@ public class CartRequest {
         this.price = price;
     }
 
-    // Constructor for quantity update which might only need limited info depending on server
     public CartRequest(String userId, String productId, int quantity, String color, String size, double price) {
         this.userId = userId;
         this.productId = productId;
