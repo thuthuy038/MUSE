@@ -218,10 +218,9 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     android.util.Log.e("MainActivity", "Navigation failed", e);
                 }
-                intent.removeExtra("category_id");
             }
         }
-    }
+   
 
     private void setupDraggableAI() {
         binding.btnAIDraggable.setOnTouchListener(new View.OnTouchListener() {
