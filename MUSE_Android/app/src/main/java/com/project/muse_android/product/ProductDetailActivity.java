@@ -336,9 +336,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
 
         if (sizeNames.isEmpty()) {
-    private void setupSizes(List<com.project.models.ProductVariant> variants) {
-        binding.chipGroupSizes.removeAllViews();
-        if (variants == null || variants.isEmpty()) {
             binding.txtSelectedSizeLabel.setVisibility(View.GONE);
             return;
         }
