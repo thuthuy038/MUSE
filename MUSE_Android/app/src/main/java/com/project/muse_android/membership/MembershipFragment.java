@@ -75,73 +75,38 @@ public class MembershipFragment extends Fragment {
         String token = sessionManager.getToken();
         if (token == null) return;
 
-        String authHeader = "Bearer " + token;
-        
-        // Fetch User Profile
-        ApiClient.INSTANCE.getInstance().getProfile(authHeader).enqueue(new Callback<User>() {
+        ApiClient.INSTANCE.getInstance().getProfile("Bearer " + token).enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
                 if (isAdded() && response.isSuccessful() && response.body() != null) {
                     User user = response.body();
-                    
-                    // Fetch Orders to calculate total spending and rank
-                    fetchOrdersAndCalculate(authHeader, user);
+                    updateUI(user);
                 }
             }
 
             @Override
             public void onFailure(Call<User> call, Throwable t) {
                 if (isAdded()) {
-                    Toast.makeText(requireContext(), "Lỗi tải dữ liệu profile", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
-    private void fetchOrdersAndCalculate(String authHeader, User user) {
-        ApiClient.INSTANCE.getInstance().getOrders(authHeader).enqueue(new Callback<java.util.List<com.project.models.Order>>() {
-            @Override
-            public void onResponse(Call<java.util.List<com.project.models.Order>> call, Response<java.util.List<com.project.models.Order>> response) {
-                if (isAdded()) {
-                    double totalSpending = 0;
-                    if (response.isSuccessful() && response.body() != null) {
-                        for (com.project.models.Order order : response.body()) {
-                            // Only count completed orders if possible, here assuming all in list are valid
-                            totalSpending += order.getTotalAmount();
-                        }
-                    }
-                    updateUI(user, totalSpending);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<java.util.List<com.project.models.Order>> call, Throwable t) {
-                if (isAdded()) {
-                    // Fallback to profile data if orders fail
-                    updateUI(user, 0);
-                    Toast.makeText(requireContext(), "Lỗi tải dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-    private void updateUI(User user, double totalSpending) {
-        // Hạng thành viên (Dựa trên tổng chi tiêu)
-        String rank;
+    private void updateUI(User user) {
+        // Hạng thành viên (Dựa trên level hoặc data từ database)
+        String rank = "MEMBER";
+        int points = user.getPoints();
         int level = user.getLevel();
 
-        if (totalSpending >= 5000000) {
-            rank = "GOLDEN";
-        } else if (totalSpending >= 1000000) {
-            rank = "SILVER";
-        } else {
-            rank = "PINK";
-        }
+        if (level >= 10) rank = "DIAMOND";
+        else if (level >= 7) rank = "PLATINUM";
+        else if (level >= 4) rank = "GOLDEN";
+        else if (level >= 2) rank = "SILVER";
 
         binding.tvRankName.setText(rank);
         
-        // Điểm tích lũy (1.000đ = 1 điểm)
-        int points = (int) (totalSpending / 1000);
+        // Điểm tích lũy
         binding.tvPoints.setText(formatPoints(points));
         
         // Cấp độ
@@ -150,35 +115,13 @@ public class MembershipFragment extends Fragment {
         // Tính toán năm tham gia
         binding.tvYears.setText(calculateMembershipYears(user.getCreatedAt()));
 
-        // Thanh tiến trình
-        double nextMilestone;
-        String nextRank;
-        if (totalSpending < 1000000) {
-            nextMilestone = 1000000;
-            nextRank = "SILVER";
-        } else if (totalSpending < 5000000) {
-            nextMilestone = 5000000;
-            nextRank = "GOLDEN";
-        } else {
-            nextMilestone = 10000000; // Diamond or next milestone
-            nextRank = "DIAMOND";
-        }
-
-        int progress = (int) (totalSpending * 100 / nextMilestone);
-        if (progress > 100) progress = 100;
+        // Thanh tiến trình (Giả sử 1000 điểm để lên cấp tiếp theo)
+        int nextLevelPoints = ((level / 3) + 1) * 1000; 
+        int progress = (points % nextLevelPoints) * 100 / nextLevelPoints;
         binding.progressPoints.setProgress(progress);
         
-        double remaining = nextMilestone - totalSpending;
-        if (remaining > 0) {
-            binding.tvPointsToNext.setText(String.format(Locale.US, "%s NỮA ĐỂ LÊN HẠNG %s", formatCurrency(remaining), nextRank));
-        } else {
-            binding.tvPointsToNext.setText("BẠN ĐÃ ĐẠT HẠNG CAO NHẤT");
-        }
-    }
-
-    private String formatCurrency(double amount) {
-        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
-        return formatter.format(amount) + "đ";
+        int remaining = nextLevelPoints - (points % nextLevelPoints);
+        binding.tvPointsToNext.setText(String.format(Locale.US, "%d ĐIỂM NỮA ĐỂ TĂNG HẠNG", remaining));
     }
 
     private String formatPoints(int points) {
