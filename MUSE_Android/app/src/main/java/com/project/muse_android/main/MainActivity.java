@@ -41,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Edge-to-edge support (Dùng chuẩn Android mới)
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -117,9 +120,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleIntent(Intent intent) {
-        if (intent != null && intent.getBooleanExtra("select_profile", false)) {
-            if (navController != null) {
-                navController.navigate(R.id.navigation_profile);
+        if (intent != null) {
+            if (intent.getBooleanExtra("select_profile", false)) {
+                if (navController != null) {
+                    navController.navigate(R.id.navigation_profile);
+                    intent.removeExtra("select_profile");
+                }
+            } else if (intent.getBooleanExtra("open_cart", false)) {
+                if (navController != null) {
+                    navController.navigate(R.id.navigation_cart);
+                    intent.removeExtra("open_cart");
+                }
+            }
+        }
             }
         }
     }

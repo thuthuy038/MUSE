@@ -73,32 +73,31 @@ public interface ApiService {
     );
 
     // ========== CART ==========
-    @GET("api/cart")
-    Call<List<Product>> getCart(
-            @Header("Authorization") String token
+    @GET("api/cart/{userId}")
+    Call<ApiResponse<List<Product>>> getCart(
+            @Path("userId") String userId
     );
 
     @POST("api/cart/add")
-    Call<Void> addToCart(
-            @Header("Authorization") String token,
+    Call<ApiResponse<Void>> addToCart(
             @Body CartRequest request
     );
 
     @PUT("api/cart/update-quantity")
-    Call<Void> updateCartQuantity(
-            @Header("Authorization") String token,
+    Call<ApiResponse<Void>> updateCartQuantity(
             @Body CartRequest request
     );
 
-    @DELETE("api/cart/remove/{productId}")
-    Call<Void> removeFromCart(
-            @Header("Authorization") String token,
-            @Path("productId") String productId
+    @DELETE("api/cart/remove/{userId}/{productId}/{size}/{color}")
+    Call<ApiResponse<Void>> removeFromCart(
+            @Path("userId") String userId,
+            @Path("productId") String productId,
+            @Path("size") String size,
+            @Path("color") String color
     );
 
     @POST("api/cart/sync")
-    Call<Void> syncCart(
-            @Header("Authorization") String token,
+    Call<ApiResponse<Void>> syncCart(
             @Body List<CartRequest> requests
     );
 

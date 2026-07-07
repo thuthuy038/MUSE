@@ -11,6 +11,7 @@ import com.project.models.Product;
 import com.project.models.ProductVariant;
 import com.project.network.ApiClient;
 import com.project.network.ApiService;
+import com.project.network.ApiResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,29 +48,51 @@ public class CartManager {
     }
 
     public void addToCart(Product product, String color, String size, int quantity, CartCallback<Void> callback) {
+        String userId = sessionManager.getUserId();
+        String prodId = product.get_id() != null ? product.get_id() : product.getId();
+        String name = product.getName();
+        String imageUrl = (product.getImages() != null && !product.getImages().isEmpty()) 
+                ? product.getImages().get(0).getUrl() : "";
+        double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
+                ? product.getDiscountPrice() : product.getPrice();
+        
+        String safeColor = color != null ? color : "";
+        String safeSize = size != null ? size : "";
+
         if (sessionManager.isLoggedIn()) {
-            // Call API
-            String token = sessionManager.getToken();
-            String userId = sessionManager.getUserId();
-            double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
-                    ? product.getDiscountPrice() : product.getPrice();
+            Log.d(TAG, "Adding to server cart: User=" + userId + ", Product=" + prodId + ", Qty=" + quantity);
             
-            CartRequest request = new CartRequest(userId, product.getId(), quantity, color, size, price);
-            apiService.addToCart("Bearer " + token, request).enqueue(new Callback<Void>() {
+            CartRequest request = new CartRequest(userId, prodId, name, imageUrl, safeSize, safeColor, quantity, price);
+            apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
                 @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
-                    if (response.isSuccessful()) callback.onSuccess(null);
-                    else callback.onError("Error adding to server cart");
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    if (response.isSuccessful()) {
+                        Log.d(TAG, "Server cart response success");
+                        updateLocalRoomAfterServer(product, safeColor, safeSize, quantity, callback);
+                    } else {
+                        Log.e(TAG, "Server cart response error: " + response.code());
+                        callback.onError("Error adding to server cart: " + response.code());
+                    }
                 }
 
                 @Override
-                public void onFailure(Call<Void> call, Throwable t) {
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    Log.e(TAG, "Server cart request failure: " + t.getMessage());
                     callback.onError(t.getMessage());
                 }
             });
         } else {
-            // Save to Room
-            CartItem existing = cartDao.getById(product.getId());
+            updateLocalRoomAfterServer(product, safeColor, safeSize, quantity, callback);
+        }
+    }
+
+    private void updateLocalRoomAfterServer(Product product, String color, String size, int quantity, CartCallback<Void> callback) {
+        String prodId = product.get_id() != null ? product.get_id() : product.getId();
+        String safeColor = color != null ? color : "";
+        String safeSize = size != null ? size : "";
+        
+        new Thread(() -> {
+            CartItem existing = cartDao.getByVariant(prodId, safeColor, safeSize);
             if (existing != null) {
                 existing.setQuantity(existing.getQuantity() + quantity);
                 cartDao.update(existing);
@@ -77,33 +100,38 @@ public class CartManager {
                 String imageUrl = (product.getImages() != null && !product.getImages().isEmpty()) 
                         ? product.getImages().get(0).getUrl() : "";
                 CartItem newItem = new CartItem(
-                        product.getId(),
+                        prodId,
                         product.getName(),
                         product.getPrice(),
                         product.getDiscountPrice() != null ? product.getDiscountPrice() : 0,
                         imageUrl,
-                        color,
-                        size,
+                        safeColor,
+                        safeSize,
                         quantity
                 );
                 cartDao.insert(newItem);
             }
-            callback.onSuccess(null);
-        }
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onSuccess(null));
+        }).start();
     }
 
     public void getCartItems(CartCallback<List<Product>> callback) {
         if (sessionManager.isLoggedIn()) {
-            String token = sessionManager.getToken();
-            apiService.getCart("Bearer " + token).enqueue(new Callback<List<Product>>() {
+            String userId = sessionManager.getUserId();
+            apiService.getCart(userId).enqueue(new Callback<ApiResponse<List<Product>>>() {
                 @Override
-                public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
-                    if (response.isSuccessful()) callback.onSuccess(response.body());
-                    else callback.onError("Error fetching server cart");
+                public void onResponse(Call<ApiResponse<List<Product>>> call, Response<ApiResponse<List<Product>>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        callback.onSuccess(response.body().getData());
+                    } else {
+                        Log.e(TAG, "Error fetching server cart: " + response.code());
+                        callback.onError("Error fetching server cart");
+                    }
                 }
 
                 @Override
-                public void onFailure(Call<List<Product>> call, Throwable t) {
+                public void onFailure(Call<ApiResponse<List<Product>>> call, Throwable t) {
+                    Log.e(TAG, "Failed to fetch server cart", t);
                     callback.onError(t.getMessage());
                 }
             });
@@ -139,7 +167,6 @@ public class CartManager {
                 variants.add(pv);
                 p.setVariants(variants);
 
-                // We'll need a way to pass quantity back to adapter if using Product model
                 p.setQuantity(item.getQuantity());
                 products.add(p);
             }
@@ -147,23 +174,26 @@ public class CartManager {
         }
     }
 
-    public void removeFromCart(String productId, CartCallback<Void> callback) {
+    public void removeFromCart(String productId, String size, String color, CartCallback<Void> callback) {
+        String safeColor = color != null ? color : "";
+        String safeSize = size != null ? size : "";
+        
         if (sessionManager.isLoggedIn()) {
-            String token = sessionManager.getToken();
-            apiService.removeFromCart("Bearer " + token, productId).enqueue(new Callback<Void>() {
+            String userId = sessionManager.getUserId();
+            apiService.removeFromCart(userId, productId, safeSize, safeColor).enqueue(new Callback<ApiResponse<Void>>() {
                 @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                     if (response.isSuccessful()) callback.onSuccess(null);
                     else callback.onError("Error removing from server cart");
                 }
 
                 @Override
-                public void onFailure(Call<Void> call, Throwable t) {
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                     callback.onError(t.getMessage());
                 }
             });
         } else {
-            CartItem item = cartDao.getById(productId);
+            CartItem item = cartDao.getByVariant(productId, safeColor, safeSize);
             if (item != null) {
                 cartDao.delete(item);
             }
@@ -171,27 +201,27 @@ public class CartManager {
         }
     }
 
-    public void updateQuantity(String productId, int quantity, double price, CartCallback<Void> callback) {
+    public void updateQuantity(String productId, int quantity, double price, String color, String size, CartCallback<Void> callback) {
+        String safeColor = color != null ? color : "";
+        String safeSize = size != null ? size : "";
+
         if (sessionManager.isLoggedIn()) {
-            String token = sessionManager.getToken();
             String userId = sessionManager.getUserId();
-            // We need color and size for API? The API definition had CartRequest.
-            // Let's assume we update by productId for simplicity or find existing info.
-            CartRequest request = new CartRequest(userId, productId, quantity, null, null, price);
-            apiService.updateCartQuantity("Bearer " + token, request).enqueue(new Callback<Void>() {
+            CartRequest request = new CartRequest(userId, productId, quantity, safeColor, safeSize, price);
+            apiService.updateCartQuantity(request).enqueue(new Callback<ApiResponse<Void>>() {
                 @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                     if (response.isSuccessful()) callback.onSuccess(null);
                     else callback.onError("Error updating quantity on server");
                 }
 
                 @Override
-                public void onFailure(Call<Void> call, Throwable t) {
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                     callback.onError(t.getMessage());
                 }
             });
         } else {
-            CartItem item = cartDao.getById(productId);
+            CartItem item = cartDao.getByVariant(productId, safeColor, safeSize);
             if (item != null) {
                 item.setQuantity(quantity);
                 cartDao.update(item);
@@ -209,21 +239,25 @@ public class CartManager {
         String userId = sessionManager.getUserId();
         List<CartRequest> requests = new ArrayList<>();
         for (CartItem item : localItems) {
-            requests.add(new CartRequest(userId, item.getProductId(), item.getQuantity(), item.getColor(), item.getSize(), item.getDiscountPrice() > 0 ? item.getDiscountPrice() : item.getPrice()));
+            requests.add(new CartRequest(userId, item.getProductId(), item.getName(), item.getImageUrl(), item.getSize(), item.getColor(), item.getQuantity(), item.getDiscountPrice() > 0 ? item.getDiscountPrice() : item.getPrice()));
         }
 
-        String token = sessionManager.getToken();
-        apiService.syncCart("Bearer " + token, requests).enqueue(new Callback<Void>() {
+
+        apiService.syncCart(requests).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful()) {
                     Log.d(TAG, "Cart synced successfully");
-                    cartDao.deleteAll();
+                    new Thread(() -> {
+                        cartDao.deleteAll();
+                    }).start();
+                } else {
+                    Log.e(TAG, "Sync cart failed: " + response.code());
                 }
             }
 
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 Log.e(TAG, "Failed to sync cart", t);
             }
         });

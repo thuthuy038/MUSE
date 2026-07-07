@@ -14,11 +14,13 @@ import com.google.android.material.chip.Chip;
 import com.project.adapters.SearchHistoryAdapter;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivitySearchBinding;
+import com.project.muse_android.main.MainActivity;
 import com.project.network.ApiResponse;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
 import com.project.utils.SessionManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -43,6 +45,7 @@ public class SearchActivity extends AppCompatActivity {
         historyManager = new SearchHistoryManager(this);
         apiService = HomeApiClient.getHomeApiService();
         sessionManager = new SessionManager(this);
+        historyList = new ArrayList<>();
 
         setupUI();
         loadPopularSearches();
@@ -57,7 +60,12 @@ public class SearchActivity extends AppCompatActivity {
     private void setupUI() {
         binding.btnBack.setOnClickListener(v -> finish());
 
-        binding.imgCart.setOnClickListener(v -> Toast.makeText(this, "Giỏ hàng", Toast.LENGTH_SHORT).show());
+        binding.imgCart.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, MainActivity.class);
+            intent.putExtra("open_cart", true);
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+        });
 
         binding.txtSearchAction.setOnClickListener(v -> performSearch());
 
@@ -166,25 +174,31 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void loadHistory() {
-        historyList = historyManager.getHistory();
-        historyAdapter = new SearchHistoryAdapter(historyList, new SearchHistoryAdapter.OnHistoryClickListener() {
-            @Override
-            public void onHistoryItemClick(String query) {
-                binding.edtSearch.setText(query);
-                performSearch();
-            }
+        historyList.clear();
+        historyList.addAll(historyManager.getHistory());
+        
+        if (historyAdapter == null) {
+            historyAdapter = new SearchHistoryAdapter(historyList, new SearchHistoryAdapter.OnHistoryClickListener() {
+                @Override
+                public void onHistoryItemClick(String query) {
+                    binding.edtSearch.setText(query);
+                    performSearch();
+                }
 
-            @Override
-            public void onRemoveItemClick(String query, int position) {
-                historyManager.removeHistory(query);
-                historyList.remove(position);
-                historyAdapter.notifyItemRemoved(position);
-                updateHistoryVisibility();
-            }
-        });
+                @Override
+                public void onRemoveItemClick(String query, int position) {
+                    historyManager.removeHistory(query);
+                    historyList.remove(position);
+                    historyAdapter.notifyItemRemoved(position);
+                    updateHistoryVisibility();
+                }
+            });
 
-        binding.rvHistory.setLayoutManager(new LinearLayoutManager(this));
-        binding.rvHistory.setAdapter(historyAdapter);
+            binding.rvHistory.setLayoutManager(new LinearLayoutManager(this));
+            binding.rvHistory.setAdapter(historyAdapter);
+        } else {
+            historyAdapter.notifyDataSetChanged();
+        }
         updateHistoryVisibility();
     }
 

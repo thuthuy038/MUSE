@@ -28,4 +28,7 @@ public interface CartDao {
 
     @Query("SELECT * FROM cart_items WHERE productId = :id LIMIT 1")
     CartItem getById(String id);
+
+    @Query("SELECT * FROM cart_items WHERE productId = :id AND color = :color AND size = :size LIMIT 1")
+    CartItem getByVariant(String id, String color, String size);
 }

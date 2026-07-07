@@ -55,6 +55,8 @@ public class CartFragment extends Fragment {
     private VerticalProductAdapter productAdapter;
 
     private boolean isEditMode = false;
+    private double selectedVoucherDiscount = 0;
+    private double selectedShippingDiscount = 0;
 
     @Nullable
     @Override
@@ -108,12 +110,32 @@ public class CartFragment extends Fragment {
         // Mở BottomSheet chọn Voucher
         binding.layoutVoucher.setOnClickListener(v -> {
             VoucherBottomSheetFragment voucherSheet = new VoucherBottomSheetFragment();
+            voucherSheet.setOnVoucherSelectedListener((discount, shipping) -> {
+                this.selectedVoucherDiscount = discount;
+                this.selectedShippingDiscount = shipping;
+                updateCheckoutButtonState();
+            });
             voucherSheet.show(getParentFragmentManager(), "VoucherBottomSheet");
         });
 
         // Mở BottomSheet chi tiết khuyến mãi
         binding.layoutPriceSummary.setOnClickListener(v -> {
             showPromotionDetails();
+        });
+
+        binding.btnCheckout.setOnClickListener(v -> {
+            ArrayList<Product> selectedProducts = new ArrayList<>();
+            for (Product p : cartProducts) {
+                if (p.isSelected()) {
+                    selectedProducts.add(p);
+                }
+            }
+            if (!selectedProducts.isEmpty()) {
+                Intent intent = new Intent(getContext(), com.project.muse_android.checkout.CheckoutActivity.class);
+                intent.putExtra("products", selectedProducts);
+                intent.putExtra("voucher_discount", selectedVoucherDiscount);
+                startActivity(intent);
+            }
         });
 
         // Xử lý nút Sửa
@@ -159,7 +181,13 @@ public class CartFragment extends Fragment {
 
         ConfirmDeleteDialog dialog = new ConfirmDeleteDialog(toDelete.size(), () -> {
             for (Product p : toDelete) {
-                CartManager.getInstance(requireContext()).removeFromCart(p.getId(), new CartManager.CartCallback<Void>() {
+                String color = "";
+                String size = "";
+                if (p.getVariants() != null && !p.getVariants().isEmpty()) {
+                    color = p.getVariants().get(0).getColor();
+                    size = p.getVariants().get(0).getSize();
+                }
+                CartManager.getInstance(requireContext()).removeFromCart(p.getId(), size, color, new CartManager.CartCallback<Void>() {
                     @Override
                     public void onSuccess(Void result) {
                         cartProducts.remove(p);
@@ -242,7 +270,13 @@ public class CartFragment extends Fragment {
                     @Override
 
                     public void onDelete(Product product, int position) {
-                        CartManager.getInstance(requireContext()).removeFromCart(product.getId(), new CartManager.CartCallback<Void>() {
+                        String color = "";
+                        String size = "";
+                        if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+                            color = product.getVariants().get(0).getColor();
+                            size = product.getVariants().get(0).getSize();
+                        }
+                        CartManager.getInstance(requireContext()).removeFromCart(product.getId(), size, color, new CartManager.CartCallback<Void>() {
                             @Override
                             public void onSuccess(Void result) {
                                 cartProducts.remove(position);
@@ -273,7 +307,13 @@ public class CartFragment extends Fragment {
                     public void onQuantityChanged(Product product, int position, int quantity) {
                         double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
                                 ? product.getDiscountPrice() : product.getPrice();
-                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, new CartManager.CartCallback<Void>() {
+                        String color = "";
+                        String size = "";
+                        if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+                            color = product.getVariants().get(0).getColor();
+                            size = product.getVariants().get(0).getSize();
+                        }
+                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, color, size, new CartManager.CartCallback<Void>() {
                             @Override
                             public void onSuccess(Void result) {
                                 updateCheckoutButtonState();
@@ -320,7 +360,7 @@ public class CartFragment extends Fragment {
                                                 ? product.getDiscountPrice() : product.getPrice();
 
                                         // Update in Manager (Room/API)
-                                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, new CartManager.CartCallback<Void>() {
+                                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, color, size, new CartManager.CartCallback<Void>() {
                                             @Override
                                             public void onSuccess(Void result) {
                                                 updateCheckoutButtonState();
@@ -438,16 +478,17 @@ public class CartFragment extends Fragment {
         for (Product p : cartProducts) {
             if (p.isSelected()) {
                 selectedCount++;
-                originalTotal += p.getPrice();
+                int qty = p.getQuantity() > 0 ? p.getQuantity() : 1;
+                originalTotal += (p.getPrice() * qty);
                 if (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) {
-                    productDiscount += (p.getPrice() - p.getDiscountPrice());
+                    productDiscount += (p.getPrice() - p.getDiscountPrice()) * qty;
                 }
             }
         }
 
-        // Fake voucher and shipping for UI demo
-        double voucherDiscount = selectedCount > 0 ? 10000 : 0;
-        double totalSavings = productDiscount + voucherDiscount;
+        // totalSavings = voucherDiscount + productDiscount
+        double totalSavings = productDiscount + selectedVoucherDiscount;
+        // finalTotal = originalTotal - totalSavings
         double finalTotal = originalTotal - totalSavings;
 
         // Update Summary UI
@@ -477,9 +518,10 @@ public class CartFragment extends Fragment {
         for (Product p : cartProducts) {
             if (p.isSelected()) {
                 selectedCount++;
-                originalTotal += p.getPrice();
+                int qty = p.getQuantity() > 0 ? p.getQuantity() : 1;
+                originalTotal += (p.getPrice() * qty);
                 if (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) {
-                    productDiscount += (p.getPrice() - p.getDiscountPrice());
+                    productDiscount += (p.getPrice() - p.getDiscountPrice()) * qty;
                 }
             }
         }
@@ -489,17 +531,14 @@ public class CartFragment extends Fragment {
             return;
         }
 
-        // Match the logic in updateCheckoutButtonState
-        double voucherDiscount = 10000;
         double shippingFee = 50000;
-        double shippingDiscount = 50000;
 
         PromotionDetailsBottomSheetFragment sheet = new PromotionDetailsBottomSheetFragment(
                 originalTotal,
-                voucherDiscount,
+                selectedVoucherDiscount,
                 productDiscount,
                 shippingFee,
-                shippingDiscount
+                selectedShippingDiscount
         );
         sheet.show(getParentFragmentManager(), "PromotionDetails");
     }

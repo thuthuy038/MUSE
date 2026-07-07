@@ -15,6 +15,7 @@
         android:layout_marginBottom="16dp"/>
 
     <TextView
+        android:id="@+id/txtFilterTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -134,66 +135,6 @@
         </GridLayout>
     </LinearLayout>
 
-    <!-- Màu sắc Section -->
-    <LinearLayout
-        android:id="@+id/sectionColor"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <LinearLayout
-            android:id="@+id/headerColor"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Màu sắc"
-                android:textColor="#333333"
-                android:textSize="16sp" />
-            <TextView
-                android:id="@+id/iconColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="+"
-                android:textColor="#333333"
-                android:textSize="24sp" />
-        </LinearLayout>
-        <GridLayout
-            android:id="@+id/contentColor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:columnCount="2"
-            android:padding="8dp"
-            android:visibility="gone">
-
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="8dp" android:layout_marginEnd="24dp">
-                <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:buttonTint="#FB6F92" />
-                <View android:layout_width="20dp" android:layout_height="20dp" android:background="@drawable/bg_filter_item_box" android:layout_marginHorizontal="4dp"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Trắng" />
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="8dp">
-                <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:buttonTint="#FB6F92" />
-                <View android:layout_width="20dp" android:layout_height="20dp" android:background="#FF0000" android:layout_marginHorizontal="4dp"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đỏ" />
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical">
-                <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:buttonTint="#FB6F92" />
-                <View android:layout_width="20dp" android:layout_height="20dp" android:background="#000000" android:layout_marginHorizontal="4dp"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đen" />
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical">
-                <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:buttonTint="#FB6F92" />
-                <View android:layout_width="20dp" android:layout_height="20dp" android:background="#FB6F92" android:layout_marginHorizontal="4dp"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Hồng" />
-            </LinearLayout>
-        </GridLayout>
-    </LinearLayout>
 
     <!-- Giá Section -->
     <LinearLayout
@@ -261,9 +202,15 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:orientation="horizontal">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 - 500.000" android:background="@drawable/bg_price_chip" android:padding="8dp" android:textSize="10sp" android:layout_marginEnd="8dp"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="500.000 - 700.000" android:background="@drawable/bg_price_chip" android:padding="8dp" android:textSize="10sp" android:layout_marginEnd="8dp"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="trên 1.000.000" android:background="@drawable/bg_price_chip" android:padding="8dp" android:textSize="10sp"/>
+                <TextView
+                    android:id="@+id/chipPrice1"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 - 500.000" android:background="@drawable/bg_price_chip" android:padding="8dp" android:textSize="10sp" android:layout_marginEnd="8dp"/>
+                <TextView
+                    android:id="@+id/chipPrice2"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="500.000 - 1.000.000" android:background="@drawable/bg_price_chip" android:padding="8dp" android:textSize="10sp" android:layout_marginEnd="8dp"/>
+                <TextView
+                    android:id="@+id/chipPrice3"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="trên 1.000.000" android:background="@drawable/bg_price_chip" android:padding="8dp" android:textSize="10sp"/>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -322,13 +269,15 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/txtCountFilter"
+            android:id="@+id/btnResetFilter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="20 (các) sản phẩm"
-            android:textColor="#333333"
-            android:textSize="16sp" />
+            android:text="Đặt lại"
+            android:textColor="#999999"
+            android:textSize="14sp"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground" />
 
         <Button
             android:id="@+id/btnApplyFilter"
