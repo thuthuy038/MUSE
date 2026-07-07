@@ -290,6 +290,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateProductList() {
+        if (binding == null) return;
         displayProducts.clear();
 
         List<Product> source;
@@ -386,6 +387,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateCategoryList() {
+        if (binding == null) return;
         categoryList.clear();
         if (isAllCategoriesShown || allCategories.size() <= 6) {
             categoryList.addAll(allCategories);
@@ -404,6 +406,7 @@ public class HomeFragment extends Fragment {
         apiService.getProducts().enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> products = response.body();
                     Log.d("HomeFragment", "Tải thành công " + products.size() + " sản phẩm");
@@ -441,6 +444,7 @@ public class HomeFragment extends Fragment {
             }
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
+                if (binding == null) return;
                 Log.e("HomeFragment", "Lỗi: ", t);
                 Toast.makeText(getContext(), "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
             }

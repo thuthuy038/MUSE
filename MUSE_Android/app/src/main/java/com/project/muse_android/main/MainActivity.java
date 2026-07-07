@@ -2,23 +2,35 @@ package com.project.muse_android.main;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
-import android.content.Intent;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
+import androidx.core.content.ContextCompat;
+import com.google.android.material.badge.BadgeDrawable;
+import com.project.models.Notification;
 import com.project.muse_android.R;
+import com.project.muse_android.auth.AuthActivity;
 import com.project.muse_android.databinding.ActivityMainBinding;
+import com.project.muse_android.notification.NotificationScreenActivity;
+import com.project.network.ApiClient;
 import com.project.utils.SessionManager;
 import com.project.utils.ViewUtils;
-import com.project.muse_android.auth.AuthActivity;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -62,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                     navController
             );
 
-            // Chặn sự kiện click vào Profile để kiểm tra đăng nhập
+            // Chặn sự kiện click vào Profile/Notification
             binding.bottomNavigationView.setOnItemSelectedListener(item -> {
                 int itemId = item.getItemId();
                 if (itemId == R.id.navigation_profile) {
@@ -73,25 +85,18 @@ public class MainActivity extends AppCompatActivity {
                         return false;
                     }
                 }
+
+                if (itemId == R.id.navigation_notification) {
+                    return NavigationUI.onNavDestinationSelected(item, navController);
+                }
                 
                 // Sử dụng NavigationUI để xử lý chuyển trang và quản lý backstack
                 boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
-                
-                // Nếu là trang chủ và đã ở trang chủ, ta có thể thêm logic cuộn lên đầu (tùy chọn)
                 if (!handled && itemId == R.id.navigation_home) {
-                    // Đã ở trang chủ hoặc không thể navigate, trả về true để giữ selection
                     return true;
                 }
-                
                 return handled;
             });
-
-            // Badge thông báo
-            var badge = binding.bottomNavigationView
-                    .getOrCreateBadge(R.id.navigation_notification);
-
-            badge.setVisible(true);
-            badge.setNumber(3);
 
             setupDraggableAI();
             startAIFloatingAnimation();
@@ -103,8 +108,6 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     binding.btnAIDraggable.setVisibility(View.VISIBLE);
                 }
-                
-                // Đảm bảo hiện lại Bottom Navigation khi chuyển trang (tránh bị kẹt do HideBottomViewOnScrollBehavior)
                 binding.bottomNavigationView.animate().translationY(0).setDuration(300).start();
             });
 
@@ -113,10 +116,82 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        updateNotificationBadge();
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
         handleIntent(intent);
+    }
+
+    public void updateNotificationBadge() {
+        if (!sessionManager.isLoggedIn()) {
+            binding.bottomNavigationView.removeBadge(R.id.navigation_notification);
+            return;
+        }
+
+        String userId = sessionManager.getUserId();
+        String token = "Bearer " + sessionManager.getToken();
+        android.util.Log.d("NotificationBadge", "updateNotificationBadge: userId=" + userId + ", token=" + token);
+        ApiClient.INSTANCE.getInstance().getNotifications(token, userId).enqueue(new Callback<com.project.models.NotificationResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<com.project.models.NotificationResponse> call, @NonNull Response<com.project.models.NotificationResponse> response) {
+                android.util.Log.d("NotificationBadge", "onResponse: code=" + response.code() + ", isSuccessful=" + response.isSuccessful());
+                int unreadCount = 0;
+                
+                // Server notifications
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    android.util.Log.d("NotificationBadge", "Server notifications fetched: " + response.body().getData().size());
+                    for (Notification n : response.body().getData()) {
+                        android.util.Log.d("NotificationBadge", "Server Notification: id=" + n.getId() + ", title=" + n.getTitle() + ", status=" + n.getStatus());
+                        if ("unread".equals(n.getStatus())) {
+                            unreadCount++;
+                        }
+                    }
+                } else {
+                    try {
+                        String err = response.errorBody() != null ? response.errorBody().string() : "empty";
+                        android.util.Log.e("NotificationBadge", "Server error body: " + err);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                
+                // Local notifications
+                List<Notification> locals = sessionManager.getLocalNotifications();
+                android.util.Log.d("NotificationBadge", "Local notifications found: " + locals.size());
+                for (Notification n : locals) {
+                    android.util.Log.d("NotificationBadge", "Local Notification: title=" + n.getTitle() + ", status=" + n.getStatus());
+                    if ("unread".equals(n.getStatus())) {
+                        unreadCount++;
+                    }
+                }
+
+                android.util.Log.d("NotificationBadge", "Final unreadCount = " + unreadCount);
+
+                final int finalUnreadCount = unreadCount;
+                binding.bottomNavigationView.post(() -> {
+                    if (finalUnreadCount > 0) {
+                        BadgeDrawable badge = binding.bottomNavigationView.getOrCreateBadge(R.id.navigation_notification);
+                        badge.setNumber(finalUnreadCount);
+                        badge.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.error_500));
+                        badge.setBadgeTextColor(ContextCompat.getColor(MainActivity.this, R.color.white));
+                        badge.setVisible(true);
+                    } else {
+                        binding.bottomNavigationView.removeBadge(R.id.navigation_notification);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<com.project.models.NotificationResponse> call, @NonNull Throwable t) {
+                android.util.Log.e("NotificationBadge", "API request failed: " + t.getMessage(), t);
+            }
+        });
     }
 
     private void handleIntent(Intent intent) {
@@ -131,8 +206,6 @@ public class MainActivity extends AppCompatActivity {
                     navController.navigate(R.id.navigation_cart);
                     intent.removeExtra("open_cart");
                 }
-            }
-        }
             }
         }
     }

@@ -14,11 +14,13 @@
     <color name="neutral_800">#332F2F</color>
     <color name="neutral_900">#1F1C1C</color>
     <color name="neutral_600">#6B6464</color>   <!-- lấy từ dòng Neutral 900 thứ hai -->
+    <color name="neutral_700">#4F4A4A</color>
 
     <!-- Success, Warning, Error (chưa dùng) -->
     <color name="success_500">#4CAF50</color>
     <color name="warning_500">#FF9800</color>
-    <color name="error_500">#6B6464</color>
+    <color name="error_500">#FF3B30</color>
+    <color name="unread_bg">#F5F5F5</color>
 
     <!-- Ứng dụng chính -->
     <color name="background">@color/neutral_50</color>

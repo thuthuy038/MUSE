@@ -159,13 +159,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         // Colors & Sizes
         setupColors(product.getColors());
         
-<<<<<<< HEAD
-        // Use variants for sizes as requested
-        setupSizes(product.getVariants());
-=======
         // Cung cấp cả product để lấy được đầy đủ danh sách size (từ cả variants và sizes)
         setupSizes(product);
->>>>>>> cab310106d2bbcaad245ecaae64d9348e70611aa
 
         updateFavoriteUI(product.isFavorite());
         binding.btnFavoriteDetail.setOnClickListener(v -> {
