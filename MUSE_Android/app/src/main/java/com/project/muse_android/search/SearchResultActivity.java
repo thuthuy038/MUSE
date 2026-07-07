@@ -98,7 +98,11 @@ public class SearchResultActivity extends AppCompatActivity {
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     categoryList.clear();
-                    categoryList.addAll(response.body());
+                    for (Category cat : response.body()) {
+                        if (cat.getStatus() == null || "active".equalsIgnoreCase(cat.getStatus())) {
+                            categoryList.add(cat);
+                        }
+                    }
                 }
             }
             @Override
@@ -237,7 +241,20 @@ public class SearchResultActivity extends AppCompatActivity {
         for (String s : sizeOptions) {
             CheckBox cb = new CheckBox(this);
             cb.setText(s);
-            cb.setButtonTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FB6F92")));
+            cb.setButtonDrawable(R.drawable.ic_custom_checkbox);
+            cb.setPadding(16, 0, 0, 0); // Space between box and text
+            cb.setTextSize(14);
+            cb.setTextColor(android.graphics.Color.parseColor("#333333"));
+
+            // Set margins for grid items
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = 0;
+            params.height = 120; // Approximately 48dp
+            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+            params.setMargins(8, 8, 8, 8);
+            cb.setLayoutParams(params);
+            cb.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
             cb.setChecked(tempSizes.contains(s));
             cb.setOnCheckedChangeListener((bv, isChecked) -> { if (isChecked) tempSizes.add(s); else tempSizes.remove(s); });
             contentSize.addView(cb);
@@ -260,6 +277,9 @@ public class SearchResultActivity extends AppCompatActivity {
                 CheckBox cb = (CheckBox) contentStar.getChildAt(k);
                 int rVal = k + 1;
                 cb.setText(starLabels[k]);
+                cb.setButtonDrawable(R.drawable.ic_custom_checkbox); // Set custom checkbox
+                cb.setPadding(16, 0, 0, 0); // Add space for consistency
+                cb.setGravity(android.view.Gravity.CENTER_VERTICAL);
                 cb.setChecked(tempRating[0] == rVal);
                 cb.setOnClickListener(v -> {
                     for (int j = 0; j < contentStar.getChildCount(); j++) if (contentStar.getChildAt(j) instanceof CheckBox) ((CheckBox)contentStar.getChildAt(j)).setChecked(false);
@@ -329,23 +349,32 @@ public class SearchResultActivity extends AppCompatActivity {
         cb.setVisibility(View.VISIBLE); cb.setChecked(isSelected);
         txtName.setTextColor(isSelected ? android.graphics.Color.BLACK : android.graphics.Color.parseColor("#999999"));
         if (isSelected) txtName.setTypeface(null, android.graphics.Typeface.BOLD);
+
         item.setOnClickListener(v -> {
             if (id.equals("all")) {
                 tempSet.clear();
-                for (int i = 0; i < container.getChildCount(); i++) {
-                    View child = container.getChildAt(i);
-                    ((CheckBox)child.findViewById(R.id.imgSelected)).setChecked(i == 0);
-                    TextView childText = child.findViewById(R.id.txtCategoryName);
-                    childText.setTextColor(i == 0 ? android.graphics.Color.BLACK : android.graphics.Color.parseColor("#999999"));
-                    childText.setTypeface(null, i == 0 ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
-                }
             } else {
-                // Chuyển hướng sang CategoryProductsFragment qua MainActivity
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("category_id", id);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                finish();
+                if (tempSet.contains(id)) tempSet.remove(id);
+                else tempSet.add(id);
+            }
+            
+            // Update UI for all category items in the bottom sheet
+            for (int i = 0; i < container.getChildCount(); i++) {
+                View child = container.getChildAt(i);
+                String childId = (i == 0) ? "all" : categoryList.get(i - 1).getId();
+                boolean childSelected = (childId.equals("all") && tempSet.isEmpty()) || tempSet.contains(childId);
+                
+                CheckBox childCb = child.findViewById(R.id.imgSelected);
+                if (childCb != null) {
+                    childCb.setChecked(childSelected);
+                    childCb.setVisibility(View.VISIBLE);
+                }
+                
+                TextView childText = child.findViewById(R.id.txtCategoryName);
+                if (childText != null) {
+                    childText.setTextColor(childSelected ? android.graphics.Color.BLACK : android.graphics.Color.parseColor("#999999"));
+                    childText.setTypeface(null, childSelected ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+                }
             }
         });
         container.addView(item);

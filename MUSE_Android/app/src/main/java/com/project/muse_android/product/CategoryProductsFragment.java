@@ -211,7 +211,20 @@ public class CategoryProductsFragment extends Fragment {
         for (String s : sizeOptions) {
             CheckBox cb = new CheckBox(getContext());
             cb.setText(s);
-            cb.setButtonTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FB6F92")));
+            cb.setButtonDrawable(R.drawable.ic_custom_checkbox);
+            cb.setPadding(16, 0, 0, 0); // Space between box and text
+            cb.setTextSize(14);
+            cb.setTextColor(android.graphics.Color.parseColor("#333333"));
+
+            // Set margins for grid items
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = 0;
+            params.height = 120; // Approximately 48dp
+            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+            params.setMargins(8, 8, 8, 8);
+            cb.setLayoutParams(params);
+            cb.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
             cb.setChecked(tempSizes.contains(s));
             cb.setOnCheckedChangeListener((bv, isChecked) -> { if (isChecked) tempSizes.add(s); else tempSizes.remove(s); });
             contentSize.addView(cb);
@@ -235,6 +248,9 @@ public class CategoryProductsFragment extends Fragment {
                 CheckBox cb = (CheckBox) contentStar.getChildAt(k);
                 int rVal = k + 1;
                 cb.setText(starLabels[k]);
+                cb.setButtonDrawable(R.drawable.ic_custom_checkbox); // Set custom checkbox
+                cb.setPadding(16, 0, 0, 0); // Add space
+                cb.setGravity(android.view.Gravity.CENTER_VERTICAL);
                 cb.setChecked(tempRating[0] == rVal);
                 cb.setOnClickListener(v -> {
                     for (int j = 0; j < contentStar.getChildCount(); j++) if (contentStar.getChildAt(j) instanceof CheckBox) ((CheckBox)contentStar.getChildAt(j)).setChecked(false);
@@ -269,7 +285,14 @@ public class CategoryProductsFragment extends Fragment {
                 }
                 // Refresh UI for temp reset
                 if (filterType == FILTER_TYPE_SIZE) for (int i=0; i<contentSize.getChildCount(); i++) ((CheckBox)contentSize.getChildAt(i)).setChecked(false);
-                else if (filterType == FILTER_TYPE_STAR) for (int i=0; i<contentStar.getChildCount(); i++) ((CheckBox)contentStar.getChildAt(i)).setChecked(false);
+                else if (filterType == FILTER_TYPE_STAR) {
+                    for (int i=0; i<contentStar.getChildCount(); i++) {
+                        View child = contentStar.getChildAt(i);
+                        if (child instanceof CheckBox) {
+                            ((CheckBox)child).setChecked(false);
+                        }
+                    }
+                }
             }
         });
 
@@ -399,7 +422,8 @@ public class CategoryProductsFragment extends Fragment {
                     categoryList.clear();
                     Category sel = null; List<Category> others = new ArrayList<>();
                     for (Category cat : response.body()) {
-                        if (cat.getStatus() == null || !"inactive".equalsIgnoreCase(cat.getStatus())) {
+                        // Show only active categories
+                        if (cat.getStatus() == null || "active".equalsIgnoreCase(cat.getStatus())) {
                             if (cat.getId().equals(selectedCategoryId)) { 
                                 sel = cat; 
                                 if (binding != null) binding.txtHeaderTitle.setText(cat.getName().toUpperCase());

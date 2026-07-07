@@ -94,7 +94,14 @@ public class ProductDetailActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Product> call, Response<Product> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    displayProduct(response.body());
+                    Product product = response.body();
+                    // Check if product is hidden/inactive
+                    if (product.getStatus() != null && !product.getStatus().equalsIgnoreCase("active")) {
+                        Toast.makeText(ProductDetailActivity.this, "Sản phẩm hiện không còn kinh doanh hoặc đã bị ẩn", Toast.LENGTH_SHORT).show();
+                        finish();
+                        return;
+                    }
+                    displayProduct(product);
                 } else {
                     Toast.makeText(ProductDetailActivity.this, "Lỗi tải chi tiết sản phẩm", Toast.LENGTH_SHORT).show();
                 }

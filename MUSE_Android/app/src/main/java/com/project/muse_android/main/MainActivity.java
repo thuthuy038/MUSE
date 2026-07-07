@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -195,20 +196,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleIntent(Intent intent) {
-        if (intent != null) {
+            if (intent == null || navController == null) return;
+    
             if (intent.getBooleanExtra("select_profile", false)) {
-                if (navController != null) {
-                    navController.navigate(R.id.navigation_profile);
-                    intent.removeExtra("select_profile");
-                }
+                navController.navigate(R.id.navigation_profile);
+                intent.removeExtra("select_profile");
             } else if (intent.getBooleanExtra("open_cart", false)) {
-                if (navController != null) {
-                    navController.navigate(R.id.navigation_cart);
-                    intent.removeExtra("open_cart");
+                navController.navigate(R.id.navigation_cart);
+                intent.removeExtra("open_cart");
+            } else if (intent.hasExtra("category_id")) {
+                String categoryId = intent.getStringExtra("category_id");
+                if (categoryId != null) {
+                    Bundle args = new Bundle();
+                    args.putString("category_id", categoryId);
+                    try {
+                        navController.navigate(R.id.navigation_category_products, args);
+                    } catch (Exception e) {
+                        android.util.Log.e("MainActivity", "Navigation failed", e);
+                    }
+                    intent.removeExtra("category_id");
                 }
             }
         }
-    }
+   
 
     private void setupDraggableAI() {
         binding.btnAIDraggable.setOnTouchListener(new View.OnTouchListener() {
@@ -221,49 +231,45 @@ public class MainActivity extends AppCompatActivity {
                         dY = v.getY() - event.getRawY();
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
-                        if (aiFloatAnim != null) aiFloatAnim.pause();
+                        stopAIFloatingAnimation();
                         return true;
+
                     case MotionEvent.ACTION_MOVE:
                         v.setX(event.getRawX() + dX);
                         v.setY(event.getRawY() + dY);
                         return true;
+
                     case MotionEvent.ACTION_UP:
-                        if (aiFloatAnim != null) aiFloatAnim.resume();
-                        float dist = (float) Math.hypot(event.getRawX() - initialTouchX, event.getRawY() - initialTouchY);
-                        if (dist < 10) {
+                        float finalX = event.getRawX();
+                        float finalY = event.getRawY();
+                        double distance = Math.sqrt(Math.pow(finalX - initialTouchX, 2) + Math.pow(finalY - initialTouchY, 2));
+
+                        if (distance < 10) {
                             v.performClick();
-                        } else {
-                            snapToEdges(v);
+                            navController.navigate(R.id.navigation_ai);
                         }
+                        startAIFloatingAnimation();
                         return true;
                 }
                 return false;
             }
         });
-
-        binding.btnAIDraggable.setOnClickListener(v -> {
-            if (navController != null) {
-                navController.navigate(R.id.navigation_ai);
-            }
-        });
     }
 
     private void startAIFloatingAnimation() {
-        if (aiFloatAnim != null) aiFloatAnim.cancel();
-        aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", -15f, 15f);
-        aiFloatAnim.setDuration(2000);
+        if (aiFloatAnim != null && aiFloatAnim.isRunning()) return;
+
+        aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", -20f, 20f);
+        aiFloatAnim.setDuration(1500);
         aiFloatAnim.setRepeatMode(ValueAnimator.REVERSE);
         aiFloatAnim.setRepeatCount(ValueAnimator.INFINITE);
+        aiFloatAnim.setInterpolator(new DecelerateInterpolator());
         aiFloatAnim.start();
     }
 
-    private void snapToEdges(View v) {
-        float screenWidth = getResources().getDisplayMetrics().widthPixels;
-        float targetX = (v.getX() + v.getWidth() / 2f < screenWidth / 2f) ? 40f : screenWidth - v.getWidth() - 40f;
-        v.animate()
-                .x(targetX)
-                .setDuration(300)
-                .setInterpolator(new DecelerateInterpolator())
-                .start();
+    private void stopAIFloatingAnimation() {
+        if (aiFloatAnim != null) {
+            aiFloatAnim.cancel();
+        }
     }
 }

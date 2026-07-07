@@ -19,9 +19,26 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MUSE_Android">
         <activity
+            android:name=".address.EditShippingAddressActivity"
+            android:exported="false" />
+        <activity
+            android:name=".address.AddShippingAddressActivity"
+            android:exported="false" />
+        <activity
+            android:name=".address.ShippingAddressActivity"
+            android:exported="false" />
+        <activity
+            android:name=".order.OrderActivity"
+            android:exported="false" />
+        <activity
+            android:name=".order.OrderSuccessActivity"
+            android:exported="false" />
+        <activity
             android:name=".checkout.CheckoutActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".auth.AuthActivity"
+            android:exported="false" />
         <activity
             android:name=".auth.AuthActivity"
             android:exported="false" />
@@ -50,7 +67,6 @@
         <activity
             android:name=".policy.TermsOfUseActivity"
             android:exported="false" />
-
         <activity
             android:name=".product.ProductDetailActivity"
             android:exported="false" />

@@ -1,5 +1,6 @@
 package com.project.muse_android.checkout;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -71,6 +72,11 @@ public class CheckoutActivity extends AppCompatActivity {
 
     private void setupUI() {
         binding.btnBack.setOnClickListener(v -> finish());
+
+        binding.cardAddress.setOnClickListener(v -> {
+            Intent intent = new Intent(this, com.project.muse_android.address.ShippingAddressActivity.class);
+            startActivity(intent);
+        });
 
         // Setup RecyclerView with Adapter in READ_ONLY mode
         adapter = new HorizontalProductAdapter(this, HorizontalProductMode.READ_ONLY, new HorizontalProductAdapter.OnProductActionListener() {
@@ -151,7 +157,10 @@ public class CheckoutActivity extends AppCompatActivity {
         });
 
         binding.btnOrder.setOnClickListener(v -> {
-            Toast.makeText(this, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show();
+            // In a real app, you would send the order to the server here.
+            // For now, we just navigate to success screen.
+            Intent intent = new Intent(this, com.project.muse_android.order.OrderSuccessActivity.class);
+            startActivity(intent);
             finish();
         });
     }

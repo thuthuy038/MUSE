@@ -209,6 +209,11 @@ public class ProfileOverviewFragment extends Fragment {
             Navigation.findNavController(v).navigate(R.id.navigation_edit_profile);
         });
 
+        binding.menuOrders.getRoot().setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), com.project.muse_android.order.OrderActivity.class);
+            startActivity(intent);
+        });
+
         binding.menuSecurity.getRoot().setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.navigation_settings);
         });
