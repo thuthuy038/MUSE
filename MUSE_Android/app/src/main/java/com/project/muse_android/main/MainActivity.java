@@ -9,29 +9,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
-import androidx.core.content.ContextCompat;
-import com.google.android.material.badge.BadgeDrawable;
-import com.project.models.Notification;
 import com.project.muse_android.R;
-import com.project.muse_android.auth.AuthActivity;
 import com.project.muse_android.databinding.ActivityMainBinding;
-import com.project.muse_android.notification.NotificationScreenActivity;
-import com.project.network.ApiClient;
-import com.project.utils.SessionManager;
 import com.project.utils.ViewUtils;
-
-import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,20 +25,10 @@ public class MainActivity extends AppCompatActivity {
     private NavController navController;
     private float dX, dY;
     private ObjectAnimator aiFloatAnim;
-    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        sessionManager = new SessionManager(this);
-        if (sessionManager.isFirstLaunch()) {
-            android.util.Log.d("MUSE_NAV", "First launch! Redirecting to AuthActivity from MainActivity");
-            Intent intent = new Intent(this, AuthActivity.class);
-            startActivity(intent);
-            finish();
-            return;
-        }
 
         // Edge-to-edge support (Dùng chuẩn Android mới)
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
@@ -75,150 +51,57 @@ public class MainActivity extends AppCompatActivity {
                     navController
             );
 
-            // Chặn sự kiện click vào Profile/Notification
-            binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-                int itemId = item.getItemId();
-                if (itemId == R.id.navigation_profile) {
-                    if (!sessionManager.isLoggedIn()) {
-                        Intent intent = new Intent(MainActivity.this, AuthActivity.class);
-                        intent.putExtra("from_profile", true);
-                        startActivity(intent);
-                        return false;
-                    }
-                }
+            // Badge thông báo
+            var badge = binding.bottomNavigationView
+                    .getOrCreateBadge(R.id.navigation_notification);
 
-                if (itemId == R.id.navigation_notification) {
-                    return NavigationUI.onNavDestinationSelected(item, navController);
-                }
-                
-                // Sử dụng NavigationUI để xử lý chuyển trang và quản lý backstack
-                boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
-                if (!handled && itemId == R.id.navigation_home) {
-                    return true;
-                }
-                return handled;
-            });
+            badge.setVisible(true);
+            badge.setNumber(3);
 
             setupDraggableAI();
             startAIFloatingAnimation();
 
-            // Ẩn/hiện bong bóng AI tùy theo fragment và đảm bảo hiện lại Bottom Nav
+            // Ẩn/hiện bong bóng AI tùy theo fragment (tùy chọn)
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 if (destination.getId() == R.id.navigation_ai) {
                     binding.btnAIDraggable.setVisibility(View.GONE);
                 } else {
                     binding.btnAIDraggable.setVisibility(View.VISIBLE);
                 }
-                binding.bottomNavigationView.animate().translationY(0).setDuration(300).start();
             });
 
-            handleIntent(getIntent());
+            handleIntent();
         }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        updateNotificationBadge();
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
+    protected void onNewIntent(android.content.Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        handleIntent(intent);
+        handleIntent();
     }
 
-    public void updateNotificationBadge() {
-        if (!sessionManager.isLoggedIn()) {
-            binding.bottomNavigationView.removeBadge(R.id.navigation_notification);
-            return;
+    private void handleIntent() {
+        Intent intent = getIntent();
+        if (intent == null || navController == null) return;
+
+        if (intent.getBooleanExtra("open_cart", false)) {
+            navController.navigate(R.id.navigation_cart);
+            intent.removeExtra("open_cart");
+        } else if (intent.hasExtra("category_id")) {
+            String categoryId = intent.getStringExtra("category_id");
+            if (categoryId != null) {
+                Bundle args = new Bundle();
+                args.putString("category_id", categoryId);
+                try {
+                    navController.navigate(R.id.navigation_category_products, args);
+                } catch (Exception e) {
+                    Log.e("MainActivity", "Navigation failed", e);
+                }
+                intent.removeExtra("category_id");
+            }
         }
-
-        String userId = sessionManager.getUserId();
-        String token = "Bearer " + sessionManager.getToken();
-        android.util.Log.d("NotificationBadge", "updateNotificationBadge: userId=" + userId + ", token=" + token);
-        ApiClient.INSTANCE.getInstance().getNotifications(token, userId).enqueue(new Callback<com.project.models.NotificationResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<com.project.models.NotificationResponse> call, @NonNull Response<com.project.models.NotificationResponse> response) {
-                android.util.Log.d("NotificationBadge", "onResponse: code=" + response.code() + ", isSuccessful=" + response.isSuccessful());
-                int unreadCount = 0;
-                
-                // Server notifications
-                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
-                    android.util.Log.d("NotificationBadge", "Server notifications fetched: " + response.body().getData().size());
-                    for (Notification n : response.body().getData()) {
-                        android.util.Log.d("NotificationBadge", "Server Notification: id=" + n.getId() + ", title=" + n.getTitle() + ", status=" + n.getStatus());
-                        if ("unread".equals(n.getStatus())) {
-                            unreadCount++;
-                        }
-                    }
-                } else {
-                    try {
-                        String err = response.errorBody() != null ? response.errorBody().string() : "empty";
-                        android.util.Log.e("NotificationBadge", "Server error body: " + err);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                
-                // Local notifications
-                List<Notification> locals = sessionManager.getLocalNotifications();
-                android.util.Log.d("NotificationBadge", "Local notifications found: " + locals.size());
-                for (Notification n : locals) {
-                    android.util.Log.d("NotificationBadge", "Local Notification: title=" + n.getTitle() + ", status=" + n.getStatus());
-                    if ("unread".equals(n.getStatus())) {
-                        unreadCount++;
-                    }
-                }
-
-                android.util.Log.d("NotificationBadge", "Final unreadCount = " + unreadCount);
-
-                final int finalUnreadCount = unreadCount;
-                binding.bottomNavigationView.post(() -> {
-                    if (finalUnreadCount > 0) {
-                        BadgeDrawable badge = binding.bottomNavigationView.getOrCreateBadge(R.id.navigation_notification);
-                        badge.setNumber(finalUnreadCount);
-                        badge.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.error_500));
-                        badge.setBadgeTextColor(ContextCompat.getColor(MainActivity.this, R.color.white));
-                        badge.setVisible(true);
-                    } else {
-                        binding.bottomNavigationView.removeBadge(R.id.navigation_notification);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<com.project.models.NotificationResponse> call, @NonNull Throwable t) {
-                android.util.Log.e("NotificationBadge", "API request failed: " + t.getMessage(), t);
-            }
-        });
     }
-
-    private void handleIntent(Intent intent) {
-            if (intent == null || navController == null) return;
-    
-            if (intent.getBooleanExtra("select_profile", false)) {
-                navController.navigate(R.id.navigation_profile);
-                intent.removeExtra("select_profile");
-            } else if (intent.getBooleanExtra("open_cart", false)) {
-                navController.navigate(R.id.navigation_cart);
-                intent.removeExtra("open_cart");
-            } else if (intent.hasExtra("category_id")) {
-                String categoryId = intent.getStringExtra("category_id");
-                if (categoryId != null) {
-                    Bundle args = new Bundle();
-                    args.putString("category_id", categoryId);
-                    try {
-                        navController.navigate(R.id.navigation_category_products, args);
-                    } catch (Exception e) {
-                        android.util.Log.e("MainActivity", "Navigation failed", e);
-                    }
-                    intent.removeExtra("category_id");
-                }
-            }
-        }
-   
 
     private void setupDraggableAI() {
         binding.btnAIDraggable.setOnTouchListener(new View.OnTouchListener() {

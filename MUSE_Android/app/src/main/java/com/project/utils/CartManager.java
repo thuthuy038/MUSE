@@ -48,8 +48,7 @@ public class CartManager {
     }
 
     public void addToCart(Product product, String color, String size, int quantity, CartCallback<Void> callback) {
-        String activeId = sessionManager.isLoggedIn() ? sessionManager.getUserId() : sessionManager.getGuestId();
-        
+        String userId = sessionManager.getUserId();
         String prodId = product.get_id() != null ? product.get_id() : product.getId();
         String name = product.getName();
         String imageUrl = (product.getImages() != null && !product.getImages().isEmpty()) 
@@ -60,28 +59,31 @@ public class CartManager {
         String safeColor = color != null ? color : "";
         String safeSize = size != null ? size : "";
 
-        Log.d(TAG, "Adding to server cart: ID=" + activeId + ", Product=" + prodId + ", Qty=" + quantity);
-        
-        CartRequest request = new CartRequest(activeId, prodId, name, imageUrl, safeSize, safeColor, quantity, price);
-        apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "Server cart response success");
-                    updateLocalRoomAfterServer(product, safeColor, safeSize, quantity, callback);
-                } else {
-                    Log.e(TAG, "Server cart response error: " + response.code());
-                    callback.onError("Error adding to server cart: " + response.code());
+        if (sessionManager.isLoggedIn()) {
+            Log.d(TAG, "Adding to server cart: User=" + userId + ", Product=" + prodId + ", Qty=" + quantity);
+            
+            CartRequest request = new CartRequest(userId, prodId, name, imageUrl, safeSize, safeColor, quantity, price);
+            apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    if (response.isSuccessful()) {
+                        Log.d(TAG, "Server cart response success");
+                        updateLocalRoomAfterServer(product, safeColor, safeSize, quantity, callback);
+                    } else {
+                        Log.e(TAG, "Server cart response error: " + response.code());
+                        callback.onError("Error adding to server cart: " + response.code());
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                Log.e(TAG, "Server cart request failure: " + t.getMessage());
-                // Fallback to local only if server fails
-                updateLocalRoomAfterServer(product, safeColor, safeSize, quantity, callback);
-            }
-        });
+                @Override
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    Log.e(TAG, "Server cart request failure: " + t.getMessage());
+                    callback.onError(t.getMessage());
+                }
+            });
+        } else {
+            updateLocalRoomAfterServer(product, safeColor, safeSize, quantity, callback);
+        }
     }
 
     private void updateLocalRoomAfterServer(Product product, String color, String size, int quantity, CartCallback<Void> callback) {
@@ -114,112 +116,62 @@ public class CartManager {
     }
 
     public void getCartItems(CartCallback<List<Product>> callback) {
-        String activeId = sessionManager.isLoggedIn() ? sessionManager.getUserId() : sessionManager.getGuestId();
-        
-        new Thread(() -> {
-            List<CartItem> localItems = cartDao.getAll();
-            List<Product> products = convertToProducts(localItems);
-
-            apiService.getCart(activeId).enqueue(new Callback<ApiResponse<List<Product>>>() {
+        if (sessionManager.isLoggedIn()) {
+            String userId = sessionManager.getUserId();
+            apiService.getCart(userId).enqueue(new Callback<ApiResponse<List<Product>>>() {
                 @Override
                 public void onResponse(Call<ApiResponse<List<Product>>> call, Response<ApiResponse<List<Product>>> response) {
                     if (response.isSuccessful() && response.body() != null) {
-                        List<Product> serverProducts = response.body().getData();
-                        if (serverProducts != null) {
-                            callback.onSuccess(serverProducts);
-                            syncLocalCacheWithServer(serverProducts);
-                        } else {
-                            callback.onSuccess(products);
-                        }
+                        callback.onSuccess(response.body().getData());
                     } else {
-                        callback.onSuccess(products);
+                        Log.e(TAG, "Error fetching server cart: " + response.code());
+                        callback.onError("Error fetching server cart");
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ApiResponse<List<Product>>> call, Throwable t) {
-                    callback.onSuccess(products);
+                    Log.e(TAG, "Failed to fetch server cart", t);
+                    callback.onError(t.getMessage());
                 }
             });
-        }).start();
-    }
+        } else {
+            List<CartItem> localItems = cartDao.getAll();
+            List<Product> products = new ArrayList<>();
+            for (CartItem item : localItems) {
+                Product p = new Product();
+                p.setId(item.getProductId());
+                p.setName(item.getName());
+                p.setPrice(item.getPrice());
+                p.setDiscountPrice(item.getDiscountPrice());
+                // Wrap image
+                List<Product.ProductImage> images = new ArrayList<>();
+                Product.ProductImage img = new Product.ProductImage();
+                img.setUrl(item.getImageUrl());
+                images.add(img);
+                p.setImages(images);
+                // Wrap variant (simplified for UI)
+                List<Product.ProductSize> sizes = new ArrayList<>();
+                Product.ProductSize ps = new Product.ProductSize();
+                ps.setSize(item.getSize());
+                ps.setQuantity(item.getQuantity());
+                sizes.add(ps);
+                p.setSizes(sizes);
 
-    public void mergeGuestCart(String userId) {
-        String guestId = sessionManager.getGuestId();
-        java.util.Map<String, String> body = new java.util.HashMap<>();
-        body.put("guestId", guestId);
-        body.put("userId", userId);
+                // Add to variants for HorizontalProductAdapter display
+                List<ProductVariant> variants = new ArrayList<>();
+                ProductVariant pv = new ProductVariant();
+                pv.setColor(item.getColor());
+                pv.setSize(item.getSize());
+                pv.setQuantity(item.getQuantity());
+                variants.add(pv);
+                p.setVariants(variants);
 
-        apiService.mergeCart(body).enqueue(new Callback<ApiResponse<Void>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "Cart merged successfully");
-                    // Refresh from server after merge
-                    getCartItems(new CartCallback<List<Product>>() {
-                        @Override
-                        public void onSuccess(List<Product> result) {}
-                        @Override
-                        public void onError(String message) {}
-                    });
-                }
+                p.setQuantity(item.getQuantity());
+                products.add(p);
             }
-            @Override
-            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                Log.e(TAG, "Failed to merge cart", t);
-            }
-        });
-    }
-
-    private List<Product> convertToProducts(List<CartItem> localItems) {
-        List<Product> products = new ArrayList<>();
-        for (CartItem item : localItems) {
-            Product p = new Product();
-            p.setId(item.getProductId());
-            p.setName(item.getName());
-            p.setPrice(item.getPrice());
-            p.setDiscountPrice(item.getDiscountPrice());
-            // Wrap image
-            List<Product.ProductImage> images = new ArrayList<>();
-            Product.ProductImage img = new Product.ProductImage();
-            img.setUrl(item.getImageUrl());
-            images.add(img);
-            p.setImages(images);
-
-            // Add to variants for HorizontalProductAdapter display
-            List<ProductVariant> variants = new ArrayList<>();
-            ProductVariant pv = new ProductVariant();
-            pv.setColor(item.getColor());
-            pv.setSize(item.getSize());
-            pv.setQuantity(item.getQuantity());
-            variants.add(pv);
-            p.setVariants(variants);
-
-            p.setQuantity(item.getQuantity());
-            products.add(p);
+            callback.onSuccess(products);
         }
-        return products;
-    }
-
-    private void syncLocalCacheWithServer(List<Product> serverProducts) {
-        new Thread(() -> {
-            cartDao.deleteAll();
-            for (Product p : serverProducts) {
-                String prodId = p.getId();
-                String name = p.getName();
-                double price = p.getPrice();
-                double discount = p.getDiscountPrice() != null ? p.getDiscountPrice() : 0;
-                String img = (p.getImages() != null && !p.getImages().isEmpty()) ? p.getImages().get(0).getUrl() : "";
-                
-                if (p.getVariants() != null && !p.getVariants().isEmpty()) {
-                    for (ProductVariant v : p.getVariants()) {
-                        cartDao.insert(new CartItem(prodId, name, price, discount, img, v.getColor(), v.getSize(), v.getQuantity()));
-                    }
-                } else {
-                    cartDao.insert(new CartItem(prodId, name, price, discount, img, "", "", p.getQuantity()));
-                }
-            }
-        }).start();
     }
 
     public void removeFromCart(String productId, String size, String color, CartCallback<Void> callback) {
@@ -281,32 +233,33 @@ public class CartManager {
     public void syncLocalCart() {
         if (!sessionManager.isLoggedIn()) return;
 
-        new Thread(() -> {
-            List<CartItem> localItems = cartDao.getAll();
-            if (localItems.isEmpty()) return;
+        List<CartItem> localItems = cartDao.getAll();
+        if (localItems.isEmpty()) return;
 
-            String userId = sessionManager.getUserId();
-            List<CartRequest> requests = new ArrayList<>();
-            for (CartItem item : localItems) {
-                requests.add(new CartRequest(userId, item.getProductId(), item.getName(), item.getImageUrl(), item.getSize(), item.getColor(), item.getQuantity(), item.getDiscountPrice() > 0 ? item.getDiscountPrice() : item.getPrice()));
+        String userId = sessionManager.getUserId();
+        List<CartRequest> requests = new ArrayList<>();
+        for (CartItem item : localItems) {
+            requests.add(new CartRequest(userId, item.getProductId(), item.getName(), item.getImageUrl(), item.getSize(), item.getColor(), item.getQuantity(), item.getDiscountPrice() > 0 ? item.getDiscountPrice() : item.getPrice()));
+        }
+
+
+        apiService.syncCart(requests).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "Cart synced successfully");
+                    new Thread(() -> {
+                        cartDao.deleteAll();
+                    }).start();
+                } else {
+                    Log.e(TAG, "Sync cart failed: " + response.code());
+                }
             }
 
-            apiService.syncCart(requests).enqueue(new Callback<ApiResponse<Void>>() {
-                @Override
-                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                    if (response.isSuccessful()) {
-                        Log.d(TAG, "Cart synced successfully with " + localItems.size() + " items");
-                        // Clear only if needed, or let getCartItems refresh it from server
-                    } else {
-                        Log.e(TAG, "Sync cart failed: " + response.code());
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                    Log.e(TAG, "Failed to sync cart", t);
-                }
-            });
-        }).start();
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                Log.e(TAG, "Failed to sync cart", t);
+            }
+        });
     }
 }
