@@ -434,7 +434,13 @@ public class CartFragment extends Fragment {
             public void onResponse(@NonNull Call<List<Product>> call, @NonNull Response<List<Product>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> products = response.body();
-                    productAdapter.setData(products);
+                    List<Product> activeProducts = new ArrayList<>();
+                    for (Product p : products) {
+                        if (p.getStatus() == null || "active".equalsIgnoreCase(p.getStatus())) {
+                            activeProducts.add(p);
+                        }
+                    }
+                    productAdapter.setData(activeProducts);
                 }
             }
 
