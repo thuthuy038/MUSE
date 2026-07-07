@@ -492,7 +492,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             Toast.makeText(this, currentProduct.isFavorite() ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
         });
     }
-
     private void navigateToCheckout(Product product, String color, String size, int quantity) {
         // Create a copy of the product for checkout
         Product checkoutProduct = new Product();

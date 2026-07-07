@@ -131,8 +131,8 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     sessionManager.saveToken(loginResponse.getToken());
                     sessionManager.saveUser(loginResponse.get_id(), loginResponse.getName(), loginResponse.getEmail());
 
-                    // Sync Cart
-                    com.project.utils.CartManager.getInstance(requireContext()).syncLocalCart();
+                    // Merge Guest Cart to User Cart on Server
+                    com.project.utils.CartManager.getInstance(requireContext()).mergeGuestCart(loginResponse.get_id());
 
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập thành công!");
                     dialog.setOnCloseListener(() -> {
@@ -184,8 +184,8 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     sessionManager.saveToken(loginResponse.getToken());
                     sessionManager.saveUser(loginResponse.get_id(), loginResponse.getName(), loginResponse.getEmail());
 
-                    // Sync Cart
-                    com.project.utils.CartManager.getInstance(requireContext()).syncLocalCart();
+                    // Merge Guest Cart to User Cart on Server
+                    com.project.utils.CartManager.getInstance(requireContext()).mergeGuestCart(loginResponse.get_id());
 
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập bằng Google thành công!");
                     dialog.setOnCloseListener(() -> {
