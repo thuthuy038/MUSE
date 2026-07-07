@@ -204,6 +204,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (intent.getBooleanExtra("open_cart", false)) {
                 navController.navigate(R.id.navigation_cart);
                 intent.removeExtra("open_cart");
+            } else if (intent.getBooleanExtra("open_explore", false)) {
+                navController.navigate(R.id.navigation_explore);
+                intent.removeExtra("open_explore");
             } else if (intent.hasExtra("category_id")) {
                 String categoryId = intent.getStringExtra("category_id");
                 if (categoryId != null) {
