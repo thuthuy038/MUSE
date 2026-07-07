@@ -20,6 +20,7 @@ import androidx.navigation.Navigation;
 import com.bumptech.glide.Glide;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.EditProfileScreenBinding;
+import com.project.models.Notification;
 import com.project.utils.SessionManager;
 import com.project.models.User;
 import com.project.models.Province;

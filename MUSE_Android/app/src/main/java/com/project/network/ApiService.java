@@ -58,6 +58,11 @@ public interface ApiService {
         @Header("Authorization") String token
     );
 
+    @GET("api/orders/user")
+    Call<List<com.project.models.Order>> getOrders(
+        @Header("Authorization") String token
+    );
+
     // ========== PRODUCTS ==========
     @GET("api/products")
     Call<List<Product>> getProducts();
@@ -96,6 +101,11 @@ public interface ApiService {
             @Body List<CartRequest> requests
     );
 
+    @POST("api/cart/merge")
+    Call<ApiResponse<Void>> mergeCart(
+            @Body Map<String, String> body
+    );
+
     // ======================
     // PROMOTION
     // ======================
@@ -120,10 +130,16 @@ public interface ApiService {
             @Body ApplyVoucherRequest request
     );
 
-    // ========== USER ==========
-    @GET("api/users/{id}")
-    Call<User> getUserById(
-        @Path("id") String userId
+    @GET("api/notifications/{userId}")
+    Call<com.project.models.NotificationResponse> getNotifications(
+            @Header("Authorization") String token,
+            @Path("userId") String userId
+    );
+
+    @PUT("api/notifications/{id}/read")
+    Call<com.project.models.Notification> markAsRead(
+            @Header("Authorization") String token,
+            @Path("id") String notificationId
     );
 
     @PUT("api/users/{id}")
