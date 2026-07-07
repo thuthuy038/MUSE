@@ -2,24 +2,28 @@ package com.project.database;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
-@Entity(tableName = "cart_items")
+@Entity(tableName = "cart_items", primaryKeys = {"productId", "color", "size"})
 public class CartItem {
-    @PrimaryKey
     @NonNull
     private String productId;
     private String name;
     private double price;
     private double discountPrice;
     private String imageUrl;
+    @NonNull
     private String color;
+    @NonNull
     private String size;
     private int quantity;
 
-    public CartItem() {}
+    public CartItem() {
+        this.productId = "";
+        this.color = "";
+        this.size = "";
+    }
 
-    public CartItem(@NonNull String productId, String name, double price, double discountPrice, String imageUrl, String color, String size, int quantity) {
+    public CartItem(@NonNull String productId, String name, double price, double discountPrice, String imageUrl, @NonNull String color, @NonNull String size, int quantity) {
         this.productId = productId;
         this.name = name;
         this.price = price;
@@ -71,19 +75,21 @@ public class CartItem {
         this.imageUrl = imageUrl;
     }
 
+    @NonNull
     public String getColor() {
         return color;
     }
 
-    public void setColor(String color) {
+    public void setColor(@NonNull String color) {
         this.color = color;
     }
 
+    @NonNull
     public String getSize() {
         return size;
     }
 
-    public void setSize(String size) {
+    public void setSize(@NonNull String size) {
         this.size = size;
     }
 

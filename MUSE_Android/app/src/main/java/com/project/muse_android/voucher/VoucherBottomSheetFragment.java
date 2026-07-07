@@ -32,6 +32,16 @@ import retrofit2.Response;
 
 public class VoucherBottomSheetFragment extends BottomSheetDialogFragment {
 
+    public interface OnVoucherSelectedListener {
+        void onVouchersSelected(double discountAmount, double shippingDiscountAmount);
+    }
+
+    private OnVoucherSelectedListener listener;
+
+    public void setOnVoucherSelectedListener(OnVoucherSelectedListener listener) {
+        this.listener = listener;
+    }
+
     private FragmentVoucherBottomSheetBinding binding;
     private VoucherAdapter discountAdapter;
     private VoucherAdapter shippingAdapter;
@@ -74,7 +84,25 @@ public class VoucherBottomSheetFragment extends BottomSheetDialogFragment {
             applyVoucherCode(code);
         });
 
-        binding.btnConfirm.setOnClickListener(v -> dismiss());
+        binding.btnConfirm.setOnClickListener(v -> {
+            if (listener != null) {
+                double discount = 0;
+                double shipping = 0;
+                // Simple logic for demo: assume each discount voucher is 10k, shipping is 50k
+                if (discountAdapter != null) {
+                    for (Voucher voucher : allVouchers) {
+                        if (voucher.isSelected() && "DISCOUNT".equals(voucher.getType())) {
+                            discount += 10000; // Replace with real value if available in model
+                        }
+                        if (voucher.isSelected() && "SHIPPING".equals(voucher.getType())) {
+                            shipping += 50000;
+                        }
+                    }
+                }
+                listener.onVouchersSelected(discount, shipping);
+            }
+            dismiss();
+        });
     }
 
     private void setupRecyclerViews() {
