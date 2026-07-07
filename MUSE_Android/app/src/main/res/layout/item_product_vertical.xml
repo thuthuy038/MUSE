@@ -64,7 +64,7 @@
             android:id="@+id/btnFavorite"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/favorite"
+            android:src="@drawable/ic_favorite"
             app:tint="#333333"
             android:contentDescription="Favorite Button"
             app:layout_constraintTop_toTopOf="@id/layoutColors"

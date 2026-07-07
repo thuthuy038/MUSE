@@ -17,7 +17,9 @@ import com.project.muse_android.R;
 import com.project.muse_android.databinding.FragmentProductVariantBottomSheetBinding;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.Locale;
 
 public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment {
 
@@ -132,27 +134,74 @@ public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment
             }
         }
 
-        // Sizes
-        List<Product.ProductSize> sizes = product.getSizes();
-        if (sizes != null) {
-            for (Product.ProductSize sizeObj : sizes) {
-                String size = sizeObj.getSize();
-                Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_chip_variant, binding.chipGroupSize, false);
-                chip.setText(size);
-                
-                if (size.equalsIgnoreCase(selectedSize)) {
-                    chip.setChecked(true);
+        // Sizes - Thu thập size từ cả sizes list và variants để đồng bộ với trang chi tiết
+        java.util.List<String> sizeNames = new java.util.ArrayList<>();
+        
+        // Từ sizes list
+        if (product.getSizes() != null) {
+            for (Product.ProductSize s : product.getSizes()) {
+                if (s.getSize() != null && !sizeNames.contains(s.getSize())) {
+                    sizeNames.add(s.getSize());
                 }
-                
-                chip.setOnClickListener(v -> {
-                    selectedSize = size;
-                });
-
-                chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    if (isChecked) selectedSize = size;
-                });
-                binding.chipGroupSize.addView(chip);
             }
+        }
+        
+        // Từ variants list
+        if (product.getVariants() != null) {
+            for (com.project.models.ProductVariant v : product.getVariants()) {
+                if (v.getSize() != null && !sizeNames.contains(v.getSize())) {
+                    sizeNames.add(v.getSize());
+                }
+            }
+        }
+
+        // Sắp xếp kích cỡ
+        try {
+            sizeNames.sort((s1, s2) -> {
+                try {
+                    Double d1 = Double.parseDouble(s1.replaceAll("[^0-9.]", ""));
+                    Double d2 = Double.parseDouble(s2.replaceAll("[^0-9.]", ""));
+                    return d1.compareTo(d2);
+                } catch (Exception e) {
+                    String order = "XXS XS S M L XL XXL 2XL 3XL";
+                    int i1 = order.indexOf(s1.toUpperCase());
+                    int i2 = order.indexOf(s2.toUpperCase());
+                    if (i1 != -1 && i2 != -1) return Integer.compare(i1, i2);
+                    return s1.compareTo(s2);
+                }
+            });
+        } catch (Exception ignored) {}
+
+        for (String size : sizeNames) {
+            Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_chip_variant, binding.chipGroupSize, false);
+            chip.setText(size);
+            
+            if (size.equalsIgnoreCase(selectedSize)) {
+                chip.setChecked(true);
+            }
+            
+            chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) selectedSize = size;
+            });
+
+            // Kiểm tra tồn kho để vô hiệu hóa (giống trang chi tiết)
+            boolean hasStock = false;
+            if (product.getVariants() != null) {
+                for (com.project.models.ProductVariant v : product.getVariants()) {
+                    if (size.equals(v.getSize()) && v.getQuantity() > 0) {
+                        hasStock = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasStock) {
+                chip.setEnabled(false);
+                chip.setAlpha(0.3f);
+                chip.setCheckable(false); // Không cho phép chọn nếu hết hàng
+            }
+
+            binding.chipGroupSize.addView(chip);
         }
     }
 
@@ -173,8 +222,10 @@ public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment
     }
 
     private String formatPrice(double price) {
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        return formatter.format(price).replace(",", ".") + "đ";
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
     }
 
     @Override

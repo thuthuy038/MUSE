@@ -28,10 +28,13 @@ import com.project.network.ApiClient;
 import com.project.network.ApiService;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.FragmentCartBinding;
+import com.project.utils.ViewUtils;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -52,6 +55,8 @@ public class CartFragment extends Fragment {
     private VerticalProductAdapter productAdapter;
 
     private boolean isEditMode = false;
+    private double selectedVoucherDiscount = 0;
+    private double selectedShippingDiscount = 0;
 
     @Nullable
     @Override
@@ -83,6 +88,9 @@ public class CartFragment extends Fragment {
         // Gọi API lấy dữ liệu sản phẩm
         fetchDataFromServer();
 
+        // Sử dụng Helper để tự động đẩy Header xuống dưới Status Bar
+        ViewUtils.applySystemBarsPadding(binding.header, true, false);
+
         // Điều chỉnh Buy Bar theo Bottom Navigation
         setupBottomSectionAdjustment();
 
@@ -102,12 +110,32 @@ public class CartFragment extends Fragment {
         // Mở BottomSheet chọn Voucher
         binding.layoutVoucher.setOnClickListener(v -> {
             VoucherBottomSheetFragment voucherSheet = new VoucherBottomSheetFragment();
+            voucherSheet.setOnVoucherSelectedListener((discount, shipping) -> {
+                this.selectedVoucherDiscount = discount;
+                this.selectedShippingDiscount = shipping;
+                updateCheckoutButtonState();
+            });
             voucherSheet.show(getParentFragmentManager(), "VoucherBottomSheet");
         });
 
         // Mở BottomSheet chi tiết khuyến mãi
         binding.layoutPriceSummary.setOnClickListener(v -> {
             showPromotionDetails();
+        });
+
+        binding.btnCheckout.setOnClickListener(v -> {
+            ArrayList<Product> selectedProducts = new ArrayList<>();
+            for (Product p : cartProducts) {
+                if (p.isSelected()) {
+                    selectedProducts.add(p);
+                }
+            }
+            if (!selectedProducts.isEmpty()) {
+                Intent intent = new Intent(getContext(), com.project.muse_android.checkout.CheckoutActivity.class);
+                intent.putExtra("products", selectedProducts);
+                intent.putExtra("voucher_discount", selectedVoucherDiscount);
+                startActivity(intent);
+            }
         });
 
         // Xử lý nút Sửa
@@ -153,7 +181,13 @@ public class CartFragment extends Fragment {
 
         ConfirmDeleteDialog dialog = new ConfirmDeleteDialog(toDelete.size(), () -> {
             for (Product p : toDelete) {
-                CartManager.getInstance(requireContext()).removeFromCart(p.getId(), new CartManager.CartCallback<Void>() {
+                String color = "";
+                String size = "";
+                if (p.getVariants() != null && !p.getVariants().isEmpty()) {
+                    color = p.getVariants().get(0).getColor();
+                    size = p.getVariants().get(0).getSize();
+                }
+                CartManager.getInstance(requireContext()).removeFromCart(p.getId(), size, color, new CartManager.CartCallback<Void>() {
                     @Override
                     public void onSuccess(Void result) {
                         cartProducts.remove(p);
@@ -236,7 +270,13 @@ public class CartFragment extends Fragment {
                     @Override
 
                     public void onDelete(Product product, int position) {
-                        CartManager.getInstance(requireContext()).removeFromCart(product.getId(), new CartManager.CartCallback<Void>() {
+                        String color = "";
+                        String size = "";
+                        if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+                            color = product.getVariants().get(0).getColor();
+                            size = product.getVariants().get(0).getSize();
+                        }
+                        CartManager.getInstance(requireContext()).removeFromCart(product.getId(), size, color, new CartManager.CartCallback<Void>() {
                             @Override
                             public void onSuccess(Void result) {
                                 cartProducts.remove(position);
@@ -265,7 +305,15 @@ public class CartFragment extends Fragment {
 
                     @Override
                     public void onQuantityChanged(Product product, int position, int quantity) {
-                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, new CartManager.CartCallback<Void>() {
+                        double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
+                                ? product.getDiscountPrice() : product.getPrice();
+                        String color = "";
+                        String size = "";
+                        if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+                            color = product.getVariants().get(0).getColor();
+                            size = product.getVariants().get(0).getSize();
+                        }
+                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, color, size, new CartManager.CartCallback<Void>() {
                             @Override
                             public void onSuccess(Void result) {
                                 updateCheckoutButtonState();
@@ -308,8 +356,11 @@ public class CartFragment extends Fragment {
                                         product.setQuantity(quantity);
                                         cartAdapter.notifyItemChanged(position);
                                         
+                                        double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
+                                                ? product.getDiscountPrice() : product.getPrice();
+
                                         // Update in Manager (Room/API)
-                                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, new CartManager.CartCallback<Void>() {
+                                        CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, color, size, new CartManager.CartCallback<Void>() {
                                             @Override
                                             public void onSuccess(Void result) {
                                                 updateCheckoutButtonState();
@@ -383,7 +434,13 @@ public class CartFragment extends Fragment {
             public void onResponse(@NonNull Call<List<Product>> call, @NonNull Response<List<Product>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> products = response.body();
-                    productAdapter.setData(products);
+                    List<Product> activeProducts = new ArrayList<>();
+                    for (Product p : products) {
+                        if (p.getStatus() == null || "active".equalsIgnoreCase(p.getStatus())) {
+                            activeProducts.add(p);
+                        }
+                    }
+                    productAdapter.setData(activeProducts);
                 }
             }
 
@@ -427,16 +484,17 @@ public class CartFragment extends Fragment {
         for (Product p : cartProducts) {
             if (p.isSelected()) {
                 selectedCount++;
-                originalTotal += p.getPrice();
+                int qty = p.getQuantity() > 0 ? p.getQuantity() : 1;
+                originalTotal += (p.getPrice() * qty);
                 if (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) {
-                    productDiscount += (p.getPrice() - p.getDiscountPrice());
+                    productDiscount += (p.getPrice() - p.getDiscountPrice()) * qty;
                 }
             }
         }
 
-        // Fake voucher and shipping for UI demo
-        double voucherDiscount = selectedCount > 0 ? 10000 : 0;
-        double totalSavings = productDiscount + voucherDiscount;
+        // totalSavings = voucherDiscount + productDiscount
+        double totalSavings = productDiscount + selectedVoucherDiscount;
+        // finalTotal = originalTotal - totalSavings
         double finalTotal = originalTotal - totalSavings;
 
         // Update Summary UI
@@ -466,9 +524,10 @@ public class CartFragment extends Fragment {
         for (Product p : cartProducts) {
             if (p.isSelected()) {
                 selectedCount++;
-                originalTotal += p.getPrice();
+                int qty = p.getQuantity() > 0 ? p.getQuantity() : 1;
+                originalTotal += (p.getPrice() * qty);
                 if (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) {
-                    productDiscount += (p.getPrice() - p.getDiscountPrice());
+                    productDiscount += (p.getPrice() - p.getDiscountPrice()) * qty;
                 }
             }
         }
@@ -478,25 +537,23 @@ public class CartFragment extends Fragment {
             return;
         }
 
-        // Match the logic in updateCheckoutButtonState
-        double voucherDiscount = 10000;
         double shippingFee = 50000;
-        double shippingDiscount = 50000;
 
         PromotionDetailsBottomSheetFragment sheet = new PromotionDetailsBottomSheetFragment(
                 originalTotal,
-                voucherDiscount,
+                selectedVoucherDiscount,
                 productDiscount,
                 shippingFee,
-                shippingDiscount
+                selectedShippingDiscount
         );
         sheet.show(getParentFragmentManager(), "PromotionDetails");
     }
 
     private String formatPrice(double price) {
-
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        return formatter.format(price).replace(",", ".") + "đ";
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
     }
 
     @Override

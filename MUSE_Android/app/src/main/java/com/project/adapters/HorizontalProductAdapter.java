@@ -20,9 +20,11 @@ import com.project.muse_android.R;
 import com.project.muse_android.databinding.ItemProductHorizontalBinding;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class HorizontalProductAdapter extends ProductAdapter {
 
@@ -37,7 +39,6 @@ public class HorizontalProductAdapter extends ProductAdapter {
     private final Context context;
     private final HorizontalProductMode mode;
     private final OnProductActionListener actionListener;
-    private final List<Product> products = new ArrayList<>();
     private final HashMap<String, Integer> quantityMap = new HashMap<>();
 
     public HorizontalProductAdapter(
@@ -53,9 +54,7 @@ public class HorizontalProductAdapter extends ProductAdapter {
 
     @Override
     public void setData(List<Product> data) {
-        products.clear();
         if (data != null) {
-            products.addAll(data);
             for (Product product : data) {
                 if (!quantityMap.containsKey(product.getId())) {
                     quantityMap.put(product.getId(), 1);
@@ -82,12 +81,14 @@ public class HorizontalProductAdapter extends ProductAdapter {
 
     @Override
     public int getItemCount() {
-        return products.size();
+        return super.getItemCount();
     }
 
     private String formatPrice(double price) {
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        return formatter.format(price).replace(",", ".") + "đ";
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
     }
 
     public class CustomHorizontalViewHolder extends RecyclerView.ViewHolder {
@@ -104,22 +105,6 @@ public class HorizontalProductAdapter extends ProductAdapter {
 
             // Reset scroll position
             binding.horizontalScrollView.scrollTo(0, 0);
-
-            // Snap behavior
-            binding.horizontalScrollView.setOnTouchListener((v, event) -> {
-                if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                    int scrollX = binding.horizontalScrollView.getScrollX();
-                    int actionsWidth = binding.layoutActions.getWidth();
-                    if (scrollX > actionsWidth / 3) {
-                        binding.horizontalScrollView.smoothScrollTo(actionsWidth, 0);
-                    } else {
-                        binding.horizontalScrollView.smoothScrollTo(0, 0);
-                    }
-                    v.performClick();
-                    return true;
-                }
-                return false;
-            });
 
             binding.txtProductName.setText(product.getName());
 
@@ -145,7 +130,8 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 size = variant.getSize();
             }
 
-            int quantity = product.getQuantity() > 0 ? product.getQuantity() : quantityMap.getOrDefault(product.getId(), 1);
+            int quantity = product.getQuantity() > 0 ? product.getQuantity() : 1;
+            quantityMap.put(product.getId(), quantity);
 
             if (mode == HorizontalProductMode.CART) {
                 binding.cbSelect.setVisibility(View.VISIBLE);
@@ -153,23 +139,44 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 binding.layoutQuantityEditor.setVisibility(View.VISIBLE);
                 binding.txtCartPrice.setVisibility(View.VISIBLE);
                 binding.layoutReadOnly.setVisibility(View.GONE);
+                binding.layoutActions.setVisibility(View.VISIBLE);
 
                 binding.txtProductSizes.setText(color + " | " + size);
                 double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 ? product.getDiscountPrice() : product.getPrice();
                 binding.txtPrice.setText(formatPrice(price));
                 binding.txtQuantity.setText(String.valueOf(quantity));
+
+                // Snap behavior for CART mode
+                binding.horizontalScrollView.setOnTouchListener((v, event) -> {
+                    if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                        int scrollX = binding.horizontalScrollView.getScrollX();
+                        int actionsWidth = binding.layoutActions.getWidth();
+                        if (scrollX > actionsWidth / 3) {
+                            binding.horizontalScrollView.smoothScrollTo(actionsWidth, 0);
+                        } else {
+                            binding.horizontalScrollView.smoothScrollTo(0, 0);
+                        }
+                        v.performClick();
+                        return true;
+                    }
+                    return false;
+                });
             } else {
                 binding.cbSelect.setVisibility(View.GONE);
                 binding.layoutVariant.setVisibility(View.GONE);
                 binding.layoutQuantityEditor.setVisibility(View.GONE);
                 binding.txtPrice.setVisibility(View.GONE);
                 binding.layoutReadOnly.setVisibility(View.VISIBLE);
+                binding.layoutActions.setVisibility(View.GONE);
 
                 binding.txtVariantReadOnly.setText(color + ", " + size);
                 binding.txtDiscountPriceReadOnly.setText(formatPrice(product.getDiscountPrice() != null ? product.getDiscountPrice() : 0));
                 binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
                 binding.txtOriginalPrice.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
                 binding.txtReadonlyQuantity.setText("x" + quantity);
+
+                // Disable scroll for READ_ONLY mode
+                binding.horizontalScrollView.setOnTouchListener((v, event) -> true);
             }
 
             // Click Listeners
@@ -199,16 +206,18 @@ public class HorizontalProductAdapter extends ProductAdapter {
 
             // Quantity
             binding.btnAdd.setOnClickListener(v -> {
-                int q = quantityMap.getOrDefault(product.getId(), 1) + 1;
+                int q = product.getQuantity() + 1;
+                product.setQuantity(q);
                 quantityMap.put(product.getId(), q);
                 binding.txtQuantity.setText(String.valueOf(q));
                 if (actionListener != null) actionListener.onQuantityChanged(product, getBindingAdapterPosition(), q);
             });
 
             binding.btnMinus.setOnClickListener(v -> {
-                int q = quantityMap.getOrDefault(product.getId(), 1);
+                int q = product.getQuantity();
                 if (q > 1) {
                     q--;
+                    product.setQuantity(q);
                     quantityMap.put(product.getId(), q);
                     binding.txtQuantity.setText(String.valueOf(q));
                     if (actionListener != null) actionListener.onQuantityChanged(product, getBindingAdapterPosition(), q);
@@ -217,17 +226,46 @@ public class HorizontalProductAdapter extends ProductAdapter {
         }
 
         private void setupSwipeWidth() {
+            // Get screen metrics
             WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             DisplayMetrics displayMetrics = new DisplayMetrics();
             wm.getDefaultDisplay().getMetrics(displayMetrics);
             int screenWidth = displayMetrics.widthPixels;
             float density = context.getResources().getDisplayMetrics().density;
-            int totalMarginPx = (int) (24 * density);
+
+            if (mode == HorizontalProductMode.READ_ONLY) {
+                // Completely disable any programmatic width/height for READ_ONLY
+                // This lets the ConstraintLayout use wrap_content from XML
+                binding.horizontalScrollView.setOnTouchListener(null);
+                
+                ViewGroup.LayoutParams params = binding.layoutMainContent.getLayoutParams();
+                params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                //params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                params.height = (int) (110 * context.getResources().getDisplayMetrics().density);
+                binding.layoutMainContent.setLayoutParams(params);
+
+                View parentLinear = (View) binding.layoutMainContent.getParent();
+                if (parentLinear != null) {
+                    parentLinear.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                    parentLinear.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                }
+                return;
+            }
+
+            // For CART mode, strictly set width to screen - margin
+            int totalMarginPx = (int) (24 * density); 
             int contentWidth = screenWidth - totalMarginPx;
 
-            ViewGroup.LayoutParams params = binding.layoutMainContent.getLayoutParams();
-            params.width = contentWidth;
-            binding.layoutMainContent.setLayoutParams(params);
+            binding.layoutMainContent.getLayoutParams().width = contentWidth;
+            binding.layoutMainContent.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+            View parentLinear = (View) binding.layoutMainContent.getParent();
+            if (parentLinear != null) {
+                parentLinear.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                parentLinear.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            }
+            
+            binding.layoutMainContent.requestLayout();
         }
     }
 }

@@ -162,6 +162,9 @@ public class CategoryProductsActivity extends AppCompatActivity {
     private void filterProducts() {
         displayProducts.clear();
         for (Product p : allProducts) {
+            // Check for active status
+            if (p.getStatus() != null && !p.getStatus().equalsIgnoreCase("active")) continue;
+
             if (selectedCategoryId != null && selectedCategoryId.equals(p.getCategory())) {
                 displayProducts.add(p);
             }

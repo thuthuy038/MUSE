@@ -42,16 +42,20 @@ public class LoginFragment extends Fragment {
     private boolean isPasswordVisible = false;
     private GoogleSignInClient googleSignInClient;
 private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                        handleGoogleSignInResult(task);
-                    } else {
-                        Toast.makeText(getContext(), "Đăng nhập Google bị hủy", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
+        new ActivityResultContracts.StartActivityForResult(),
+        result -> {
+            // Log mã kết quả của Android (ví dụ: 0 là Canceled, -1 là OK)
+            android.util.Log.d("GOOGLE_DEBUG", "Result Code: " + result.getResultCode());
+
+            if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                handleGoogleSignInResult(task);
+            } else {
+                // Hiển thị rõ mã lỗi để tra cứu
+                Toast.makeText(getContext(), "Đăng nhập bị hủy (Mã: " + result.getResultCode() + ")", Toast.LENGTH_SHORT).show();
+            }
+        }
+);
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -127,8 +131,8 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     sessionManager.saveToken(loginResponse.getToken());
                     sessionManager.saveUser(loginResponse.get_id(), loginResponse.getName(), loginResponse.getEmail());
 
-                    // Sync Cart
-                    com.project.utils.CartManager.getInstance(requireContext()).syncLocalCart();
+                    // Merge Guest Cart to User Cart on Server
+                    com.project.utils.CartManager.getInstance(requireContext()).mergeGuestCart(loginResponse.get_id());
 
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập thành công!");
                     dialog.setOnCloseListener(() -> {
@@ -180,8 +184,8 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     sessionManager.saveToken(loginResponse.getToken());
                     sessionManager.saveUser(loginResponse.get_id(), loginResponse.getName(), loginResponse.getEmail());
 
-                    // Sync Cart
-                    com.project.utils.CartManager.getInstance(requireContext()).syncLocalCart();
+                    // Merge Guest Cart to User Cart on Server
+                    com.project.utils.CartManager.getInstance(requireContext()).mergeGuestCart(loginResponse.get_id());
 
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập bằng Google thành công!");
                     dialog.setOnCloseListener(() -> {

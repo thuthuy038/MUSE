@@ -58,6 +58,11 @@ public interface ApiService {
         @Header("Authorization") String token
     );
 
+    @GET("api/orders/user")
+    Call<List<com.project.models.Order>> getOrders(
+        @Header("Authorization") String token
+    );
+
     // ========== PRODUCTS ==========
     @GET("api/products")
     Call<List<Product>> getProducts();
@@ -68,33 +73,37 @@ public interface ApiService {
     );
 
     // ========== CART ==========
-    @GET("api/cart")
-    Call<List<Product>> getCart(
-            @Header("Authorization") String token
+    @GET("api/cart/{userId}")
+    Call<ApiResponse<List<Product>>> getCart(
+            @Path("userId") String userId
     );
 
     @POST("api/cart/add")
-    Call<Void> addToCart(
-            @Header("Authorization") String token,
+    Call<ApiResponse<Void>> addToCart(
             @Body CartRequest request
     );
 
     @PUT("api/cart/update-quantity")
-    Call<Void> updateCartQuantity(
-            @Header("Authorization") String token,
+    Call<ApiResponse<Void>> updateCartQuantity(
             @Body CartRequest request
     );
 
-    @DELETE("api/cart/remove/{productId}")
-    Call<Void> removeFromCart(
-            @Header("Authorization") String token,
-            @Path("productId") String productId
+    @DELETE("api/cart/remove/{userId}/{productId}/{size}/{color}")
+    Call<ApiResponse<Void>> removeFromCart(
+            @Path("userId") String userId,
+            @Path("productId") String productId,
+            @Path("size") String size,
+            @Path("color") String color
     );
 
     @POST("api/cart/sync")
-    Call<Void> syncCart(
-            @Header("Authorization") String token,
+    Call<ApiResponse<Void>> syncCart(
             @Body List<CartRequest> requests
+    );
+
+    @POST("api/cart/merge")
+    Call<ApiResponse<Void>> mergeCart(
+            @Body Map<String, String> body
     );
 
     // ======================
@@ -121,10 +130,16 @@ public interface ApiService {
             @Body ApplyVoucherRequest request
     );
 
-    // ========== USER ==========
-    @GET("api/users/{id}")
-    Call<User> getUserById(
-        @Path("id") String userId
+    @GET("api/notifications/{userId}")
+    Call<com.project.models.NotificationResponse> getNotifications(
+            @Header("Authorization") String token,
+            @Path("userId") String userId
+    );
+
+    @PUT("api/notifications/{id}/read")
+    Call<com.project.models.Notification> markAsRead(
+            @Header("Authorization") String token,
+            @Path("id") String notificationId
     );
 
     @PUT("api/users/{id}")

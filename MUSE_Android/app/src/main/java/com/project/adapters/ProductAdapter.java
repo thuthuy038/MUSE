@@ -19,6 +19,8 @@ import com.project.muse_android.R;
 import com.project.muse_android.databinding.ItemProductHorizontalBinding;
 import com.project.muse_android.databinding.ItemProductVerticalBinding;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,7 +38,7 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void onFavoriteClick(Product product);
     }
 
-    private List<Product> products;
+    protected List<Product> products;
     private final int viewType;
     private final OnProductClickListener listener;
     private OnFavoriteClickListener favoriteListener;
@@ -110,13 +112,14 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         public void bind(Product product) {
             binding.txtProductName.setText(product.getName());
             binding.txtProductSizes.setText(product.getSizeRange());
-            binding.txtPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", product.getPrice()));
 
-            double originalPrice = product.getOriginalPrice();
-            if (originalPrice > product.getPrice()) {
-                binding.txtOriginalPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", originalPrice));
+            Double dPrice = product.getDiscountPrice();
+            if (dPrice != null && dPrice > 0) {
+                binding.txtPrice.setText(formatPrice(dPrice));
+                binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
                 binding.layoutOriginalPrice.setVisibility(View.VISIBLE);
             } else {
+                binding.txtPrice.setText(formatPrice(product.getPrice()));
                 binding.layoutOriginalPrice.setVisibility(View.GONE);
             }
 
@@ -174,13 +177,14 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         public void bind(Product product) {
             binding.txtProductName.setText(product.getName());
             binding.txtProductSizes.setText(product.getSizeRange());
-            binding.txtPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", product.getPrice()));
 
-            double originalPrice = product.getOriginalPrice();
-            if (originalPrice > product.getPrice()) {
-                binding.txtOriginalPrice.setText(String.format(Locale.getDefault(), "%.0f VNĐ", originalPrice));
+            Double dPrice = product.getDiscountPrice();
+            if (dPrice != null && dPrice > 0) {
+                binding.txtPrice.setText(formatPrice(dPrice));
+                binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
                 binding.layoutOriginalPrice.setVisibility(View.VISIBLE);
             } else {
+                binding.txtPrice.setText(formatPrice(product.getPrice()));
                 binding.layoutOriginalPrice.setVisibility(View.GONE);
             }
 
@@ -227,12 +231,19 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    private String formatPrice(double price) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
+    }
+
     private void updateFavoriteIcon(ImageView imageView, boolean isFavorite) {
         if (isFavorite) {
-            imageView.setImageResource(R.drawable.ic_favorite);
+            imageView.setImageResource(R.drawable.ic_favorite_filled);
             imageView.setImageTintList(null);
         } else {
-            imageView.setImageResource(R.drawable.favorite);
+            imageView.setImageResource(R.drawable.ic_favorite);
             imageView.setImageTintList(ColorStateList.valueOf(Color.parseColor("#333333")));
         }
     }
@@ -321,28 +332,54 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if (name == null) return Color.TRANSPARENT;
         String colorName = name.toLowerCase().trim();
 
+        // Basic Colors
         if (colorName.contains("trắng") || colorName.contains("white")) return Color.WHITE;
         if (colorName.contains("đen") || colorName.contains("black")) return Color.BLACK;
         if (colorName.contains("xám") || colorName.contains("gray") || colorName.contains("grey") || colorName.contains("ghi")) return Color.GRAY;
+        
+        // Metallics
         if (colorName.contains("bạc") || colorName.contains("silver")) return Color.parseColor("#C0C0C0");
-        if (colorName.contains("vàng đồng") || colorName.contains("gold")) return Color.parseColor("#FFD700");
-        if (colorName.contains("navy") || colorName.contains("than")) return Color.parseColor("#000080");
+        if (colorName.contains("vàng đồng") || colorName.contains("gold")) return Color.parseColor("#D4AF37");
+        
+        // Blues
+        if (colorName.contains("navy") || colorName.contains("xanh than") || colorName.contains("than")) return Color.parseColor("#000080");
         if (colorName.contains("sky") || colorName.contains("da trời")) return Color.parseColor("#87CEEB");
-        if (colorName.contains("xanh dương") || colorName.contains("blue") || colorName.equals("xanh")) return Color.BLUE;
-        if (colorName.contains("đỏ") || colorName.contains("red")) return Color.RED;
+        if (colorName.contains("xanh dương") || colorName.contains("blue") || colorName.equals("xanh")) return Color.parseColor("#0000FF");
+        if (colorName.contains("cobalt") || colorName.contains("xanh coban")) return Color.parseColor("#0047AB");
+        
+        // Reds & Pinks
+        if (colorName.contains("đỏ đô") || colorName.contains("burgundy") || colorName.contains("đỏ rượu")) return Color.parseColor("#800000");
+        if (colorName.contains("đỏ") || colorName.contains("red")) return Color.parseColor("#FF0000");
+        if (colorName.contains("hồng phấn") || colorName.contains("rose")) return Color.parseColor("#FF66CC");
         if (colorName.contains("hồng") || colorName.contains("pink")) return Color.parseColor("#FFC0CB");
+        if (colorName.contains("fuchsia") || colorName.contains("hồng sen")) return Color.parseColor("#FF00FF");
+        
+        // Purples
         if (colorName.contains("tím") || colorName.contains("purple") || colorName.contains("violet")) return Color.parseColor("#800080");
         if (colorName.contains("mận") || colorName.contains("plum")) return Color.parseColor("#8E4585");
+        if (colorName.contains("lavender") || colorName.contains("oải hương")) return Color.parseColor("#E6E6FA");
+        
+        // Greens
         if (colorName.contains("rêu") || colorName.contains("olive")) return Color.parseColor("#808000");
-        if (colorName.contains("xanh lá") || colorName.contains("green")) return Color.GREEN;
-        if (colorName.contains("cốm")) return Color.parseColor("#D0F0C0");
+        if (colorName.contains("xanh lá") || colorName.contains("green")) return Color.parseColor("#008000");
+        if (colorName.contains("cốm") || colorName.contains("mint")) return Color.parseColor("#98FF98");
+        if (colorName.contains("xanh ngọc") || colorName.contains("teal") || colorName.contains("turquoise")) return Color.parseColor("#008080");
+        
+        // Browns & Earth Tones
         if (colorName.contains("nâu") || colorName.contains("brown") || colorName.contains("bò")) return Color.parseColor("#A52A2A");
         if (colorName.contains("be") || colorName.contains("beige") || colorName.contains("kem") || colorName.contains("cream")) return Color.parseColor("#F5F5DC");
+        if (colorName.contains("khaki") || colorName.contains("cát")) return Color.parseColor("#C3B091");
+        if (colorName.contains("nâu đất") || colorName.contains("terracotta")) return Color.parseColor("#E2725B");
+        
+        // Oranges & Yellows
         if (colorName.contains("cam") || colorName.contains("orange")) return Color.parseColor("#FFA500");
         if (colorName.contains("gạch") || colorName.contains("brick")) return Color.parseColor("#B22222");
-        if (colorName.contains("vàng") || colorName.contains("yellow")) return Color.YELLOW;
+        if (colorName.contains("vàng") || colorName.contains("yellow")) return Color.parseColor("#FFFF00");
+        if (colorName.contains("mù tạt") || colorName.contains("mustard")) return Color.parseColor("#FFDB58");
+        
+        // Patterns & Multi
         if (colorName.contains("đa sắc") || colorName.contains("nhiều màu") || colorName.contains("multi")) return Color.LTGRAY;
-        if (colorName.contains("họa tiết") || colorName.contains("hoa")) return Color.parseColor("#F0F0F0");
+        if (colorName.contains("họa tiết") || colorName.contains("hoa") || colorName.contains("caro")) return Color.parseColor("#F0F0F0");
 
         return Color.TRANSPARENT;
     }

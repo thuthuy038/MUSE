@@ -180,7 +180,7 @@ public class ProfileOverviewFragment extends Fragment {
         binding.menuOrders.tvTitle.setText(R.string.profile_my_orders);
 
         // Favorites
-        binding.menuFavorites.ivIcon.setImageResource(R.drawable.ic_favorite);
+        binding.menuFavorites.ivIcon.setImageResource(R.drawable.ic_favorite_filled);
         binding.menuFavorites.tvTitle.setText(R.string.profile_favorites);
     }
 
@@ -207,6 +207,11 @@ public class ProfileOverviewFragment extends Fragment {
 
         binding.menuPersonalInfo.getRoot().setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.navigation_edit_profile);
+        });
+
+        binding.menuOrders.getRoot().setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), com.project.muse_android.order.OrderActivity.class);
+            startActivity(intent);
         });
 
         binding.menuSecurity.getRoot().setOnClickListener(v -> {

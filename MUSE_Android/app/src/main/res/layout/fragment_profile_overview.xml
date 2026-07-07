@@ -255,7 +255,7 @@
                 layout="@layout/item_profile_menu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:icon="@drawable/ic_favorite"
+                app:icon="@drawable/ic_favorite_filled"
                 app:title="@string/profile_favorites" />
 
             <TextView
