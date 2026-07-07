@@ -73,6 +73,11 @@ public class CheckoutActivity extends AppCompatActivity {
     private void setupUI() {
         binding.btnBack.setOnClickListener(v -> finish());
 
+        binding.cardAddress.setOnClickListener(v -> {
+            Intent intent = new Intent(this, com.project.muse_android.address.ShippingAddressActivity.class);
+            startActivity(intent);
+        });
+
         // Setup RecyclerView with Adapter in READ_ONLY mode
         adapter = new HorizontalProductAdapter(this, HorizontalProductMode.READ_ONLY, new HorizontalProductAdapter.OnProductActionListener() {
             @Override
