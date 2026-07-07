@@ -519,16 +519,54 @@ public class Product implements Serializable, Parcelable {
     }
 
     public String getSizeRange() {
-        if (sizes == null || sizes.isEmpty()) {
+        java.util.List<String> allSizes = new java.util.ArrayList<>();
+        
+        // Thu thập từ cả variants và sizes để đảm bảo hiện đủ dải size (kể cả size hết hàng)
+        if (variants != null) {
+            for (ProductVariant pv : variants) {
+                if (pv.getSize() != null && !allSizes.contains(pv.getSize())) {
+                    allSizes.add(pv.getSize());
+                }
+            }
+        }
+        
+        if (sizes != null) {
+            for (ProductSize ps : sizes) {
+                if (ps.getSize() != null && !allSizes.contains(ps.getSize())) {
+                    allSizes.add(ps.getSize());
+                }
+            }
+        }
+
+        if (allSizes.isEmpty()) {
             return "";
         }
 
-        if (sizes.size() == 1) {
-            return sizes.get(0).getSize();
+        // Thống nhất logic sắp xếp giống ProductDetailActivity
+        try {
+            allSizes.sort((s1, s2) -> {
+                try {
+                    // Ưu tiên sắp xếp theo số (size giày, v.v.)
+                    Double d1 = Double.parseDouble(s1.replaceAll("[^0-9.]", ""));
+                    Double d2 = Double.parseDouble(s2.replaceAll("[^0-9.]", ""));
+                    return d1.compareTo(d2);
+                } catch (Exception e) {
+                    // Logic sắp xếp cho S, M, L, XL (giống trang chi tiết)
+                    String order = "XXS XS S M L XL XXL 2XL 3XL";
+                    int i1 = order.indexOf(s1.toUpperCase());
+                    int i2 = order.indexOf(s2.toUpperCase());
+                    if (i1 != -1 && i2 != -1) return Integer.compare(i1, i2);
+                    return s1.compareTo(s2);
+                }
+            });
+        } catch (Exception ignored) {}
+
+        if (allSizes.size() == 1) {
+            return allSizes.get(0);
         }
 
-        return sizes.get(0).getSize() + "-" +
-                sizes.get(sizes.size() - 1).getSize();
+        // Thống nhất định dạng hiển thị dải Min - Max (ví dụ: S - XL)
+        return allSizes.get(0) + " - " + allSizes.get(allSizes.size() - 1);
     }
 
     // ==========================

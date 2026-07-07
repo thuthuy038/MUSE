@@ -67,6 +67,25 @@ public class MainActivity extends AppCompatActivity {
                     binding.btnAIDraggable.setVisibility(View.VISIBLE);
                 }
             });
+
+            handleIntent();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent();
+    }
+
+    private void handleIntent() {
+        if (getIntent() != null && getIntent().getBooleanExtra("open_cart", false)) {
+            if (navController != null) {
+                navController.navigate(R.id.navigation_cart);
+                // Reset intent extra to avoid re-navigating on config changes
+                getIntent().removeExtra("open_cart");
+            }
         }
     }
 

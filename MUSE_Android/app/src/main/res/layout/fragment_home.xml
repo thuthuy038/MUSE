@@ -33,7 +33,6 @@
             android:layout_width="0dp"
             android:layout_height="54dp"
             android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
             android:background="@drawable/bg_search_bar"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -42,7 +41,7 @@
             android:clickable="true"
             android:focusable="true"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/imgCart"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imgLogo"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -72,16 +71,6 @@
                 android:focusable="false" />
 
         </LinearLayout>
-
-        <ImageView
-            android:id="@+id/imgCart"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_cart"
-            android:contentDescription="Shopping Cart"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -171,7 +160,7 @@
                 app:spanCount="3"
                 tools:listitem="@layout/item_category" />
 
-            <!-- 3. Tabs for Hot/New/All -->
+            <!-- 3. Tabs for Hot/New -->
             <LinearLayout
                 android:id="@+id/layoutTabs"
                 android:layout_width="match_parent"
@@ -198,17 +187,6 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="SẢN PHẨM MỚI"
-                    android:textColor="#D3D3D3"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tabAll"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="TẤT CẢ"
                     android:textColor="#D3D3D3"
                     android:textSize="16sp"
                     android:textStyle="bold" />

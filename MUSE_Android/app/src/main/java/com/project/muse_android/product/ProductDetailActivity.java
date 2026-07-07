@@ -20,6 +20,7 @@ import com.project.models.Category;
 import com.project.models.Product;
 import com.project.models.ProductVariant;
 import com.project.muse_android.R;
+import com.project.muse_android.main.MainActivity;
 import com.project.muse_android.cart.ProductVariantBottomSheetFragment;
 import com.project.muse_android.checkout.CheckoutActivity;
 import com.project.muse_android.databinding.ActivityProductDetailBinding;
@@ -68,6 +69,13 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         binding.btnBack.setOnClickListener(v -> finish());
         binding.txtOriginalPrice.setPaintFlags(binding.txtOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+        binding.btnCart.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, MainActivity.class);
+            intent.putExtra("open_cart", true);
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+        });
 
         if (productId != null) {
             loadProductDetail();
@@ -151,8 +159,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         // Colors & Sizes
         setupColors(product.getColors());
         
-        // Use variants for sizes as requested
-        setupSizes(product.getVariants());
+        // Cung cấp cả product để lấy được đầy đủ danh sách size (từ cả variants và sizes)
+        setupSizes(product);
 
         updateFavoriteUI(product.isFavorite());
         binding.btnFavoriteDetail.setOnClickListener(v -> {
@@ -249,17 +257,85 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private String mapColorNameToHex(String name) {
+        if (name == null) return "#E0E0E0";
         String colorName = name.toLowerCase().trim();
+
+        // Basic Colors
         if (colorName.contains("trắng") || colorName.contains("white")) return "#FFFFFF";
         if (colorName.contains("đen") || colorName.contains("black")) return "#000000";
-        if (colorName.contains("hồng") || colorName.contains("pink")) return "#FFC0CB";
-        if (colorName.contains("xanh dương") || colorName.contains("blue")) return "#0000FF";
+        if (colorName.contains("xám") || colorName.contains("gray") || colorName.contains("grey") || colorName.contains("ghi")) return "#808080";
+        
+        // Metallics
+        if (colorName.contains("bạc") || colorName.contains("silver")) return "#C0C0C0";
+        if (colorName.contains("vàng đồng") || colorName.contains("gold")) return "#D4AF37";
+        
+        // Blues
+        if (colorName.contains("navy") || colorName.contains("xanh than") || colorName.contains("than")) return "#000080";
+        if (colorName.contains("sky") || colorName.contains("da trời")) return "#87CEEB";
+        if (colorName.contains("xanh dương") || colorName.contains("blue") || colorName.equals("xanh")) return "#0000FF";
+        if (colorName.contains("cobalt") || colorName.contains("xanh coban")) return "#0047AB";
+        
+        // Reds & Pinks
+        if (colorName.contains("đỏ đô") || colorName.contains("burgundy") || colorName.contains("đỏ rượu")) return "#800000";
         if (colorName.contains("đỏ") || colorName.contains("red")) return "#FF0000";
+        if (colorName.contains("hồng phấn") || colorName.contains("rose")) return "#FF66CC";
+        if (colorName.contains("hồng") || colorName.contains("pink")) return "#FFC0CB";
+        if (colorName.contains("fuchsia") || colorName.contains("hồng sen")) return "#FF00FF";
+        
+        // Purples
+        if (colorName.contains("tím") || colorName.contains("purple") || colorName.contains("violet")) return "#800080";
+        if (colorName.contains("mận") || colorName.contains("plum")) return "#8E4585";
+        if (colorName.contains("lavender") || colorName.contains("oải hương")) return "#E6E6FA";
+        
+        // Greens
+        if (colorName.contains("rêu") || colorName.contains("olive")) return "#808000";
+        if (colorName.contains("xanh lá") || colorName.contains("green")) return "#008000";
+        if (colorName.contains("cốm") || colorName.contains("mint")) return "#98FF98";
+        if (colorName.contains("xanh ngọc") || colorName.contains("teal") || colorName.contains("turquoise")) return "#008080";
+        
+        // Browns & Earth Tones
+        if (colorName.contains("nâu") || colorName.contains("brown") || colorName.contains("bò")) return "#A52A2A";
+        if (colorName.contains("be") || colorName.contains("beige") || colorName.contains("kem") || colorName.contains("cream")) return "#F5F5DC";
+        if (colorName.contains("khaki") || colorName.contains("cát")) return "#C3B091";
+        if (colorName.contains("nâu đất") || colorName.contains("terracotta")) return "#E2725B";
+        
+        // Oranges & Yellows
+        if (colorName.contains("cam") || colorName.contains("orange")) return "#FFA500";
+        if (colorName.contains("gạch") || colorName.contains("brick")) return "#B22222";
         if (colorName.contains("vàng") || colorName.contains("yellow")) return "#FFFF00";
-        if (colorName.contains("kem") || colorName.contains("beige")) return "#F5F5DC";
+        if (colorName.contains("mù tạt") || colorName.contains("mustard")) return "#FFDB58";
+        
+        // Patterns & Multi
+        if (colorName.contains("đa sắc") || colorName.contains("nhiều màu") || colorName.contains("multi")) return "#CCCCCC";
+        if (colorName.contains("họa tiết") || colorName.contains("hoa") || colorName.contains("caro")) return "#F0F0F0";
+
         return "#E0E0E0";
     }
 
+    private void setupSizes(Product product) {
+        binding.chipGroupSizes.removeAllViews();
+        
+        java.util.List<String> sizeNames = new java.util.ArrayList<>();
+        
+        // 1. Lấy từ variants (nguồn chính xác về tồn kho)
+        if (product.getVariants() != null) {
+            for (com.project.models.ProductVariant v : product.getVariants()) {
+                if (v.getSize() != null && !sizeNames.contains(v.getSize())) {
+                    sizeNames.add(v.getSize());
+                }
+            }
+        }
+        
+        // 2. Lấy bổ sung từ sizes (để hiện các size đã hết hàng hoàn toàn, không có trong variants)
+        if (product.getSizes() != null) {
+            for (Product.ProductSize ps : product.getSizes()) {
+                if (ps.getSize() != null && !sizeNames.contains(ps.getSize())) {
+                    sizeNames.add(ps.getSize());
+                }
+            }
+        }
+
+        if (sizeNames.isEmpty()) {
     private void setupSizes(List<com.project.models.ProductVariant> variants) {
         binding.chipGroupSizes.removeAllViews();
         if (variants == null || variants.isEmpty()) {
@@ -267,20 +343,30 @@ public class ProductDetailActivity extends AppCompatActivity {
             return;
         }
 
+        // Sắp xếp kích cỡ để hiển thị đúng thứ tự (ví dụ: 36, 37, 38 hoặc S, M, L)
+        try {
+            sizeNames.sort((s1, s2) -> {
+                try {
+                    Double d1 = Double.parseDouble(s1.replaceAll("[^0-9.]", ""));
+                    Double d2 = Double.parseDouble(s2.replaceAll("[^0-9.]", ""));
+                    return d1.compareTo(d2);
+                } catch (Exception e) {
+                    // Logic sắp xếp cho S, M, L, XL
+                    String order = "XXS XS S M L XL XXL 2XL 3XL";
+                    int i1 = order.indexOf(s1.toUpperCase());
+                    int i2 = order.indexOf(s2.toUpperCase());
+                    if (i1 != -1 && i2 != -1) return Integer.compare(i1, i2);
+                    return s1.compareTo(s2);
+                }
+            });
+        } catch (Exception ignored) {}
+
         binding.txtSelectedSizeLabel.setVisibility(View.VISIBLE);
         binding.txtSelectedSizeLabel.setText("Kích cỡ");
 
-        Set<String> processedSizes = new HashSet<>();
         int firstAvailableId = -1;
-        String firstAvailableSize = "";
 
-        for (com.project.models.ProductVariant variant : variants) {
-            String sizeName = variant.getSize();
-            if (sizeName == null || processedSizes.contains(sizeName)) {
-                continue;
-            }
-            processedSizes.add(sizeName);
-
+        for (String sizeName : sizeNames) {
             Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_chip_variant, binding.chipGroupSizes, false);
             chip.setText(sizeName);
             
@@ -294,14 +380,24 @@ public class ProductDetailActivity extends AppCompatActivity {
                 }
             });
 
-            // Handle stock
-            if (variant.getQuantity() <= 0) {
+            // Kiểm tra xem size này có còn hàng không (trong bất kỳ variant nào)
+            boolean hasStock = false;
+            if (product.getVariants() != null) {
+                for (com.project.models.ProductVariant v : product.getVariants()) {
+                    if (sizeName.equals(v.getSize()) && v.getQuantity() > 0) {
+                        hasStock = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasStock) {
                 chip.setEnabled(false);
                 chip.setAlpha(0.3f);
+                chip.setCheckable(false); // Không cho phép chọn nếu hết hàng
             } else {
                 if (firstAvailableId == -1) {
                     firstAvailableId = chipId;
-                    firstAvailableSize = sizeName;
                 }
             }
 

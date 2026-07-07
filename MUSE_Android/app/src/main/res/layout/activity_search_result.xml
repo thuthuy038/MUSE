@@ -128,7 +128,7 @@
                 android:orientation="horizontal">
 
                 <LinearLayout
-                    android:id="@+id/btnFilterPrice"
+                    android:id="@+id/btnFilterCategory"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:background="@drawable/bg_filter_button"
@@ -140,16 +140,17 @@
                         android:layout_height="16dp"
                         android:src="@drawable/ic_chevron_down_pink" />
                     <TextView
+                        android:id="@+id/txtFilterCategory"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:text="Khoảng giá"
+                        android:text="Danh mục"
                         android:textColor="#333333"
                         android:textSize="12sp" />
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/btnFilterColor"
+                    android:id="@+id/btnFilterPrice"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:layout_marginStart="8dp"
@@ -162,13 +163,15 @@
                         android:layout_height="16dp"
                         android:src="@drawable/ic_chevron_down_pink" />
                     <TextView
+                        android:id="@+id/txtFilterPrice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:text="Màu sắc"
+                        android:text="Khoảng giá"
                         android:textColor="#333333"
                         android:textSize="12sp" />
                 </LinearLayout>
+
 
                 <LinearLayout
                     android:id="@+id/btnFilterSize"
@@ -184,10 +187,34 @@
                         android:layout_height="16dp"
                         android:src="@drawable/ic_chevron_down_pink" />
                     <TextView
+                        android:id="@+id/txtFilterSize"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
                         android:text="Kích cỡ"
+                        android:textColor="#333333"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/btnFilterStar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_filter_button"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_down_pink" />
+                    <TextView
+                        android:id="@+id/txtFilterStar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="Sao đánh giá"
                         android:textColor="#333333"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -251,6 +278,33 @@
         app:layout_constraintTop_toBottomOf="@id/infoBar"
         app:layout_constraintBottom_toTopOf="@id/txtDisclaimer"
         tools:listitem="@layout/item_product_vertical" />
+
+    <!-- Loading UI -->
+    <LinearLayout
+        android:id="@+id/loadingLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/rvProducts"
+        app:layout_constraintBottom_toBottomOf="@id/rvProducts">
+
+        <ProgressBar
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:indeterminateTint="@color/primary_500" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Đang tìm kiếm sản phẩm..."
+            android:textColor="#666666"
+            android:textSize="14sp" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/txtDisclaimer"
