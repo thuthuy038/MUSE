@@ -11,8 +11,6 @@ import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.project.muse_android.databinding.FragmentPromotionDetailsBottomSheetBinding;
 
-import java.text.DecimalFormat;
-
 public class PromotionDetailsBottomSheetFragment extends BottomSheetDialogFragment {
 
     private FragmentPromotionDetailsBottomSheetBinding binding;
@@ -58,8 +56,10 @@ public class PromotionDetailsBottomSheetFragment extends BottomSheetDialogFragme
     }
 
     private String formatPrice(double price) {
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        return formatter.format(price).replace(",", ".") + "đ";
+        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(new java.util.Locale("vi", "VN"));
+        symbols.setGroupingSeparator('.');
+        java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("#,###", symbols);
+        return decimalFormat.format(price) + " VNĐ";
     }
 
     @Override

@@ -315,10 +315,12 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadBanners() {
+        if (binding == null) return;
         binding.vpBanners.setAlpha(0.5f);
         homeApiService.getBanners().enqueue(new Callback<List<Banner>>() {
             @Override
             public void onResponse(Call<List<Banner>> call, Response<List<Banner>> response) {
+                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     bannerList.clear();
                     for (Banner banner : response.body()) {
@@ -336,10 +338,12 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadCategories() {
+        if (binding == null) return;
         binding.rvCategories.setAlpha(0.5f);
         homeApiService.getCategories().enqueue(new Callback<List<Category>>() {
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     allCategories.clear();
                     for (Category cat : response.body()) {

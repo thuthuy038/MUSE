@@ -130,7 +130,8 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 size = variant.getSize();
             }
 
-            int quantity = product.getQuantity() > 0 ? product.getQuantity() : quantityMap.getOrDefault(product.getId(), 1);
+            int quantity = product.getQuantity() > 0 ? product.getQuantity() : 1;
+            quantityMap.put(product.getId(), quantity);
 
             if (mode == HorizontalProductMode.CART) {
                 binding.cbSelect.setVisibility(View.VISIBLE);
@@ -205,16 +206,18 @@ public class HorizontalProductAdapter extends ProductAdapter {
 
             // Quantity
             binding.btnAdd.setOnClickListener(v -> {
-                int q = quantityMap.getOrDefault(product.getId(), 1) + 1;
+                int q = product.getQuantity() + 1;
+                product.setQuantity(q);
                 quantityMap.put(product.getId(), q);
                 binding.txtQuantity.setText(String.valueOf(q));
                 if (actionListener != null) actionListener.onQuantityChanged(product, getBindingAdapterPosition(), q);
             });
 
             binding.btnMinus.setOnClickListener(v -> {
-                int q = quantityMap.getOrDefault(product.getId(), 1);
+                int q = product.getQuantity();
                 if (q > 1) {
                     q--;
+                    product.setQuantity(q);
                     quantityMap.put(product.getId(), q);
                     binding.txtQuantity.setText(String.valueOf(q));
                     if (actionListener != null) actionListener.onQuantityChanged(product, getBindingAdapterPosition(), q);

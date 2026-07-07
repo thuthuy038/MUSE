@@ -33,9 +33,9 @@ public class CheckoutActivity extends AppCompatActivity {
     
     private double originalTotal = 0;
     private double productDiscount = 0;
-    private double voucherDiscount = 10000; // Mock
-    private double shippingFee = 20000; // Mock default
-    private double shippingDiscount = 10000; // Mock
+    private double voucherDiscount = 0; 
+    private double shippingFee = 50000; 
+    private double shippingDiscount = 50000; 
 
     private int selectedShippingMethod = 1; // 1: Standard, 2: Fast, 3: Express
     private int selectedPaymentMethod = 1; // 1: COD, 2: Bank, 3: Momo, 4: VNPay
@@ -64,6 +64,9 @@ public class CheckoutActivity extends AppCompatActivity {
         if (list != null) {
             checkoutProducts.addAll(list);
         }
+        
+        // Retrieve voucher discount passed from CartFragment
+        voucherDiscount = getIntent().getDoubleExtra("voucher_discount", 0);
     }
 
     private void setupUI() {
@@ -91,6 +94,10 @@ public class CheckoutActivity extends AppCompatActivity {
 
         binding.btnSelectVoucher.setOnClickListener(v -> {
             VoucherBottomSheetFragment voucherSheet = new VoucherBottomSheetFragment();
+            voucherSheet.setOnVoucherSelectedListener((discount, shipping) -> {
+                this.voucherDiscount = discount;
+                calculatePrices();
+            });
             voucherSheet.show(getSupportFragmentManager(), "VoucherBottomSheet");
         });
 
@@ -173,21 +180,18 @@ public class CheckoutActivity extends AppCompatActivity {
                 binding.cardShippingStandard.setStrokeColor(android.graphics.Color.parseColor("#008B86"));
                 binding.ivCheckStandard.setImageResource(R.drawable.ic_check_circle);
                 binding.ivCheckStandard.setColorFilter(android.graphics.Color.parseColor("#008B86"));
-                shippingFee = 20000;
                 break;
             case 2:
                 binding.cardShippingFast.setCardBackgroundColor(android.graphics.Color.parseColor("#F0FEFF"));
                 binding.cardShippingFast.setStrokeColor(android.graphics.Color.parseColor("#008B86"));
                 binding.ivCheckFast.setImageResource(R.drawable.ic_check_circle);
                 binding.ivCheckFast.setColorFilter(android.graphics.Color.parseColor("#008B86"));
-                shippingFee = 40000;
                 break;
             case 3:
                 binding.cardShippingExpress.setCardBackgroundColor(android.graphics.Color.parseColor("#F0FEFF"));
                 binding.cardShippingExpress.setStrokeColor(android.graphics.Color.parseColor("#008B86"));
                 binding.ivCheckExpress.setImageResource(R.drawable.ic_check_circle);
                 binding.ivCheckExpress.setColorFilter(android.graphics.Color.parseColor("#008B86"));
-                shippingFee = 60000;
                 break;
         }
     }
@@ -246,29 +250,34 @@ public class CheckoutActivity extends AppCompatActivity {
     private void calculatePrices() {
         originalTotal = 0;
         productDiscount = 0;
+        double itemTotalDiscounted = 0;
         int totalQuantity = 0;
 
         for (Product p : checkoutProducts) {
             int q = p.getQuantity() > 0 ? p.getQuantity() : 1;
             totalQuantity += q;
+            
             originalTotal += p.getPrice() * q;
-            if (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) {
-                productDiscount += (p.getPrice() - p.getDiscountPrice()) * q;
-            }
+            double discPrice = (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) 
+                    ? p.getDiscountPrice() : p.getPrice();
+            
+            itemTotalDiscounted += discPrice * q;
+            productDiscount += (p.getPrice() - discPrice) * q;
         }
 
-        double totalSavings = productDiscount + voucherDiscount;
-        double finalTotal = originalTotal - totalSavings + (shippingFee - shippingDiscount);
+        double finalTotal = itemTotalDiscounted + shippingFee - shippingDiscount - voucherDiscount;
 
         binding.txtTotalCountLabel.setText("Tổng số tiền (" + totalQuantity + " sản phẩm)");
-        binding.txtTotalItemsPrice.setText(formatPrice(originalTotal - productDiscount));
+        binding.txtTotalItemsPrice.setText(formatPrice(itemTotalDiscounted));
 
-        binding.txtSubtotal.setText(formatPrice(originalTotal));
+        binding.txtSubtotal.setText(formatPrice(itemTotalDiscounted));
+        binding.txtShippingFee.setText(formatPrice(shippingFee));
+        binding.txtShippingDiscount.setText("-" + formatPrice(shippingDiscount));
         binding.txtVoucherDiscount.setText("-" + formatPrice(voucherDiscount));
         binding.txtTotalAmount.setText(formatPrice(finalTotal));
         
         binding.txtBottomTotal.setText(formatPrice(finalTotal));
-        binding.txtBottomSavings.setText("Tiết kiệm: " + formatPrice(totalSavings));
+        binding.txtBottomSavings.setText("Tiết kiệm: " + formatPrice(productDiscount + voucherDiscount));
     }
 
     private String formatPrice(double price) {
