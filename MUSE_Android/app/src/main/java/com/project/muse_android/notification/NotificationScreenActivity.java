@@ -1,59 +1,73 @@
 package com.project.muse_android.notification;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import com.google.android.material.tabs.TabLayoutMediator;
-import com.project.muse_android.databinding.ActivityNotificationTabsBinding;
+import androidx.core.content.ContextCompat;
+
+import com.project.muse_android.databinding.NotificationScreenBinding;
 import com.project.muse_android.main.MainActivity;
-import com.project.utils.ViewUtils;
 
 public class NotificationScreenActivity extends AppCompatActivity {
 
-    private ActivityNotificationTabsBinding binding;
+    private NotificationScreenBinding binding;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Toast.makeText(this, "Đã bật thông báo", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Thông báo bị từ chối", Toast.LENGTH_SHORT).show();
+                }
+                navigateToMain();
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityNotificationTabsBinding.inflate(getLayoutInflater());
+        binding = NotificationScreenBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Header Padding
-        ViewUtils.applySystemBarsPadding(binding.header, true, false);
+        binding.btnEnable.setOnClickListener(v -> checkAndRequestNotificationPermission());
 
-        setupTabs();
-        
-        binding.viewPager.setUserInputEnabled(true);
+        binding.btnLater.setOnClickListener(v -> navigateToMain());
+
+        binding.btnSkip.setOnClickListener(v -> navigateToMain());
+
+        binding.btnGetStarted.setOnClickListener(v -> navigateToMain());
+
+        binding.btnPrev.setOnClickListener(v -> finish());
     }
 
-    private void setupTabs() {
-        binding.viewPager.setAdapter(new FragmentStateAdapter(this) {
-            @NonNull
-            @Override
-            public Fragment createFragment(int position) {
-                switch (position) {
-                    case 0: return NotificationListFragment.newInstance("promotion");
-                    case 1: return NotificationListFragment.newInstance("system");
-                    case 2: return NotificationListFragment.newInstance("order");
-                    default: return new Fragment();
-                }
+    private void checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                navigateToMain();
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
+        } else {
+            navigateToMain();
+        }
+    }
 
-            @Override
-            public int getItemCount() {
-                return 3;
-            }
-        });
+    private void navigateToMain() {
+        com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(this);
+        sessionManager.setShouldShowOffer(true);
 
-        new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
-            switch (position) {
-                case 0: tab.setText("Khuyến mãi"); break;
-                case 1: tab.setText("Hệ thống"); break;
-                case 2: tab.setText("Đơn hàng"); break;
-            }
-        }).attach();
+        Intent intent = new Intent(NotificationScreenActivity.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 }
+
