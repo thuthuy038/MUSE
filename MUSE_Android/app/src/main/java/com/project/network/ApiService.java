@@ -156,6 +156,11 @@ public interface ApiService {
         @retrofit2.http.Part okhttp3.MultipartBody.Part avatar
     );
 
+    @GET("api/reviews/product/{productId}")
+    Call<com.project.models.ReviewResponse> getProductReviews(
+            @Path("productId") String productId
+    );
+
     @GET
     Call<java.util.List<com.project.models.Province>> getProvinces(
         @retrofit2.http.Url String url

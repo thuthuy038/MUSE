@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="16dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
+        <ImageView
+            android:id="@+id/imgUserAvatar"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/account_circle"
+            android:scaleType="centerCrop"
+            app:tint="@color/primary_500"
+            android:layout_centerVertical="true" />
+        <TextView
+            android:id="@+id/txtUserName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/imgUserAvatar"
+            android:layout_marginStart="12dp"
+            android:text="Bichchamzzzzz"
+            android:textColor="#333333"
+            android:textSize="14sp"
+            android:fontFamily="@font/montserrat"
+            android:layout_centerVertical="true" />
+        <TextView
+            android:id="@+id/txtHelpful"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="Hữu ích (3) 👍"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:fontFamily="@font/montserrat"
+            android:layout_centerVertical="true" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutStars"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/star" app:tint="#FFD93D"/>
+        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/star" app:tint="#FFD93D"/>
+        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/star" app:tint="#FFD93D"/>
+        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/star" app:tint="#FFD93D"/>
+        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/star" app:tint="#FFD93D"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtVariantInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Phân loại: Hồng, M"
+        android:textColor="#999999"
+        android:textSize="13sp"
+        android:fontFamily="@font/montserrat" />
+
+    <TextView
+        android:id="@+id/txtComment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Mình 1m52 46kg mặc vừa tới đầu gối, fix nha, peak nha. Êm lắm, còn phần tay áo thì mỏng, có độ co giãn, mặc khá thoải ..."
+        android:textColor="#333333"
+        android:textSize="14sp"
+        android:lineSpacingExtra="4dp"
+        android:fontFamily="@font/montserrat" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvReviewImages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:visibility="visible" />
+
+    <TextView
+        android:id="@+id/txtReviewDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="19:07, 16/6/2026"
+        android:textColor="#999999"
+        android:textSize="12sp"
+        android:fontFamily="@font/montserrat" />
+</LinearLayout>
