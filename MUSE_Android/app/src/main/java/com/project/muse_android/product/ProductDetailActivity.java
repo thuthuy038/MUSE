@@ -16,6 +16,7 @@ import androidx.core.view.WindowCompat;
 
 import androidx.viewpager2.widget.ViewPager2;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
@@ -26,11 +27,14 @@ import com.google.android.material.chip.Chip;
 import com.project.models.Category;
 import com.project.models.Product;
 import com.project.models.ProductVariant;
+import com.project.models.ProductReview;
 import com.project.muse_android.R;
 import com.project.muse_android.main.MainActivity;
 import com.project.muse_android.search.SearchActivity;
 import com.project.muse_android.cart.ProductVariantBottomSheetFragment;
 import com.project.muse_android.checkout.CheckoutActivity;
+import com.project.adapters.ProductReviewAdapter;
+import com.project.models.ReviewResponse;
 import com.project.muse_android.databinding.ActivityProductDetailBinding;
 import com.project.network.HomeApiClient;
 import com.project.network.ApiService;
@@ -90,6 +94,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         if (productId != null) {
             loadProductDetail();
+            loadReviews();
         } else {
             Toast.makeText(this, "Không tìm thấy mã sản phẩm", Toast.LENGTH_SHORT).show();
             finish();
@@ -150,7 +155,13 @@ public class ProductDetailActivity extends AppCompatActivity {
         binding.txtReviewTitle.setText(String.format(Locale.getDefault(), "Đánh giá sản phẩm (%d)", product.getReviewCount()));
 
         // Stock and Category
-        binding.txtStockInfo.setText(product.getStock() > 0 ? "Kho còn hàng" : "Hết hàng");
+        binding.txtStockDetail.setText(product.getStock() > 0 ? String.format(Locale.getDefault(), "Còn hàng (%d)", product.getStock()) : "Hết hàng");
+        binding.txtMaterialDetail.setText(product.getMaterial() != null && !product.getMaterial().isEmpty() ? product.getMaterial() : "-");
+
+        // Static info as requested
+        binding.txtOriginDetail.setText("Việt Nam");
+        binding.txtShipFromDetail.setText("Thành phố Hồ Chí Minh");
+
         if (product.getStock() <= 0) {
             binding.txtSoldOut.setVisibility(View.VISIBLE);
             binding.btnBuyNow.setEnabled(false);
@@ -214,7 +225,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                     for (Category cat : response.body()) {
                         if (cat.getId().equals(categoryId)) {
                             binding.txtCategoryBreadcrumb.setText(cat.getName().toUpperCase());
-                            binding.txtCategoryInfo.setText(String.format("Danh mục %s", cat.getName()));
+                            binding.txtCategoryDetail.setText(cat.getName());
                             break;
                         }
                     }
@@ -440,6 +451,12 @@ public class ProductDetailActivity extends AppCompatActivity {
             binding.imgSizeGuideContent.setVisibility(isVisible ? View.GONE : View.VISIBLE);
             binding.imgSizeGuideArrow.setRotation(isVisible ? 0 : 90);
         });
+
+        binding.btnToggleInfo.setOnClickListener(v -> {
+            boolean isVisible = binding.layoutInfoContent.getVisibility() == View.VISIBLE;
+            binding.layoutInfoContent.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+            binding.imgInfoArrow.setRotation(isVisible ? 0 : 90);
+        });
     }
 
     private String formatPrice(double price) {
@@ -507,6 +524,48 @@ public class ProductDetailActivity extends AppCompatActivity {
             currentProduct.setFavorite(!currentProduct.isFavorite());
             updateFavoriteUI(currentProduct.isFavorite());
             Toast.makeText(this, currentProduct.isFavorite() ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.btnSeeAllReviews.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProductReviewsActivity.class);
+            intent.putExtra("product_id", productId);
+            startActivity(intent);
+        });
+    }
+
+    private void loadReviews() {
+        ApiService service = HomeApiClient.getApiService();
+        service.getProductReviews(productId).enqueue(new Callback<ReviewResponse>() {
+            @Override
+            public void onResponse(Call<ReviewResponse> call, Response<ReviewResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    List<com.project.models.ProductReview> allReviews = response.body().getData();
+                    if (!allReviews.isEmpty()) {
+                        // Display only 1 review in detail screen
+                        List<com.project.models.ProductReview> singleReviewList = new ArrayList<>();
+                        singleReviewList.add(allReviews.get(0));
+
+                        ProductReviewAdapter adapter = new ProductReviewAdapter(singleReviewList);
+                        adapter.setOnImageClickListener((images, imgPos) -> {
+                            Intent intent = new Intent(ProductDetailActivity.this, FullScreenImageActivity.class);
+                            intent.putStringArrayListExtra("images", new ArrayList<>(images));
+                            intent.putExtra("position", imgPos);
+                            startActivity(intent);
+                        });
+
+                        binding.rvSingleReview.setLayoutManager(new LinearLayoutManager(ProductDetailActivity.this));
+                        binding.rvSingleReview.setAdapter(adapter);
+                        binding.rvSingleReview.setVisibility(View.VISIBLE);
+                    } else {
+                        binding.rvSingleReview.setVisibility(View.GONE);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReviewResponse> call, Throwable t) {
+                // Silently fail for detail screen
+            }
         });
     }
     private void navigateToCheckout(Product product, String color, String size, int quantity) {

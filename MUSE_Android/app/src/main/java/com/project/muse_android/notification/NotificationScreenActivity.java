@@ -9,17 +9,15 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.project.muse_android.databinding.NotificationScreenBinding;
 import com.project.muse_android.main.MainActivity;
-import com.project.utils.ViewUtils;
 
 public class NotificationScreenActivity extends AppCompatActivity {
 
-    private ActivityNotificationTabsBinding binding;
+    private NotificationScreenBinding binding;
 
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -34,7 +32,7 @@ public class NotificationScreenActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityNotificationTabsBinding.inflate(getLayoutInflater());
+        binding = NotificationScreenBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         binding.btnEnable.setOnClickListener(v -> checkAndRequestNotificationPermission());
