@@ -1,11 +1,14 @@
 package com.project.muse_android.search;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -36,6 +39,18 @@ public class SearchActivity extends AppCompatActivity {
     private HomeApiService apiService;
     private SessionManager sessionManager;
 
+    private final ActivityResultLauncher<Intent> resultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    boolean shouldClear = result.getData().getBooleanExtra("clear_search", false);
+                    if (shouldClear) {
+                        binding.edtSearch.setText("");
+                    }
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +73,16 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void setupUI() {
-        binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnBack.setOnClickListener(v -> {
+            // Khi nhấn back, nếu ô tìm kiếm trống thì trả kết quả về để trang trước xóa text
+            String query = binding.edtSearch.getText().toString().trim();
+            if (query.isEmpty()) {
+                android.content.Intent resultIntent = new android.content.Intent();
+                resultIntent.putExtra("clear_search", true);
+                setResult(RESULT_OK, resultIntent);
+            }
+            finish();
+        });
 
         binding.imgCart.setOnClickListener(v -> {
             android.content.Intent intent = new android.content.Intent(this, MainActivity.class);
@@ -84,7 +108,14 @@ public class SearchActivity extends AppCompatActivity {
             updateHistoryVisibility();
         });
 
-        binding.btnViewCategories.setOnClickListener(v -> finish()); // Go back to Home
+        binding.btnViewCategories.setOnClickListener(v -> {
+            // Chuyển sang tab Explore (Khám phá) thông qua MainActivity
+            android.content.Intent intent = new android.content.Intent(this, MainActivity.class);
+            intent.putExtra("open_explore", true);
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            finish();
+        });
 
         binding.imgVoiceSearch.setOnClickListener(v -> Toast.makeText(this, "Đang nghe giọng nói...", Toast.LENGTH_SHORT).show());
 
@@ -119,7 +150,7 @@ public class SearchActivity extends AppCompatActivity {
 
             android.content.Intent intent = new android.content.Intent(this, SearchResultActivity.class);
             intent.putExtra("query", query);
-            startActivity(intent);
+            resultLauncher.launch(intent);
         } else {
             Toast.makeText(this, "Vui lòng nhập nội dung tìm kiếm", Toast.LENGTH_SHORT).show();
         }

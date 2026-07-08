@@ -60,7 +60,7 @@
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
-                android:hint="Bạn đang tìm gì thế ?"
+                android:hint="Bạn đang tìm sản phẩm gì thế ?"
                 android:textColor="#333333"
                 android:textColorHint="#999999"
                 android:textSize="14sp"
@@ -176,7 +176,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="NỔI BẬT"
+                    android:text=" SẢN PHẨM BÁN CHẠY"
                     android:textColor="@color/primary_500"
                     android:textSize="16sp"
                     android:textStyle="bold" />

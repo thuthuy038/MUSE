@@ -108,12 +108,10 @@
                 android:layout_height="450dp"
                 android:background="#F5F5F5">
 
-                <ImageView
-                    android:id="@+id/imgProduct"
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/viewPagerImages"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/image" />
+                    android:layout_height="match_parent" />
 
                 <TextView
                     android:id="@+id/txtImageIndicator"

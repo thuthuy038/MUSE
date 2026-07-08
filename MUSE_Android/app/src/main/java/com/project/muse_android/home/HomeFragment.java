@@ -21,6 +21,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -78,7 +80,18 @@ public class HomeFragment extends Fragment {
     private int selectedTab = 0; // 0: Hot, 1: New
 
     private final List<Category> allCategories = new ArrayList<>();
-    private boolean isAllCategoriesShown = false;
+
+    private final ActivityResultLauncher<Intent> searchLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    boolean shouldClear = result.getData().getBooleanExtra("clear_search", false);
+                    if (shouldClear && binding != null) {
+                        binding.edtSearch.setText("");
+                    }
+                }
+            }
+    );
 
     @Nullable
     @Override
@@ -105,11 +118,7 @@ public class HomeFragment extends Fragment {
         // Sử dụng Helper để tự động đẩy Header xuống dưới Status Bar
         ViewUtils.applySystemBarsPadding(binding.header, true, false);
 
-        binding.btnViewAllCategories.setOnClickListener(v -> {
-            isAllCategoriesShown = true;
-            updateCategoryList();
-            binding.btnViewAllCategories.setVisibility(View.GONE);
-        });
+        binding.btnViewAllCategories.setVisibility(View.GONE);
 
         setInitialStates();
 
@@ -123,18 +132,17 @@ public class HomeFragment extends Fragment {
 
     private void setInitialStates() {
         if (binding == null) return;
-        binding.header.setAlpha(0f);
-        binding.searchBar.setAlpha(0f);
+        // Đặt alpha là 1 để không bị mờ lúc bắt đầu
+        binding.header.setAlpha(1f);
+        binding.searchBar.setAlpha(1f);
 
         if (binding.rvCategories != null && binding.rvCategories.getParent() instanceof LinearLayout) {
             LinearLayout contentLayout = (LinearLayout) binding.rvCategories.getParent();
             for (int i = 0; i < contentLayout.getChildCount(); i++) {
-                contentLayout.getChildAt(i).setAlpha(0f);
+                contentLayout.getChildAt(i).setAlpha(1f);
             }
         } else {
-            // Fallback: nếu không tìm thấy parent hoặc không phải LinearLayout, 
-            // đảm bảo rvProducts vẫn được ẩn để animate sau
-            binding.rvProducts.setAlpha(0f);
+            binding.rvProducts.setAlpha(1f);
         }
     }
 
@@ -171,7 +179,7 @@ public class HomeFragment extends Fragment {
         if (view == null) return;
         view.setTranslationY(startY);
         view.animate()
-                .alpha(1f)
+                .alpha(1f) // Giữ alpha 1 để không bị hiệu ứng mờ (fade in)
                 .translationY(0f)
                 .setStartDelay(delay)
                 .setDuration(duration)
@@ -219,7 +227,15 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupViewPager() {
-        bannerAdapter = new BannerAdapter(bannerList);
+        bannerAdapter = new BannerAdapter(bannerList, banner -> {
+            // Chuyển sang tab Explore (Khám phá) thông qua MainActivity
+            if (getActivity() != null) {
+                Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
+                intent.putExtra("open_explore", true);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            }
+        });
         binding.vpBanners.setAdapter(bannerAdapter);
 
         binding.vpBanners.setPageTransformer((page, position) -> {
@@ -327,7 +343,10 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupClickEffects() {
-        View.OnClickListener toSearch = v -> startActivity(new Intent(getContext(), SearchActivity.class));
+        View.OnClickListener toSearch = v -> {
+            Intent intent = new Intent(getContext(), SearchActivity.class);
+            searchLauncher.launch(intent);
+        };
         binding.searchBar.setOnClickListener(toSearch);
         binding.edtSearch.setOnClickListener(toSearch);
 
@@ -371,8 +390,16 @@ public class HomeFragment extends Fragment {
                 if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     allCategories.clear();
+
+                    // Thêm danh mục "Tất cả" với Logo
+                    Category allCategory = new Category();
+                    allCategory.setId("all");
+                    allCategory.setName("Tất cả");
+                    allCategories.add(allCategory);
+
                     for (Category cat : response.body()) {
-                        if (cat.getStatus() == null || "active".equalsIgnoreCase(cat.getStatus())) {
+                        String status = cat.getStatus();
+                        if (status == null || "active".equalsIgnoreCase(status) || "featured".equalsIgnoreCase(status)) {
                             allCategories.add(cat);
                         }
                     }
@@ -389,14 +416,12 @@ public class HomeFragment extends Fragment {
     private void updateCategoryList() {
         if (binding == null) return;
         categoryList.clear();
-        if (isAllCategoriesShown || allCategories.size() <= 6) {
-            categoryList.addAll(allCategories);
-            binding.btnViewAllCategories.setVisibility(View.GONE);
-        } else {
-            categoryList.addAll(allCategories.subList(0, 6));
-            binding.btnViewAllCategories.setVisibility(View.VISIBLE);
-        }
+        // Luôn hiện tất cả danh mục
+        categoryList.addAll(allCategories);
         categoryAdapter.notifyDataSetChanged();
+
+        // Luôn ẩn nút "Xem tất cả"
+        binding.btnViewAllCategories.setVisibility(View.GONE);
     }
 
     private void loadProducts() {

@@ -207,6 +207,20 @@ public class MainActivity extends AppCompatActivity {
             if (binding != null) {
                 binding.bottomNavigationView.setSelectedItemId(R.id.navigation_cart);
                 intent.removeExtra("open_cart");
+            } else if (intent.getBooleanExtra("open_explore", false)) {
+                navController.navigate(R.id.navigation_explore);
+                intent.removeExtra("open_explore");
+            } else if (intent.hasExtra("category_id")) {
+                String categoryId = intent.getStringExtra("category_id");
+                if (categoryId != null) {
+                    Bundle args = new Bundle();
+                    args.putString("category_id", categoryId);
+                    try {
+                        navController.navigate(R.id.navigation_category_products, args);
+                    } catch (Exception e) {
+                        android.util.Log.e("MainActivity", "Navigation failed", e);
+                    }
+                    intent.removeExtra("category_id");
             }
         } else if (intent.hasExtra("category_id")) {
             String categoryId = intent.getStringExtra("category_id");

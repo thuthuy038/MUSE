@@ -20,6 +20,8 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.project.adapters.CategoryAdapter;
@@ -103,8 +105,16 @@ public class CategoryProductsFragment extends Fragment {
         categoryAdapter = new CategoryAdapter(categoryList, category -> {
             if (category.getId().equals(selectedCategoryId)) return;
             selectedCategoryId = category.getId();
-            binding.txtHeaderTitle.setText(category.getName().toUpperCase());
-            reorderCategories(category);
+
+            if ("all".equals(selectedCategoryId)) {
+                binding.txtHeaderTitle.setText("TẤT CẢ SẢN PHẨM");
+                binding.rvHorizontalCategories.smoothScrollToPosition(0);
+            } else {
+                binding.txtHeaderTitle.setText(category.getName().toUpperCase());
+                centerCategoryItem(category.getId());
+            }
+
+            // reorderCategories(category); - REMOVED: keep position
             applyFiltersAndSort();
             categoryAdapter.setSelectedCategoryId(category.getId());
         });
@@ -328,7 +338,7 @@ public class CategoryProductsFragment extends Fragment {
             if (p.getStatus() != null && !p.getStatus().equalsIgnoreCase("active")) continue;
             
             // Horizontal Category Filter
-            if (selectedCategoryId != null && !selectedCategoryId.equals(p.getCategory())) {
+            if (selectedCategoryId != null && !selectedCategoryId.equals("all") && !selectedCategoryId.equals(p.getCategory())) {
                 boolean catMatch = false;
                 for (Category cat : categoryList) {
                     if (cat.getId().equals(selectedCategoryId) && cat.getName().equalsIgnoreCase(p.getCategory())) {
@@ -403,15 +413,42 @@ public class CategoryProductsFragment extends Fragment {
         }
     }
 
-    private void reorderCategories(Category selected) {
-        if (selected == null) return;
-        List<Category> newList = new ArrayList<>();
-        newList.add(selected);
-        for (Category c : categoryList) if (c.getId() != null && !c.getId().equals(selected.getId())) newList.add(c);
-        categoryList.clear(); categoryList.addAll(newList);
-        categoryAdapter.notifyDataSetChanged();
-        categoryAdapter.setSelectedCategoryId(selected.getId());
-        binding.rvHorizontalCategories.scrollToPosition(0);
+    private void centerCategoryItem(String categoryId) {
+        int position = -1;
+        for (int i = 0; i < categoryList.size(); i++) {
+            if (categoryList.get(i).getId().equals(categoryId)) {
+                position = i;
+                break;
+            }
+        }
+
+        if (position != -1 && binding != null && binding.rvHorizontalCategories.getLayoutManager() != null) {
+            final int targetPos = position;
+            final RecyclerView rv = binding.rvHorizontalCategories;
+            final LinearLayoutManager layoutManager = (LinearLayoutManager) rv.getLayoutManager();
+
+            rv.post(() -> {
+                View targetView = layoutManager.findViewByPosition(targetPos);
+                int offset = 0;
+                
+                if (targetPos == 0) {
+                    // Item đầu tiên ("Tất cả") luôn nằm sát trái
+                    offset = 0;
+                } else if (targetView != null) {
+                    // Tính toán offset để đưa item vào giữa
+                    int rvWidth = rv.getWidth();
+                    int itemWidth = targetView.getWidth();
+                    offset = (rvWidth / 2) - (itemWidth / 2);
+                } else {
+                    // Fallback nếu view chưa được load: giả định item rộng khoảng 100dp
+                    float density = getResources().getDisplayMetrics().density;
+                    int assumedItemWidth = (int) (100 * density);
+                    offset = (rv.getWidth() / 2) - (assumedItemWidth / 2);
+                }
+
+                layoutManager.scrollToPositionWithOffset(targetPos, offset);
+            });
+        }
     }
 
     private void loadCategories() {
@@ -420,24 +457,39 @@ public class CategoryProductsFragment extends Fragment {
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     categoryList.clear();
-                    Category sel = null; List<Category> others = new ArrayList<>();
+
+                    // 1. ALWAYS add "Tất cả" category FIRST
+                    Category allCategory = new Category();
+                    allCategory.setId("all");
+                    allCategory.setName("Tất cả");
+                    categoryList.add(allCategory);
+
+                    if ("all".equals(selectedCategoryId)) {
+                        if (binding != null) binding.txtHeaderTitle.setText("TẤT CẢ SẢN PHẨM");
+                    }
+
+                    // 2. Add other active/featured categories in their DB order
                     for (Category cat : response.body()) {
-                        // Show only active categories
-                        if (cat.getStatus() == null || "active".equalsIgnoreCase(cat.getStatus())) {
-                            if (cat.getId().equals(selectedCategoryId)) { 
-                                sel = cat; 
+                        String status = cat.getStatus();
+                        if (status == null || "active".equalsIgnoreCase(status) || "featured".equalsIgnoreCase(status)) {
+                            categoryList.add(cat);
+                            if (cat.getId().equals(selectedCategoryId)) {
                                 if (binding != null) binding.txtHeaderTitle.setText(cat.getName().toUpperCase());
                             }
-                            else others.add(cat);
                         }
                     }
-                    if (sel != null) categoryList.add(sel);
-                    categoryList.addAll(others);
+
                     if (isAdded() && binding != null) {
                         categoryAdapter.notifyDataSetChanged();
                         if (selectedCategoryId != null) { 
-                            categoryAdapter.setSelectedCategoryId(selectedCategoryId); 
-                            binding.rvHorizontalCategories.scrollToPosition(0); 
+                            categoryAdapter.setSelectedCategoryId(selectedCategoryId);
+
+                            if ("all".equals(selectedCategoryId)) {
+                                binding.rvHorizontalCategories.scrollToPosition(0);
+                            } else {
+                                // Scroll to center selected item
+                                binding.rvHorizontalCategories.post(() -> centerCategoryItem(selectedCategoryId));
+                            }
                         }
                     }
                 }
