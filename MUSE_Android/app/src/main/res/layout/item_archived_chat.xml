@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@android:color/white"
+    app:strokeColor="#FFF0F3"
+    app:strokeWidth="1dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/imgChatIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/img_aiphongcach"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_chip_pink" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_toEndOf="@id/imgChatIcon"
+            android:layout_toStartOf="@+id/btnDeleteChat"
+            android:layout_marginStart="16dp"
+            android:layout_centerVertical="true">
+
+            <TextView
+                android:id="@+id/tvChatTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tư vấn phong cách"
+                android:textColor="@color/neutral_900"
+                android:fontFamily="@font/montserrat_bold"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvChatDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="07/07/2026"
+                android:textColor="@color/neutral_500"
+                android:textSize="12sp"
+                android:fontFamily="@font/montserrat" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/btnDeleteChat"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_remove"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:padding="2dp"
+            app:tint="@color/primary_500"
+            android:contentDescription="Xóa lịch sử" />
+
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

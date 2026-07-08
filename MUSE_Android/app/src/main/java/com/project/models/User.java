@@ -44,13 +44,19 @@ public class User {
     @com.google.gson.annotations.SerializedName("profileCompleted")
     private boolean profileCompleted = false;
 
-    public static class Address {
+    public static class Address implements java.io.Serializable {
+        private String _id;
         private String street;
         private String ward;
         private String district;
         private String province;
         private String addressNote;
         private boolean isDefault;
+        @com.google.gson.annotations.SerializedName(value = "fullName", alternate = {"name"})
+        private String fullName;
+        @com.google.gson.annotations.SerializedName(value = "phone", alternate = {"phoneNumber", "phone_number"})
+        private String phone;
+        private String type; // office, nha_rieng
 
         public Address() {}
 
@@ -62,6 +68,9 @@ public class User {
             this.addressNote = addressNote;
             this.isDefault = isDefault;
         }
+
+        public String get_id() { return _id; }
+        public void set_id(String _id) { this._id = _id; }
 
         public String getStreet() { return street; }
         public void setStreet(String street) { this.street = street; }
@@ -80,6 +89,15 @@ public class User {
 
         public boolean isDefault() { return isDefault; }
         public void setDefault(boolean isDefault) { this.isDefault = isDefault; }
+
+        public String getFullName() { return fullName; }
+        public void setFullName(String fullName) { this.fullName = fullName; }
+
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
+
+        public String getType() { return type; }
+        public void setType(String type) { this.type = type; }
     }
 
     public static class Payment {

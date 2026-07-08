@@ -34,6 +34,7 @@ public class ApiClient {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(Product.ProductSize.class, new ProductSizeDeserializer())
                 .registerTypeAdapter(ProductImage.class, new ProductImageDeserializer())
+                .setLenient()
                 .create();
 
         Retrofit retrofit = new Retrofit.Builder()

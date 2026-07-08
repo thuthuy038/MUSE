@@ -21,6 +21,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MUSE_Android">
         <activity
+            android:name=".order.OrderDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".address.EditShippingAddressActivity"
             android:exported="false" />
         <activity
@@ -51,6 +54,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
         <activity
             android:name=".auth.AISetupActivity"
             android:exported="false" />
@@ -65,6 +69,12 @@
             android:exported="false" />
         <activity
             android:name=".policy.TermsOfUseActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.ProductReviewsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.FullScreenImageActivity"
             android:exported="false" />
         <activity
             android:name=".product.ProductDetailActivity"

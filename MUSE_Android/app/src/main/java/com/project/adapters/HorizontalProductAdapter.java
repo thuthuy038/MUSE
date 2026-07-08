@@ -170,9 +170,15 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 binding.layoutActions.setVisibility(View.GONE);
 
                 binding.txtVariantReadOnly.setText(color + ", " + size);
-                binding.txtDiscountPriceReadOnly.setText(formatPrice(product.getDiscountPrice() != null ? product.getDiscountPrice() : 0));
-                binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
-                binding.txtOriginalPrice.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                double discPrice = (product.getDiscountPrice() != null && product.getDiscountPrice() > 0) ? product.getDiscountPrice() : product.getPrice();
+                binding.txtDiscountPriceReadOnly.setText(formatPrice(discPrice));
+                if (product.getDiscountPrice() != null && product.getDiscountPrice() > 0 && product.getDiscountPrice() < product.getPrice()) {
+                    binding.txtOriginalPrice.setVisibility(View.VISIBLE);
+                    binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
+                    binding.txtOriginalPrice.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                } else {
+                    binding.txtOriginalPrice.setVisibility(View.GONE);
+                }
                 binding.txtReadonlyQuantity.setText("x" + quantity);
 
                 // Disable scroll for READ_ONLY mode

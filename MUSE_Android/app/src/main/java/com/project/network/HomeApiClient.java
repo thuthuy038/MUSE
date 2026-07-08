@@ -42,7 +42,9 @@ public class HomeApiClient {
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(Product.ProductSize.class, new ProductSizeDeserializer())
                     .registerTypeAdapter(Product.ProductImage.class, new ProductImageDeserializer())
+                    .setLenient()
                     .create();
+
 
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
