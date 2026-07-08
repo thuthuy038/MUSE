@@ -253,26 +253,53 @@ public class CartManager {
         String safeColor = color != null ? color : "";
         String safeSize = size != null ? size : "";
 
+        CartItem existing = cartDao.getByVariant(productId, safeColor, safeSize);
+
         if (sessionManager.isLoggedIn()) {
             String userId = sessionManager.getUserId();
-            CartRequest request = new CartRequest(userId, productId, quantity, safeColor, safeSize, price);
-            apiService.updateCartQuantity(request).enqueue(new Callback<ApiResponse<Void>>() {
+            int oldQuantity = (existing != null) ? existing.getQuantity() : 0;
+            int delta = quantity - oldQuantity;
+
+            if (delta == 0) {
+                callback.onSuccess(null);
+                return;
+            }
+
+            String name = (existing != null) ? existing.getName() : "";
+            String imageUrl = (existing != null) ? existing.getImageUrl() : "";
+
+            CartRequest request = new CartRequest(userId, productId, name, imageUrl, safeSize, safeColor, delta, price);
+            apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
                 @Override
                 public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                    if (response.isSuccessful()) callback.onSuccess(null);
-                    else callback.onError("Error updating quantity on server");
+                    if (response.isSuccessful()) {
+                        if (existing != null) {
+                            existing.setQuantity(quantity);
+                            cartDao.update(existing);
+                        }
+                        callback.onSuccess(null);
+                    } else {
+                        String errMsg = "Error updating quantity on server: " + response.code();
+                        try {
+                            if (response.errorBody() != null) {
+                                errMsg += " - " + response.errorBody().string();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        callback.onError(errMsg);
+                    }
                 }
 
                 @Override
                 public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                    callback.onError(t.getMessage());
+                    callback.onError("Fail: " + t.toString());
                 }
             });
         } else {
-            CartItem item = cartDao.getByVariant(productId, safeColor, safeSize);
-            if (item != null) {
-                item.setQuantity(quantity);
-                cartDao.update(item);
+            if (existing != null) {
+                existing.setQuantity(quantity);
+                cartDao.update(existing);
             }
             callback.onSuccess(null);
         }

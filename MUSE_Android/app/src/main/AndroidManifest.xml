@@ -41,9 +41,15 @@
             android:name=".checkout.CheckoutActivity"
             android:exported="false" />
         <activity
-            android:name=".auth.AuthActivity"
+            android:name=".ai.ChatBotActivity"
             android:exported="false" />
         <activity
+            android:name=".ai.ArchivalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ai.VirtualFittingActivity"
+            android:exported="false" />
+                <activity
             android:name=".auth.AuthActivity"
             android:exported="false" />
 

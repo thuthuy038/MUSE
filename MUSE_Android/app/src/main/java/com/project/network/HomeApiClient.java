@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.project.models.Product;
 import com.project.models.ProductImageDeserializer;
 import com.project.models.ProductSizeDeserializer;
+import com.project.models.Order;
+import com.project.models.PaymentDeserializer;
 
 import java.util.concurrent.TimeUnit;
 
@@ -42,6 +44,7 @@ public class HomeApiClient {
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(Product.ProductSize.class, new ProductSizeDeserializer())
                     .registerTypeAdapter(Product.ProductImage.class, new ProductImageDeserializer())
+                    .registerTypeAdapter(Order.Payment.class, new PaymentDeserializer())
                     .setLenient()
                     .create();
 

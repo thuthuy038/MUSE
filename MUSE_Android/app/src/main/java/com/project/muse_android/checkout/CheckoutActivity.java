@@ -454,7 +454,9 @@ public class CheckoutActivity extends AppCompatActivity {
             public void onFailure(@NonNull Call<Order> call, @NonNull Throwable t) {
                 binding.btnOrder.setEnabled(true);
                 binding.btnOrder.setText("ĐẶT HÀNG");
-                Toast.makeText(CheckoutActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                android.util.Log.e("CheckoutActivity", "Lỗi kết nối khi đặt hàng", t);
+                t.printStackTrace();
+                Toast.makeText(CheckoutActivity.this, "Lỗi kết nối: " + t.toString(), Toast.LENGTH_LONG).show();
             }
         });
     }
