@@ -199,18 +199,20 @@ public class MainActivity extends AppCompatActivity {
         if (intent == null || navController == null) return;
 
         if (intent.getBooleanExtra("select_profile", false)) {
-            if (binding != null) {
-                binding.bottomNavigationView.setSelectedItemId(R.id.navigation_profile);
-            }
+            navController.navigate(R.id.navigation_profile);
             intent.removeExtra("select_profile");
         } else if (intent.getBooleanExtra("open_cart", false)) {
-            if (binding != null) {
-                binding.bottomNavigationView.setSelectedItemId(R.id.navigation_cart);
-            }
+            navController.navigate(R.id.navigation_cart);
             intent.removeExtra("open_cart");
+        } else if (intent.getBooleanExtra("open_home", false)) {
+            navController.navigate(R.id.navigation_home);
+            intent.removeExtra("open_home");
         } else if (intent.getBooleanExtra("open_explore", false)) {
             navController.navigate(R.id.navigation_explore);
             intent.removeExtra("open_explore");
+        } else if (intent.getBooleanExtra("open_notification", false)) {
+            navController.navigate(R.id.navigation_notification);
+            intent.removeExtra("open_notification");
         } else if (intent.hasExtra("category_id")) {
             String categoryId = intent.getStringExtra("category_id");
             if (categoryId != null) {
@@ -220,34 +222,6 @@ public class MainActivity extends AppCompatActivity {
                     navController.navigate(R.id.navigation_category_products, args);
                 } catch (Exception e) {
                     android.util.Log.e("MainActivity", "Navigation failed", e);
-            if (intent == null || navController == null) return;
-    
-            if (intent.getBooleanExtra("select_profile", false)) {
-                navController.navigate(R.id.navigation_profile);
-                intent.removeExtra("select_profile");
-            } else if (intent.getBooleanExtra("open_cart", false)) {
-                navController.navigate(R.id.navigation_cart);
-                intent.removeExtra("open_cart");
-            } else if (intent.getBooleanExtra("open_home", false)) {
-                navController.navigate(R.id.navigation_home);
-                intent.removeExtra("open_home");
-            } else if (intent.getBooleanExtra("open_explore", false)) {
-                navController.navigate(R.id.navigation_explore);
-                intent.removeExtra("open_explore");
-            } else if (intent.getBooleanExtra("open_notification", false)) {
-                navController.navigate(R.id.navigation_notification);
-                intent.removeExtra("open_notification");
-            } else if (intent.hasExtra("category_id")) {
-                String categoryId = intent.getStringExtra("category_id");
-                if (categoryId != null) {
-                    Bundle args = new Bundle();
-                    args.putString("category_id", categoryId);
-                    try {
-                        navController.navigate(R.id.navigation_category_products, args);
-                    } catch (Exception e) {
-                        android.util.Log.e("MainActivity", "Navigation failed", e);
-                    }
-                    intent.removeExtra("category_id");
                 }
                 intent.removeExtra("category_id");
             }
