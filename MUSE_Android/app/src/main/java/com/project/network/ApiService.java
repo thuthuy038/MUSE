@@ -63,6 +63,27 @@ public interface ApiService {
         @Header("Authorization") String token
     );
 
+    @GET("api/orders/myorders/{userId}")
+    Call<List<com.project.models.Order>> getMyOrders(
+        @Path("userId") String userId
+    );
+
+    @POST("api/orders")
+    Call<com.project.models.Order> createOrder(
+        @Body com.project.models.Order order
+    );
+
+    @GET("api/orders/{id}")
+    Call<com.project.models.Order> getOrderDetail(
+        @Path("id") String orderId
+    );
+
+    @PUT("api/orders/{id}/status")
+    Call<com.project.models.Order> updateOrderStatus(
+        @Path("id") String orderId,
+        @Body Map<String, String> status
+    );
+
     // ========== PRODUCTS ==========
     @GET("api/products")
     Call<List<Product>> getProducts();
@@ -155,6 +176,26 @@ public interface ApiService {
         @Path("id") String userId,
         @retrofit2.http.Part okhttp3.MultipartBody.Part avatar
     );
+
+    // ========== ADDRESS ==========
+    @GET("api/users/{id}")
+    Call<User> getUserById(@Path("id") String userId);
+
+    @POST("api/address/add/{userId}")
+    Call<User> addAddress(
+        @Path("userId") String userId,
+        @Body User.Address address
+    );
+
+    // ========== LOCATION ==========
+    @GET("api/location/provinces")
+    Call<List<com.project.models.Province>> getProvinces();
+
+    @GET("api/location/districts/{code}")
+    Call<List<com.project.models.District>> getDistricts(@Path("code") String provinceCode);
+
+    @GET("api/location/wards/{code}")
+    Call<List<com.project.models.Ward>> getWards(@Path("code") String districtCode);
 
     @GET
     Call<java.util.List<com.project.models.Province>> getProvinces(

@@ -57,6 +57,7 @@ public class CartFragment extends Fragment {
     private boolean isEditMode = false;
     private double selectedVoucherDiscount = 0;
     private double selectedShippingDiscount = 0;
+    private String selectedVoucherCode = "";
 
     @Nullable
     @Override
@@ -110,9 +111,10 @@ public class CartFragment extends Fragment {
         // Mở BottomSheet chọn Voucher
         binding.layoutVoucher.setOnClickListener(v -> {
             VoucherBottomSheetFragment voucherSheet = new VoucherBottomSheetFragment();
-            voucherSheet.setOnVoucherSelectedListener((discount, shipping) -> {
+            voucherSheet.setOnVoucherSelectedListener((discount, shipping, code) -> {
                 this.selectedVoucherDiscount = discount;
                 this.selectedShippingDiscount = shipping;
+                this.selectedVoucherCode = code;
                 updateCheckoutButtonState();
             });
             voucherSheet.show(getParentFragmentManager(), "VoucherBottomSheet");
@@ -134,6 +136,7 @@ public class CartFragment extends Fragment {
                 Intent intent = new Intent(getContext(), com.project.muse_android.checkout.CheckoutActivity.class);
                 intent.putExtra("products", selectedProducts);
                 intent.putExtra("voucher_discount", selectedVoucherDiscount);
+                intent.putExtra("voucher_code", selectedVoucherCode);
                 startActivity(intent);
             }
         });

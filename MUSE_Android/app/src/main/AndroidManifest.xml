@@ -19,6 +19,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MUSE_Android">
         <activity
+            android:name=".order.OrderDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".address.EditShippingAddressActivity"
             android:exported="false" />
         <activity
@@ -52,6 +55,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
         <activity
             android:name=".auth.AISetupActivity"
             android:exported="false" />
