@@ -16,11 +16,21 @@ import java.util.List;
 
 public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.ViewHolder> {
 
+    public interface OnBannerClickListener {
+        void onBannerClick(Banner banner);
+    }
+
     private List<Banner> banners;
+    private OnBannerClickListener listener;
     private static final String BASE_URL = "https://server-testing-ymn9.onrender.com";
 
     public BannerAdapter(List<Banner> banners) {
         this.banners = banners;
+    }
+
+    public BannerAdapter(List<Banner> banners, OnBannerClickListener listener) {
+        this.banners = banners;
+        this.listener = listener;
     }
 
     @NonNull
@@ -40,6 +50,12 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.ViewHolder
                 .placeholder(android.R.drawable.ic_menu_gallery)
                 .error(android.R.drawable.ic_menu_report_image)
                 .into(holder.imgBanner);
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onBannerClick(banner);
+            }
+        });
     }
 
     private String getFullImageUrl(String path) {

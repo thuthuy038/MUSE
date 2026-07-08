@@ -14,6 +14,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 
+import androidx.viewpager2.widget.ViewPager2;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import android.view.ViewGroup;
+import android.view.LayoutInflater;
+import android.widget.ImageView;
+
 import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
 import com.project.models.Category;
@@ -21,6 +28,7 @@ import com.project.models.Product;
 import com.project.models.ProductVariant;
 import com.project.muse_android.R;
 import com.project.muse_android.main.MainActivity;
+import com.project.muse_android.search.SearchActivity;
 import com.project.muse_android.cart.ProductVariantBottomSheetFragment;
 import com.project.muse_android.checkout.CheckoutActivity;
 import com.project.muse_android.databinding.ActivityProductDetailBinding;
@@ -68,6 +76,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         productId = getIntent().getStringExtra("product_id");
 
         binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnSearch.setOnClickListener(v -> {
+            startActivity(new Intent(this, SearchActivity.class));
+        });
         binding.txtOriginalPrice.setPaintFlags(binding.txtOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 
         binding.btnCart.setOnClickListener(v -> {
@@ -155,12 +166,18 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         // Image
         if (product.getImages() != null && !product.getImages().isEmpty()) {
-            String imageUrl = product.getImages().get(0).getUrl();
-            if (!imageUrl.startsWith("http")) {
-                imageUrl = BASE_URL + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
-            }
-            Glide.with(this).load(imageUrl).placeholder(R.drawable.image).into(binding.imgProduct);
+            ImageAdapter adapter = new ImageAdapter(product.getImages());
+            binding.viewPagerImages.setAdapter(adapter);
+
             binding.txtImageIndicator.setText(String.format(Locale.getDefault(), "1/%d", product.getImages().size()));
+
+            binding.viewPagerImages.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    super.onPageSelected(position);
+                    binding.txtImageIndicator.setText(String.format(Locale.getDefault(), "%d/%d", position + 1, product.getImages().size()));
+                }
+            });
         }
 
         // Colors & Sizes
@@ -516,5 +533,50 @@ public class ProductDetailActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CheckoutActivity.class);
         intent.putParcelableArrayListExtra("products", productList);
         startActivity(intent);
+    }
+
+    // Adapter for ViewPager2
+    private class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder> {
+        private List<Product.ProductImage> images;
+
+        public ImageAdapter(List<Product.ProductImage> images) {
+            this.images = images;
+        }
+
+        @NonNull
+        @Override
+        public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            ImageView imageView = new ImageView(parent.getContext());
+            imageView.setLayoutParams(new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            return new ImageViewHolder(imageView);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
+            String imageUrl = images.get(position).getUrl();
+            if (imageUrl != null && !imageUrl.startsWith("http")) {
+                imageUrl = BASE_URL + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
+            }
+            Glide.with(holder.itemView.getContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.image)
+                    .into(holder.imageView);
+        }
+
+        @Override
+        public int getItemCount() {
+            return images != null ? images.size() : 0;
+        }
+
+        class ImageViewHolder extends RecyclerView.ViewHolder {
+            ImageView imageView;
+            public ImageViewHolder(@NonNull ImageView itemView) {
+                super(itemView);
+                this.imageView = itemView;
+            }
+        }
     }
 }

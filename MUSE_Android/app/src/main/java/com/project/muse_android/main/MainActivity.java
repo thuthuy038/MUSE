@@ -204,9 +204,6 @@ public class MainActivity extends AppCompatActivity {
             } else if (intent.getBooleanExtra("open_cart", false)) {
                 navController.navigate(R.id.navigation_cart);
                 intent.removeExtra("open_cart");
-            } else if (intent.getBooleanExtra("open_ai", false)) {
-                navController.navigate(R.id.navigation_ai);
-                intent.removeExtra("open_ai");
             } else if (intent.hasExtra("category_id")) {
                 String categoryId = intent.getStringExtra("category_id");
                 if (categoryId != null) {
@@ -260,11 +257,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startAIFloatingAnimation() {
-        if (aiFloatAnim != null) {
-            aiFloatAnim.cancel();
-        }
-        float currentY = binding.btnAIDraggable.getTranslationY();
-        aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", currentY - 20f, currentY + 20f);
+        if (aiFloatAnim != null && aiFloatAnim.isRunning()) return;
+
+        aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", -20f, 20f);
         aiFloatAnim.setDuration(1500);
         aiFloatAnim.setRepeatMode(ValueAnimator.REVERSE);
         aiFloatAnim.setRepeatCount(ValueAnimator.INFINITE);

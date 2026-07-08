@@ -1,6 +1,7 @@
 package com.project.adapters;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -64,37 +65,46 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Category category = categories.get(position);
-        holder.binding.txtCategoryName.setText(category.getName());
+        holder.binding.txtCategoryName.setText(category.getName().toUpperCase());
         
         boolean isSelected = isSelectionEnabled && (position == selectedPosition);
-        if (isSelected && selectedPosition != -1) {
-            holder.binding.cardCategory.setCardElevation(15f);
-            holder.binding.cardCategory.setAlpha(1.0f);
-            holder.binding.cardCategory.setScaleX(1.25f);
-            holder.binding.cardCategory.setScaleY(1.25f);
-            holder.binding.txtCategoryName.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.primary_500));
-            holder.binding.txtCategoryName.setAlpha(1.0f);
-            holder.binding.txtCategoryName.setTextSize(14);
-            
-            GradientDrawable border = new GradientDrawable();
-            border.setCornerRadius(12 * holder.itemView.getResources().getDisplayMetrics().density);
-            border.setStroke(6, ContextCompat.getColor(holder.itemView.getContext(), R.color.primary_500));
-            border.setColor(Color.parseColor("#F5F5F5"));
-            holder.binding.cardCategory.setBackground(border);
+
+        if (isSelected) {
+            // Selected style: Larger size, PINK text, Pink shadow
+            holder.itemView.setScaleX(1.15f);
+            holder.itemView.setScaleY(1.15f);
+
+            holder.binding.txtCategoryName.setTypeface(null, Typeface.BOLD);
+            holder.binding.txtCategoryName.setTextColor(Color.parseColor("#FB6F92")); // Pink color
+
+            // Pink Shadow effect for the card
+            holder.binding.cardCategory.setCardElevation(12f);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                holder.binding.cardCategory.setOutlineSpotShadowColor(Color.parseColor("#FB6F92"));
+                holder.binding.cardCategory.setOutlineAmbientShadowColor(Color.parseColor("#FB6F92"));
+            }
         } else {
-            holder.binding.cardCategory.setCardElevation(3f);
-            holder.binding.cardCategory.setAlpha(0.9f);
-            holder.binding.cardCategory.setScaleX(1.0f);
-            holder.binding.cardCategory.setScaleY(1.0f);
-            holder.binding.txtCategoryName.setTextColor(Color.parseColor("#333333"));
-            holder.binding.txtCategoryName.setAlpha(0.8f);
-            holder.binding.txtCategoryName.setTextSize(12);
-            holder.binding.cardCategory.setBackground(null);
-            holder.binding.cardCategory.setCardBackgroundColor(Color.parseColor("#F5F5F5"));
+            // Normal style
+            holder.itemView.setScaleX(1.0f);
+            holder.itemView.setScaleY(1.0f);
+            holder.binding.layoutContainer.setBackground(null);
+            holder.binding.txtCategoryName.setTypeface(null, Typeface.NORMAL);
+            holder.binding.txtCategoryName.setTextColor(Color.parseColor("#666666"));
+
+            // Remove shadow
+            holder.binding.cardCategory.setCardElevation(2f);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                holder.binding.cardCategory.setOutlineSpotShadowColor(Color.BLACK);
+                holder.binding.cardCategory.setOutlineAmbientShadowColor(Color.BLACK);
+            }
         }
 
         String imageUrl = category.getImageUrl();
         if (imageUrl != null) {
+            // Reset to default scale type for normal categories
+            holder.binding.imgCategory.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            holder.binding.imgCategory.setPadding(0, 0, 0, 0);
+
             if (!imageUrl.startsWith("http")) {
                 imageUrl = BASE_URL + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
             }
@@ -104,15 +114,29 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
                     .error(android.R.drawable.ic_menu_report_image)
                     .into(holder.binding.imgCategory);
         } else {
-            holder.binding.imgCategory.setImageResource(android.R.drawable.ic_menu_gallery);
+            // Handle "All" category which might not have an image - Use brand logo
+            if ("all".equals(category.getId())) {
+                holder.binding.imgCategory.setImageResource(R.drawable.logo); // Logo thương hiệu
+
+                // Adjust scale type and padding to prevent cropping for logo
+                holder.binding.imgCategory.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+                int padding = (int) (12 * holder.itemView.getResources().getDisplayMetrics().density);
+                holder.binding.imgCategory.setPadding(padding, padding, padding, padding);
+            } else {
+                holder.binding.imgCategory.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+                holder.binding.imgCategory.setPadding(0, 0, 0, 0);
+                holder.binding.imgCategory.setImageResource(android.R.drawable.ic_menu_gallery);
+            }
         }
 
         holder.itemView.setOnClickListener(v -> {
             if (isSelectionEnabled) {
                 int oldPos = selectedPosition;
                 selectedPosition = holder.getBindingAdapterPosition();
-                notifyItemChanged(oldPos);
-                notifyItemChanged(selectedPosition);
+                if (oldPos != selectedPosition) {
+                    notifyItemChanged(oldPos);
+                    notifyItemChanged(selectedPosition);
+                }
             }
 
             if (listener != null) {
