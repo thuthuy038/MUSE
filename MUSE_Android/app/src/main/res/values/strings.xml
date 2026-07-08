@@ -221,4 +221,8 @@
     <string name="btn_complete_ai_setup">ĐI ĐẾN SETUP AI</string>
     <string name="btn_maybe_later">THUI ĐỂ LẦN SAU</string>
 
+    <string name="ai_setup_completed_title">HOÀN THÀNH SETUP</string>
+    <string name="ai_setup_completed_desc">Chúc mừng! Bạn đã hoàn thành thiết lập AI Profile. Giờ đây bạn có thể khám phá những tính năng tuyệt vời cùng MUSE AI.</string>
+    <string name="btn_ok">OK</string>
+
 </resources>

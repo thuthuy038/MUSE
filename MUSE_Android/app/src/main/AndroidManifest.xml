@@ -22,7 +22,23 @@
             android:exported="false" />
 
         <activity
+            android:name="com.project.muse_android.ai.ChatBotActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.project.muse_android.ai.ArchivalActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.project.muse_android.ai.VirtualFittingActivity"
+            android:exported="false" />
+
+        <activity
             android:name="com.project.muse_android.auth.AuthActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.project.muse_android.auth.AISetupActivity"
             android:exported="false" />
 
         <activity
