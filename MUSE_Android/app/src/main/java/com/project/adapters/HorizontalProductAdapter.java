@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -146,6 +147,10 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 binding.txtPrice.setText(formatPrice(price));
                 binding.txtQuantity.setText(String.valueOf(quantity));
 
+                binding.imgSimilarIcon.setVisibility(View.GONE);
+                binding.txtSimilar.setVisibility(View.VISIBLE);
+                binding.txtSimilar.setText("Sản phẩm\ntương tự");
+
                 // Snap behavior for CART mode
                 binding.horizontalScrollView.setOnTouchListener((v, event) -> {
                     if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
@@ -161,6 +166,22 @@ public class HorizontalProductAdapter extends ProductAdapter {
                     }
                     return false;
                 });
+            } else if (mode == com.project.models.enums.HorizontalProductMode.SUGGEST) {
+                binding.cbSelect.setVisibility(View.GONE);
+                binding.layoutVariant.setVisibility(View.GONE);
+                binding.layoutQuantityEditor.setVisibility(View.GONE);
+                binding.txtPrice.setVisibility(View.GONE);
+                binding.layoutReadOnly.setVisibility(View.VISIBLE);
+                binding.layoutActions.setVisibility(View.GONE);
+
+                binding.txtVariantReadOnly.setText(color + ", " + size);
+                binding.txtDiscountPriceReadOnly.setText(formatPrice(product.getDiscountPrice() != null ? product.getDiscountPrice() : 0));
+                binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
+                binding.txtOriginalPrice.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                binding.txtReadonlyQuantity.setVisibility(View.GONE);
+
+                // Disable scroll for SUGGEST mode (static item)
+                binding.horizontalScrollView.setOnTouchListener((v, event) -> true);
             } else {
                 binding.cbSelect.setVisibility(View.GONE);
                 binding.layoutVariant.setVisibility(View.GONE);
@@ -258,9 +279,14 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 return;
             }
 
-            // For CART mode, strictly set width to screen - margin
-            int totalMarginPx = (int) (24 * density); 
+            // For CART & SUGGEST modes, set width to screen - margin
+            int margin = (mode == com.project.models.enums.HorizontalProductMode.SUGGEST) ? 80 : 24;
+            int totalMarginPx = (int) (margin * density); 
             int contentWidth = screenWidth - totalMarginPx;
+
+            // Adjust layoutActions width dynamically: 90dp for SUGGEST (delete is hidden), 160dp for CART (both shown)
+            int actionsWidthDp = (mode == com.project.models.enums.HorizontalProductMode.SUGGEST) ? 90 : 160;
+            binding.layoutActions.getLayoutParams().width = (int) (actionsWidthDp * density);
 
             binding.layoutMainContent.getLayoutParams().width = contentWidth;
             binding.layoutMainContent.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;

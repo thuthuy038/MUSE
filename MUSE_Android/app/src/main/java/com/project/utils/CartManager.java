@@ -253,14 +253,109 @@ public class CartManager {
         String safeColor = color != null ? color : "";
         String safeSize = size != null ? size : "";
 
+        CartItem existing = cartDao.getByVariant(productId, safeColor, safeSize);
+
         if (sessionManager.isLoggedIn()) {
             String userId = sessionManager.getUserId();
-            CartRequest request = new CartRequest(userId, productId, quantity, safeColor, safeSize, price);
-            apiService.updateCartQuantity(request).enqueue(new Callback<ApiResponse<Void>>() {
+            int oldQuantity = (existing != null) ? existing.getQuantity() : 0;
+            int delta = quantity - oldQuantity;
+
+            if (delta == 0) {
+                callback.onSuccess(null);
+                return;
+            }
+
+            String name = (existing != null) ? existing.getName() : "";
+            String imageUrl = (existing != null) ? existing.getImageUrl() : "";
+
+            CartRequest request = new CartRequest(userId, productId, name, imageUrl, safeSize, safeColor, delta, price);
+            apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
                 @Override
                 public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                    if (response.isSuccessful()) callback.onSuccess(null);
-                    else callback.onError("Error updating quantity on server");
+                    if (response.isSuccessful()) {
+                        if (existing != null) {
+                            existing.setQuantity(quantity);
+                            cartDao.update(existing);
+                        }
+                        callback.onSuccess(null);
+                    } else {
+                        String errMsg = "Error updating quantity on server: " + response.code();
+                        try {
+                            if (response.errorBody() != null) {
+                                errMsg += " - " + response.errorBody().string();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        callback.onError(errMsg);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    callback.onError("Fail: " + t.toString());
+                }
+            });
+        } else {
+            if (existing != null) {
+                existing.setQuantity(quantity);
+                cartDao.update(existing);
+            }
+            callback.onSuccess(null);
+        }
+    }
+
+    public void updateCartItemVariant(String productId, String oldColor, String oldSize, String newColor, String newSize, double price, CartCallback<Void> callback) {
+        String safeOldColor = oldColor != null ? oldColor : "";
+        String safeOldSize = oldSize != null ? oldSize : "";
+        String safeNewColor = newColor != null ? newColor : "";
+        String safeNewSize = newSize != null ? newSize : "";
+
+        if (sessionManager.isLoggedIn()) {
+            String userId = sessionManager.getUserId();
+            apiService.removeFromCart(userId, productId, safeOldSize, safeOldColor).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    new Thread(() -> {
+                        CartItem localOld = cartDao.getByVariant(productId, safeOldColor, safeOldSize);
+                        int qty = localOld != null ? localOld.getQuantity() : 1;
+                        
+                        if (localOld != null) {
+                            cartDao.delete(localOld);
+                        }
+
+                        CartRequest request = new CartRequest(userId, productId, qty, safeNewColor, safeNewSize, price);
+                        apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
+                            @Override
+                            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response2) {
+                                new Thread(() -> {
+                                    CartItem existingNew = cartDao.getByVariant(productId, safeNewColor, safeNewSize);
+                                    if (existingNew != null) {
+                                        existingNew.setQuantity(existingNew.getQuantity() + qty);
+                                        cartDao.update(existingNew);
+                                    } else {
+                                        CartItem newItem = new CartItem(
+                                                productId,
+                                                localOld != null ? localOld.getName() : "",
+                                                price,
+                                                localOld != null ? localOld.getDiscountPrice() : 0,
+                                                localOld != null ? localOld.getImageUrl() : "",
+                                                safeNewColor,
+                                                safeNewSize,
+                                                qty
+                                        );
+                                        cartDao.insert(newItem);
+                                    }
+                                    new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onSuccess(null));
+                                }).start();
+                            }
+
+                            @Override
+                            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onError(t.getMessage()));
+                            }
+                        });
+                    }).start();
                 }
 
                 @Override
@@ -269,12 +364,24 @@ public class CartManager {
                 }
             });
         } else {
-            CartItem item = cartDao.getByVariant(productId, safeColor, safeSize);
-            if (item != null) {
-                item.setQuantity(quantity);
-                cartDao.update(item);
-            }
-            callback.onSuccess(null);
+            new Thread(() -> {
+                CartItem localOld = cartDao.getByVariant(productId, safeOldColor, safeOldSize);
+                if (localOld != null) {
+                    int qty = localOld.getQuantity();
+                    cartDao.delete(localOld);
+
+                    CartItem existingNew = cartDao.getByVariant(productId, safeNewColor, safeNewSize);
+                    if (existingNew != null) {
+                        existingNew.setQuantity(existingNew.getQuantity() + qty);
+                        cartDao.update(existingNew);
+                    } else {
+                        localOld.setColor(safeNewColor);
+                        localOld.setSize(safeNewSize);
+                        cartDao.insert(localOld);
+                    }
+                }
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onSuccess(null));
+            }).start();
         }
     }
 

@@ -17,13 +17,23 @@ public class VirtualFittingActivity extends AppCompatActivity {
         com.project.utils.ViewUtils.applySystemBarsPadding(binding.layoutHeader, true, false);
 
         binding.btnBack.setOnClickListener(v -> finish());
+
+        binding.btnAiAgent.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, ChatBotActivity.class);
+            startActivity(intent);
+        });
         
         binding.btnFittingCart.setOnClickListener(v -> {
-            // Handle Fitting from Cart
+            android.content.Intent intent = new android.content.Intent(this, FittingCartActivity.class);
+            startActivity(intent);
         });
 
         binding.btnFittingSearch.setOnClickListener(v -> {
-            // Handle Fitting from Search
+            android.content.Intent intent = new android.content.Intent(this, FittingSearchActivity.class);
+            startActivity(intent);
         });
+
+        // Setup Bottom Navigation
+        com.project.utils.ViewUtils.setupBottomNavigation(binding.bottomNavigationView, this);
     }
 }

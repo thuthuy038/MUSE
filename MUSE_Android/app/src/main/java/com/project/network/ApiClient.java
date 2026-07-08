@@ -6,6 +6,8 @@ import com.project.models.Product;
 import com.project.models.ProductImage;
 import com.project.models.ProductImageDeserializer;
 import com.project.models.ProductSizeDeserializer;
+import com.project.models.Order;
+import com.project.models.PaymentDeserializer;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -34,6 +36,7 @@ public class ApiClient {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(Product.ProductSize.class, new ProductSizeDeserializer())
                 .registerTypeAdapter(ProductImage.class, new ProductImageDeserializer())
+                .registerTypeAdapter(Order.Payment.class, new PaymentDeserializer())
                 .setLenient()
                 .create();
 
