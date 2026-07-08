@@ -12,8 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.project.adapters.HorizontalProductAdapter;
 import com.project.adapters.ProductAdapter;
 import com.project.models.Product;
+import com.project.models.enums.HorizontalProductMode;
 import com.project.muse_android.R;
 import com.project.muse_android.product.ProductDetailActivity;
 
@@ -52,11 +54,29 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
                 holder.rvSuggestedProducts.setVisibility(View.VISIBLE);
                 holder.rvSuggestedProducts.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
                 
-                ProductAdapter productAdapter = new ProductAdapter(msg.getSuggestedProducts(), ProductAdapter.TYPE_HORIZONTAL, product -> {
-                    Intent intent = new Intent(context, ProductDetailActivity.class);
-                    intent.putExtra("product_id", product.get_id());
-                    context.startActivity(intent);
-                });
+                HorizontalProductAdapter productAdapter = new HorizontalProductAdapter(
+                        context,
+                        HorizontalProductMode.SUGGEST,
+                        new HorizontalProductAdapter.OnProductActionListener() {
+                            @Override
+                            public void onDelete(Product product, int position) {}
+                            @Override
+                            public void onSimilar(Product product, int position) {}
+                            @Override
+                            public void onCheckedChanged(Product product, int position, boolean checked) {}
+                            @Override
+                            public void onQuantityChanged(Product product, int position, int quantity) {}
+                            @Override
+                            public void onVariantClick(Product product, int position) {}
+                            @Override
+                            public void onProductClick(Product product) {
+                                Intent intent = new Intent(context, ProductDetailActivity.class);
+                                intent.putExtra("product_id", product.get_id());
+                                context.startActivity(intent);
+                            }
+                        }
+                );
+                productAdapter.setData(msg.getSuggestedProducts());
                 holder.rvSuggestedProducts.setAdapter(productAdapter);
             } else {
                 holder.rvSuggestedProducts.setVisibility(View.GONE);

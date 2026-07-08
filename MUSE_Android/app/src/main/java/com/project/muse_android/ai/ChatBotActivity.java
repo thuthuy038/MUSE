@@ -12,10 +12,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.project.models.Product;
+import com.project.models.User;
+import com.project.muse_android.BuildConfig;
 import com.project.muse_android.databinding.ActivityChatBotBinding;
 import com.project.muse_android.R;
+import com.project.network.ApiClient;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
+import com.project.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +38,8 @@ public class ChatBotActivity extends AppCompatActivity {
     private final List<ChatMessage> messageList = new ArrayList<>();
     private final List<Product> shopProducts = new ArrayList<>();
     private final List<OutfitSet> outfitSets = new ArrayList<>();
-    private String geminiApiKey = "AQ.Ab8RN6JuOuokeOJYL_uT-KidNvkSjLVBSLmANTmNrin_olwz6Q";
+    private String geminiApiKey = BuildConfig.GEMINI_API_KEY;
+    private User currentUser = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +58,13 @@ public class ChatBotActivity extends AppCompatActivity {
         binding.rvChatHistory.setAdapter(chatAdapter);
 
         // Load Products from database
+        loadUserProfile();
         loadShopProducts();
+
+        // Update tabs and headers with today's date
+        String todayDate = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(new java.util.Date());
+        binding.tabSuggestions.setText("GỢI Ý " + todayDate);
+        binding.tvStyleTodayHeader.setText("STYLE CỦA BẠN HÔM NAY (" + todayDate + ") ✨");
 
         // Load Today's saved conversation session if exists
         List<ChatMessage> todayChat = AiStorageManager.loadTodayChat(this);
@@ -85,6 +96,9 @@ public class ChatBotActivity extends AppCompatActivity {
         binding.tabSuggestions.setOnClickListener(v -> switchTab(false));
 
         setupViewPager();
+
+        // Setup Bottom Navigation
+        com.project.utils.ViewUtils.setupBottomNavigation(binding.bottomNavigationView, this);
     }
 
     private void setupViewPager() {
@@ -161,6 +175,14 @@ public class ChatBotActivity extends AppCompatActivity {
         }
     }
 
+    private long getTodaySeed() {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        int year = cal.get(java.util.Calendar.YEAR);
+        int month = cal.get(java.util.Calendar.MONTH);
+        int day = cal.get(java.util.Calendar.DAY_OF_MONTH);
+        return year * 10000L + month * 100L + day;
+    }
+
     private void generateOutfitSets() {
         outfitSets.clear();
         
@@ -176,6 +198,11 @@ public class ChatBotActivity extends AppCompatActivity {
                 bottoms.add(p);
             }
         }
+
+        // Shuffle based on current date seed to vary recommendations daily
+        long seed = getTodaySeed();
+        java.util.Collections.shuffle(tops, new java.util.Random(seed));
+        java.util.Collections.shuffle(bottoms, new java.util.Random(seed + 1));
         
         // Let's pair them! We create up to 3 sets
         int count = Math.min(3, Math.min(tops.size(), bottoms.size()));
@@ -194,10 +221,12 @@ public class ChatBotActivity extends AppCompatActivity {
         
         // Fallback: If we couldn't find distinct tops and bottoms, just pair any products
         if (outfitSets.isEmpty() && shopProducts.size() >= 2) {
-            int fallbackSets = Math.min(3, shopProducts.size() / 2);
+            List<Product> fallbackList = new ArrayList<>(shopProducts);
+            java.util.Collections.shuffle(fallbackList, new java.util.Random(seed + 2));
+            int fallbackSets = Math.min(3, fallbackList.size() / 2);
             for (int i = 0; i < fallbackSets; i++) {
-                Product top = shopProducts.get(i * 2);
-                Product bottom = shopProducts.get(i * 2 + 1);
+                Product top = fallbackList.get(i * 2);
+                Product bottom = fallbackList.get(i * 2 + 1);
                 String setName = "BỘ PHỐI ĐỒ " + (i + 1) + ": " + getStyleNameForIndex(i);
                 String desc = "Phối đồ hoàn hảo giữa " + top.getName() + " và " + bottom.getName() + ".";
                 outfitSets.add(new OutfitSet(setName, top, bottom, desc));
@@ -362,15 +391,109 @@ public class ChatBotActivity extends AppCompatActivity {
         AiStorageManager.archiveTodayChat(this, messageList);
     }
 
+    private void loadUserProfile() {
+        SessionManager sessionManager = new SessionManager(this);
+        String token = sessionManager.getToken();
+        if (token == null) return;
+
+        ApiClient.INSTANCE.getInstance().getProfile("Bearer " + token).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    currentUser = response.body();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                // Fail silently, fallback to SharedPreferences
+            }
+        });
+    }
+
+    private String joinStrings(List<String> list) {
+        if (list == null || list.isEmpty()) return "Chưa thiết lập";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            sb.append(list.get(i));
+            if (i < list.size() - 1) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
+    }
+
+    private String getSkinToneText(int skinVal) {
+        switch (skinVal) {
+            case 1: return "Trắng sáng (Fair)";
+            case 2: return "Trắng hồng (Medium Light)";
+            case 3: return "Tự nhiên (Medium)";
+            case 4: return "Hơi ngăm (Warm/Olive)";
+            case 5: return "Bánh mật (Dark/Tan)";
+            default: return "Chưa thiết lập";
+        }
+    }
+
     private String buildSystemInstruction() {
         SharedPreferences prefs = getSharedPreferences("AI_PREFS", MODE_PRIVATE);
-        String gender = prefs.getString("gender", "Nữ");
+
+        // Base fallback values from SharedPreferences
+        String gender = prefs.getString("gender", "female");
         int height = prefs.getInt("height", 160);
-        int weight = prefs.getInt("weight", 50);
+        float weight = prefs.getInt("weight", 50);
         String vong1 = prefs.getString("vong1", "Chưa nhập");
         String vong2 = prefs.getString("vong2", "Chưa nhập");
         String vong3 = prefs.getString("vong3", "Chưa nhập");
         String styles = prefs.getString("styles", "Tự nhiên, thanh lịch");
+
+        // Extra info from SharedPreferences
+        int skinVal = prefs.getInt("skin", 0);
+        String skinTone = getSkinToneText(skinVal);
+        String bodyShape = prefs.getString("spinner_body_shape", "Chưa thiết lập");
+        String favColors = prefs.getString("spinner_color_palette", "Chưa thiết lập");
+        String fashionPurpose = prefs.getString("spinner_style_vibe", "Chưa thiết lập");
+
+        // If logged-in profile data is available, override with database values
+        if (currentUser != null) {
+            if (currentUser.getGender() != null) {
+                gender = currentUser.getGender();
+            }
+            if (currentUser.getHeight() > 0) {
+                height = currentUser.getHeight();
+            }
+            if (currentUser.getWeight() > 0) {
+                weight = currentUser.getWeight();
+            }
+            if (currentUser.getFavoriteStyles() != null && !currentUser.getFavoriteStyles().isEmpty()) {
+                styles = joinStrings(currentUser.getFavoriteStyles());
+            }
+            if (currentUser.getFavoriteColors() != null && !currentUser.getFavoriteColors().isEmpty()) {
+                favColors = joinStrings(currentUser.getFavoriteColors());
+            }
+            if (currentUser.getFashionPurpose() != null && !currentUser.getFashionPurpose().isEmpty()) {
+                fashionPurpose = joinStrings(currentUser.getFashionPurpose());
+            }
+        }
+
+        // Auto-calculate body shape (BMI) if not set explicitly
+        if (bodyShape.equals("Chưa thiết lập") || bodyShape.contains("Chưa thiết lập")) {
+            if (height > 0 && weight > 0) {
+                float heightM = height / 100f;
+                float bmi = weight / (heightM * heightM);
+                if (bmi < 18.5f) bodyShape = "Mảnh mai";
+                else if (bmi >= 25f && bmi < 30f) bodyShape = "Đầy đặn";
+                else if (bmi >= 30f) bodyShape = "Tròn trịa";
+                else bodyShape = "Cân đối";
+            }
+        }
+
+        // Localized gender
+        String genderVn = "Nữ";
+        if ("male".equalsIgnoreCase(gender)) {
+            genderVn = "Nam";
+        } else if ("other".equalsIgnoreCase(gender)) {
+            genderVn = "Khác";
+        }
 
         // Format product list for context
         StringBuilder productsCtx = new StringBuilder();
@@ -381,12 +504,16 @@ public class ChatBotActivity extends AppCompatActivity {
         }
 
         return "Bạn là trợ lý thời trang AI ảo siêu ngọt ngào, nữ tính, chu đáo của thương hiệu thời trang cao cấp MUSE.\n" +
-                "Bạn sẽ trò chuyện, tư vấn phối đồ, và giải đáp thắc mắc của khách hàng dựa trên thông tin hình thể của họ:\n" +
-                "- Giới tính: " + gender + "\n" +
+                "Bạn sẽ trò chuyện, tư vấn phối đồ, và giải đáp thắc mắc của khách hàng dựa trên thông tin hình thể và sở thích của họ để có gợi ý phù hợp nhất:\n" +
+                "- Giới tính: " + genderVn + "\n" +
                 "- Chiều cao: " + height + " cm\n" +
                 "- Cân nặng: " + weight + " kg\n" +
+                "- Dáng người: " + bodyShape + "\n" +
                 "- Số đo 3 vòng: Vòng 1: " + vong1 + " cm | Vòng 2: " + vong2 + " cm | Vòng 3: " + vong3 + " cm\n" +
-                "- Gu phong cách ưa thích: " + styles + "\n\n" +
+                "- Tone màu da: " + skinTone + "\n" +
+                "- Gu phong cách ưa thích: " + styles + "\n" +
+                "- Sở thích màu sắc trang phục: " + favColors + "\n" +
+                "- Mục đích/Dịp diện đồ: " + fashionPurpose + "\n\n" +
                 productsCtx.toString() + "\n" +
                 "QUY TẮC RECOMMEND SẢN PHẨM:\n" +
                 "Nếu bạn khuyên khách hàng nên mua hoặc thử một hoặc nhiều sản phẩm nào ở trên, hãy đính kèm chính xác danh sách các ID của sản phẩm đó vào cuối câu trả lời của bạn bên trong dấu ngoặc kép vuông đôi theo định dạng sau: [[id1, id2]]. Ví dụ: [[65cfb..., 65cfc...]]. Nếu không khuyên mua sản phẩm nào, không cần đính kèm.\n" +
