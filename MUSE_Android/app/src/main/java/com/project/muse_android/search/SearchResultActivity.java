@@ -111,7 +111,15 @@ public class SearchResultActivity extends AppCompatActivity {
     }
 
     private void setupUI() {
-        binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnBack.setOnClickListener(v -> {
+            String query = binding.edtSearchQuery.getText().toString().trim();
+            if (query.isEmpty()) {
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("clear_search", true);
+                setResult(RESULT_OK, resultIntent);
+            }
+            finish();
+        });
         binding.btnClearSearch.setOnClickListener(v -> {
             binding.edtSearchQuery.setText("");
             performSearch(""); 

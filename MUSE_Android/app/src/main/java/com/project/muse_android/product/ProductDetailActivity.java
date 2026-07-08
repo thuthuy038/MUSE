@@ -14,15 +14,27 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 
+import androidx.viewpager2.widget.ViewPager2;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import android.view.ViewGroup;
+import android.view.LayoutInflater;
+import android.widget.ImageView;
+
 import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
 import com.project.models.Category;
 import com.project.models.Product;
 import com.project.models.ProductVariant;
+import com.project.models.ProductReview;
 import com.project.muse_android.R;
 import com.project.muse_android.main.MainActivity;
+import com.project.muse_android.search.SearchActivity;
 import com.project.muse_android.cart.ProductVariantBottomSheetFragment;
 import com.project.muse_android.checkout.CheckoutActivity;
+import com.project.adapters.ProductReviewAdapter;
+import com.project.models.ReviewResponse;
 import com.project.muse_android.databinding.ActivityProductDetailBinding;
 import com.project.network.HomeApiClient;
 import com.project.network.ApiService;
@@ -68,6 +80,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         productId = getIntent().getStringExtra("product_id");
 
         binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnSearch.setOnClickListener(v -> {
+            startActivity(new Intent(this, SearchActivity.class));
+        });
         binding.txtOriginalPrice.setPaintFlags(binding.txtOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 
         binding.btnCart.setOnClickListener(v -> {
@@ -79,6 +94,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         if (productId != null) {
             loadProductDetail();
+            loadReviews();
         } else {
             Toast.makeText(this, "Không tìm thấy mã sản phẩm", Toast.LENGTH_SHORT).show();
             finish();
@@ -139,7 +155,13 @@ public class ProductDetailActivity extends AppCompatActivity {
         binding.txtReviewTitle.setText(String.format(Locale.getDefault(), "Đánh giá sản phẩm (%d)", product.getReviewCount()));
 
         // Stock and Category
-        binding.txtStockInfo.setText(product.getStock() > 0 ? "Kho còn hàng" : "Hết hàng");
+        binding.txtStockDetail.setText(product.getStock() > 0 ? String.format(Locale.getDefault(), "Còn hàng (%d)", product.getStock()) : "Hết hàng");
+        binding.txtMaterialDetail.setText(product.getMaterial() != null && !product.getMaterial().isEmpty() ? product.getMaterial() : "-");
+
+        // Static info as requested
+        binding.txtOriginDetail.setText("Việt Nam");
+        binding.txtShipFromDetail.setText("Thành phố Hồ Chí Minh");
+
         if (product.getStock() <= 0) {
             binding.txtSoldOut.setVisibility(View.VISIBLE);
             binding.btnBuyNow.setEnabled(false);
@@ -155,12 +177,18 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         // Image
         if (product.getImages() != null && !product.getImages().isEmpty()) {
-            String imageUrl = product.getImages().get(0).getUrl();
-            if (!imageUrl.startsWith("http")) {
-                imageUrl = BASE_URL + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
-            }
-            Glide.with(this).load(imageUrl).placeholder(R.drawable.image).into(binding.imgProduct);
+            ImageAdapter adapter = new ImageAdapter(product.getImages());
+            binding.viewPagerImages.setAdapter(adapter);
+
             binding.txtImageIndicator.setText(String.format(Locale.getDefault(), "1/%d", product.getImages().size()));
+
+            binding.viewPagerImages.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    super.onPageSelected(position);
+                    binding.txtImageIndicator.setText(String.format(Locale.getDefault(), "%d/%d", position + 1, product.getImages().size()));
+                }
+            });
         }
 
         // Colors & Sizes
@@ -197,7 +225,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                     for (Category cat : response.body()) {
                         if (cat.getId().equals(categoryId)) {
                             binding.txtCategoryBreadcrumb.setText(cat.getName().toUpperCase());
-                            binding.txtCategoryInfo.setText(String.format("Danh mục %s", cat.getName()));
+                            binding.txtCategoryDetail.setText(cat.getName());
                             break;
                         }
                     }
@@ -423,6 +451,12 @@ public class ProductDetailActivity extends AppCompatActivity {
             binding.imgSizeGuideContent.setVisibility(isVisible ? View.GONE : View.VISIBLE);
             binding.imgSizeGuideArrow.setRotation(isVisible ? 0 : 90);
         });
+
+        binding.btnToggleInfo.setOnClickListener(v -> {
+            boolean isVisible = binding.layoutInfoContent.getVisibility() == View.VISIBLE;
+            binding.layoutInfoContent.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+            binding.imgInfoArrow.setRotation(isVisible ? 0 : 90);
+        });
     }
 
     private String formatPrice(double price) {
@@ -491,6 +525,48 @@ public class ProductDetailActivity extends AppCompatActivity {
             updateFavoriteUI(currentProduct.isFavorite());
             Toast.makeText(this, currentProduct.isFavorite() ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
         });
+
+        binding.btnSeeAllReviews.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProductReviewsActivity.class);
+            intent.putExtra("product_id", productId);
+            startActivity(intent);
+        });
+    }
+
+    private void loadReviews() {
+        ApiService service = HomeApiClient.getApiService();
+        service.getProductReviews(productId).enqueue(new Callback<ReviewResponse>() {
+            @Override
+            public void onResponse(Call<ReviewResponse> call, Response<ReviewResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    List<com.project.models.ProductReview> allReviews = response.body().getData();
+                    if (!allReviews.isEmpty()) {
+                        // Display only 1 review in detail screen
+                        List<com.project.models.ProductReview> singleReviewList = new ArrayList<>();
+                        singleReviewList.add(allReviews.get(0));
+
+                        ProductReviewAdapter adapter = new ProductReviewAdapter(singleReviewList);
+                        adapter.setOnImageClickListener((images, imgPos) -> {
+                            Intent intent = new Intent(ProductDetailActivity.this, FullScreenImageActivity.class);
+                            intent.putStringArrayListExtra("images", new ArrayList<>(images));
+                            intent.putExtra("position", imgPos);
+                            startActivity(intent);
+                        });
+
+                        binding.rvSingleReview.setLayoutManager(new LinearLayoutManager(ProductDetailActivity.this));
+                        binding.rvSingleReview.setAdapter(adapter);
+                        binding.rvSingleReview.setVisibility(View.VISIBLE);
+                    } else {
+                        binding.rvSingleReview.setVisibility(View.GONE);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReviewResponse> call, Throwable t) {
+                // Silently fail for detail screen
+            }
+        });
     }
     private void navigateToCheckout(Product product, String color, String size, int quantity) {
         // Create a copy of the product for checkout
@@ -516,5 +592,50 @@ public class ProductDetailActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CheckoutActivity.class);
         intent.putParcelableArrayListExtra("products", productList);
         startActivity(intent);
+    }
+
+    // Adapter for ViewPager2
+    private class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder> {
+        private List<Product.ProductImage> images;
+
+        public ImageAdapter(List<Product.ProductImage> images) {
+            this.images = images;
+        }
+
+        @NonNull
+        @Override
+        public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            ImageView imageView = new ImageView(parent.getContext());
+            imageView.setLayoutParams(new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            return new ImageViewHolder(imageView);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
+            String imageUrl = images.get(position).getUrl();
+            if (imageUrl != null && !imageUrl.startsWith("http")) {
+                imageUrl = BASE_URL + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
+            }
+            Glide.with(holder.itemView.getContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.image)
+                    .into(holder.imageView);
+        }
+
+        @Override
+        public int getItemCount() {
+            return images != null ? images.size() : 0;
+        }
+
+        class ImageViewHolder extends RecyclerView.ViewHolder {
+            ImageView imageView;
+            public ImageViewHolder(@NonNull ImageView itemView) {
+                super(itemView);
+                this.imageView = itemView;
+            }
+        }
     }
 }

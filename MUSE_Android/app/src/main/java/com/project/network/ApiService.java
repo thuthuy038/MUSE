@@ -197,6 +197,11 @@ public interface ApiService {
     @GET("api/location/wards/{code}")
     Call<List<com.project.models.Ward>> getWards(@Path("code") String districtCode);
 
+    @GET("api/reviews/product/{productId}")
+    Call<com.project.models.ReviewResponse> getProductReviews(
+            @Path("productId") String productId
+    );
+
     @GET
     Call<java.util.List<com.project.models.Province>> getProvinces(
         @retrofit2.http.Url String url

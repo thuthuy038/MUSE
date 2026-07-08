@@ -71,19 +71,38 @@ public class AIFragment extends Fragment {
         sessionManager = new SessionManager(requireContext());
         homeApiService = HomeApiClient.getHomeApiService();
 
+        // Sử dụng Helper để tự động đẩy Header xuống dưới Status Bar
+        com.project.utils.ViewUtils.applySystemBarsPadding(binding.header, true, false);
+
         binding.ivBack.setOnClickListener(v -> {
             Navigation.findNavController(v).navigateUp();
         });
 
         binding.btnEditProfile.setOnClickListener(v -> {
-            if (sessionManager.isLoggedIn()) {
+            if (isAIProfileEmpty()) {
+                showSetupPopup();
+            } else {
                 Intent intent = new Intent(getActivity(), AISetupActivity.class);
                 startActivity(intent);
-            } else {
-                Toast.makeText(getContext(), "Vui lòng đăng nhập để sử dụng tính năng thiết lập AI Profile!", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getActivity(), AuthActivity.class);
-                startActivity(intent);
             }
+        });
+
+        // Link AI Agent to ChatBotActivity
+        binding.cardAiAgent.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), ChatBotActivity.class);
+            startActivity(intent);
+        });
+
+        // Link Your Archival to ArchivalActivity
+        binding.cardArchival.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), ArchivalActivity.class);
+            startActivity(intent);
+        });
+
+        // Link Virtual Fitting to VirtualFittingActivity
+        binding.cardVirtualFitting.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), VirtualFittingActivity.class);
+            startActivity(intent);
         });
 
         // Initialize ViewPager2 for AI seasonal banners
@@ -152,14 +171,11 @@ public class AIFragment extends Fragment {
         binding.tvUserLabel.setText("AI Profile Khách");
         binding.ivUserAvatar.setImageResource(R.drawable.ic_account_circle);
 
-        // Populate with full options for guests
-        populateSpinnerWithOptions(binding.spFavoriteStyle, STYLES, null);
-        populateSpinnerWithOptions(binding.spColorPalette, COLORS, null);
-        populateSpinnerWithOptions(binding.spStyleVibe, PURPOSES, null);
-        populateBodyShapeSpinner(binding.spBodyShape, null);
+        setupSpinnersFromPrefs();
 
-        // Show setup popup for guest (named "Người đẹp")
-        showSetupPopup();
+        if (isAIProfileEmpty()) {
+            showSetupPopup();
+        }
     }
 
     private void populateUserUI(User user) {
@@ -185,14 +201,33 @@ public class AIFragment extends Fragment {
             binding.ivUserAvatar.setImageResource(R.drawable.ic_account_circle);
         }
 
-        // Populating Spinners from User database data (pre-select saved selection)
-        populateSpinnerWithOptions(binding.spFavoriteStyle, STYLES, user.getFavoriteStyles());
-        populateSpinnerWithOptions(binding.spColorPalette, COLORS, user.getFavoriteColors());
-        populateSpinnerWithOptions(binding.spStyleVibe, PURPOSES, user.getFashionPurpose());
-        populateBodyShapeSpinner(binding.spBodyShape, user);
+        // Save server User data to local AI_PREFS to keep them synced
+        if (getContext() != null) {
+            android.content.SharedPreferences.Editor editor = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE).edit();
+            if (user.getGender() != null && !user.getGender().isEmpty()) {
+                editor.putString("gender", user.getGender());
+            }
+            if (user.getHeight() > 0) {
+                editor.putInt("height", user.getHeight());
+            }
+            if (user.getWeight() > 0) {
+                editor.putInt("weight", (int) user.getWeight());
+            }
+            
+            if (user.getFavoriteStyles() != null && !user.getFavoriteStyles().isEmpty()) {
+                StringBuilder sb = new StringBuilder();
+                for (String style : user.getFavoriteStyles()) {
+                    if (sb.length() > 0) sb.append(",");
+                    sb.append(style);
+                }
+                editor.putString("styles", sb.toString());
+            }
+            editor.apply();
+        }
 
-        // Show setup popup if name is "Người đẹp" or profile is not completed
-        if ("Người đẹp".equals(user.getName()) || !user.isProfileCompleted()) {
+        setupSpinnersFromPrefs();
+
+        if (isAIProfileEmpty()) {
             showSetupPopup();
         }
     }
@@ -213,25 +248,67 @@ public class AIFragment extends Fragment {
         dialog.findViewById(R.id.btnMaybeLater).setOnClickListener(v -> dialog.dismiss());
         dialog.findViewById(R.id.btnCompleteSetup).setOnClickListener(v -> {
             dialog.dismiss();
-            Intent intent = new Intent(getActivity(), AISetupActivity.class);
-            startActivity(intent);
+            if (sessionManager.isLoggedIn()) {
+                Intent intent = new Intent(getActivity(), AISetupActivity.class);
+                startActivity(intent);
+            } else {
+                Toast.makeText(getContext(), "Vui lòng đăng nhập để sử dụng tính năng thiết lập AI Profile!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getActivity(), AuthActivity.class);
+                startActivity(intent);
+            }
         });
 
         dialog.show();
     }
 
-    private void populateSpinnerWithOptions(Spinner spinner, String[] options, List<String> userPreferences) {
+    private boolean isAIProfileEmpty() {
+        if (getContext() == null) return true;
+        android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
+        String gender = prefs.getString("gender", "");
+        int height = prefs.getInt("height", 0);
+        int weight = prefs.getInt("weight", 0);
+        String vong1 = prefs.getString("vong1", "");
+        String vong2 = prefs.getString("vong2", "");
+        String vong3 = prefs.getString("vong3", "");
+        String styles = prefs.getString("styles", "");
+        int skin = prefs.getInt("skin", 0);
+
+        boolean isLogged = sessionManager.isLoggedIn();
+        boolean completed = sessionManager.isProfileCompleted();
+
+        if (!gender.isEmpty() || height > 0 || weight > 0 || !vong1.isEmpty() || !vong2.isEmpty() || !vong3.isEmpty() || !styles.isEmpty() || skin > 0) {
+            return false;
+        }
+
+        if (isLogged && completed) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void setupSpinnersFromPrefs() {
+        if (getContext() == null) return;
+        android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
+        
+        String savedStyle = prefs.getString("spinner_favorite_style", null);
+        String savedColor = prefs.getString("spinner_color_palette", null);
+        String savedVibe = prefs.getString("spinner_style_vibe", null);
+        String savedShape = prefs.getString("spinner_body_shape", null);
+
+        populateSpinnerWithSavedOption(binding.spFavoriteStyle, STYLES, savedStyle, "spinner_favorite_style");
+        populateSpinnerWithSavedOption(binding.spColorPalette, COLORS, savedColor, "spinner_color_palette");
+        populateSpinnerWithSavedOption(binding.spStyleVibe, PURPOSES, savedVibe, "spinner_style_vibe");
+        populateBodyShapeSpinnerFromPrefs(binding.spBodyShape, savedShape);
+    }
+
+    private void populateSpinnerWithSavedOption(Spinner spinner, String[] options, String savedValue, String prefKey) {
         List<String> list = new ArrayList<>();
         int selectedIndex = 0;
 
-        String target = null;
-        if (userPreferences != null && !userPreferences.isEmpty()) {
-            target = userPreferences.get(0);
-        }
-
         for (int i = 0; i < options.length; i++) {
             list.add(options[i]);
-            if (target != null && target.equalsIgnoreCase(options[i])) {
+            if (savedValue != null && savedValue.equalsIgnoreCase(options[i])) {
                 selectedIndex = i;
             }
         }
@@ -244,31 +321,53 @@ public class AIFragment extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setSelection(selectedIndex);
+
+        spinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                if (getContext() != null) {
+                    android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
+                    prefs.edit().putString(prefKey, options[position]).apply();
+                }
+            }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
     }
 
-    private void populateBodyShapeSpinner(Spinner spinner, User user) {
+    private void populateBodyShapeSpinnerFromPrefs(Spinner spinner, String savedShape) {
         List<String> list = new ArrayList<>();
         int selectedIndex = 0;
 
-        if (user != null && user.getHeight() > 0 && user.getWeight() > 0) {
-            String bmiSpec = "Chiều cao: " + user.getHeight() + " cm | Cân nặng: " + (int) user.getWeight() + " kg";
+        android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
+        int height = prefs.getInt("height", 0);
+        int weight = prefs.getInt("weight", 0);
+
+        if (height > 0 && weight > 0) {
+            String bmiSpec = "Chiều cao: " + height + " cm | Cân nặng: " + weight + " kg";
             list.add(bmiSpec);
 
-            float heightM = user.getHeight() / 100f;
-            float bmi = user.getWeight() / (heightM * heightM);
+            float heightM = height / 100f;
+            float bmi = weight / (heightM * heightM);
             String bmiShape = "Dáng người: Cân đối";
             if (bmi < 18.5f) bmiShape = "Dáng người: Mảnh mai";
             else if (bmi >= 25f && bmi < 30f) bmiShape = "Dáng người: Đầy đặn";
             else if (bmi >= 30f) bmiShape = "Dáng người: Tròn trịa";
             list.add(bmiShape);
-
-            selectedIndex = 0; // Show measurement specs as first selected option
         } else {
             list.add("(Chưa thiết lập số đo)");
         }
 
         for (String shape : SHAPES) {
             list.add(shape);
+        }
+
+        if (savedShape != null) {
+            for (int i = 0; i < list.size(); i++) {
+                if (savedShape.equalsIgnoreCase(list.get(i))) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
         }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -279,6 +378,17 @@ public class AIFragment extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setSelection(selectedIndex);
+
+        spinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                if (getContext() != null) {
+                    android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
+                    prefs.edit().putString("spinner_body_shape", list.get(position)).apply();
+                }
+            }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
     }
 
     private void loadCachedFallback() {
@@ -287,10 +397,7 @@ public class AIFragment extends Fragment {
         binding.tvUserLabel.setText(sessionManager.isProfileCompleted() ? "AI Profile Đã Hoàn Thành" : "AI Profile Chưa Hoàn Thành");
         binding.ivUserAvatar.setImageResource(R.drawable.ic_account_circle);
 
-        populateSpinnerWithOptions(binding.spFavoriteStyle, STYLES, null);
-        populateSpinnerWithOptions(binding.spColorPalette, COLORS, null);
-        populateSpinnerWithOptions(binding.spStyleVibe, PURPOSES, null);
-        populateBodyShapeSpinner(binding.spBodyShape, null);
+        setupSpinnersFromPrefs();
     }
 
     private void loadBannersAndStartRotation() {

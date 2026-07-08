@@ -11,8 +11,10 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
         android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
         android:background="@color/white"
         android:elevation="4dp">
 
@@ -99,39 +101,47 @@
 
                 <TextView
                     android:id="@+id/tvUserName"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
+                    android:layout_marginEnd="8dp"
                     android:fontFamily="@font/montserrat_bold"
                     android:textColor="@color/neutral_900"
                     android:textSize="18sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     app:layout_constraintStart_toEndOf="@id/ivUserAvatar"
+                    app:layout_constraintEnd_toStartOf="@id/btnEditProfile"
                     app:layout_constraintTop_toTopOf="@id/ivUserAvatar"
                     tools:text="Ngọc" />
 
                 <TextView
                     android:id="@+id/tvUserLabel"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
                     android:fontFamily="@font/montserrat"
                     android:text="@string/label_profile_caps"
                     android:textColor="@color/primary_500"
                     android:textSize="11sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     app:layout_constraintStart_toStartOf="@id/tvUserName"
+                    app:layout_constraintEnd_toStartOf="@id/btnEditProfile"
                     app:layout_constraintTop_toBottomOf="@id/tvUserName" />
 
                 <Button
                     android:id="@+id/btnEditProfile"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat_bold"
                     android:text="@string/btn_edit_caps"
-                    android:textColor="@color/neutral_900"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="@color/primary_500"
+                    app:cornerRadius="8dp"
                     app:layout_constraintBottom_toBottomOf="@id/ivUserAvatar"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/ivUserAvatar"
-                    app:strokeColor="@color/neutral_300" />
+                    app:layout_constraintTop_toTopOf="@id/ivUserAvatar" />
 
                 <!-- Dropdowns -->
                 <LinearLayout
@@ -157,8 +167,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:layout_marginBottom="12dp"
-                        android:background="@drawable/bg_chip_pink"
-                        android:paddingHorizontal="12dp"
+                        android:background="@drawable/bg_spinner_pink_glow"
+                        android:paddingStart="44dp"
+                        android:paddingEnd="44dp"
+                        android:overlapAnchor="false"
+                        android:spinnerMode="dropdown"
                         android:entries="@array/styles_array" />
 
                     <!-- Body Shape -->
@@ -176,8 +189,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:layout_marginBottom="12dp"
-                        android:background="@drawable/bg_chip_pink"
-                        android:paddingHorizontal="12dp"
+                        android:background="@drawable/bg_spinner_pink_glow"
+                        android:paddingStart="44dp"
+                        android:paddingEnd="44dp"
+                        android:overlapAnchor="false"
+                        android:spinnerMode="dropdown"
                         android:entries="@array/body_shapes_array" />
 
                     <!-- Color Palette -->
@@ -195,8 +211,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:layout_marginBottom="12dp"
-                        android:background="@drawable/bg_chip_pink"
-                        android:paddingHorizontal="12dp"
+                        android:background="@drawable/bg_spinner_pink_glow"
+                        android:paddingStart="44dp"
+                        android:paddingEnd="44dp"
+                        android:overlapAnchor="false"
+                        android:spinnerMode="dropdown"
                         android:entries="@array/colors_array" />
 
                     <!-- Style Vibe -->
@@ -214,8 +233,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:layout_marginBottom="4dp"
-                        android:background="@drawable/bg_chip_pink"
-                        android:paddingHorizontal="12dp"
+                        android:background="@drawable/bg_spinner_pink_glow"
+                        android:paddingStart="44dp"
+                        android:paddingEnd="44dp"
+                        android:overlapAnchor="false"
+                        android:spinnerMode="dropdown"
                         android:entries="@array/vibes_array" />
 
                 </LinearLayout>
@@ -233,12 +255,16 @@
 
                 <!-- AI Agent -->
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cardAiAgent"
                     android:layout_width="0dp"
                     android:layout_height="120dp"
                     android:layout_columnWeight="1"
                     android:layout_marginEnd="8dp"
                     android:layout_marginBottom="16dp"
                     android:background="@drawable/ai_stylist_card_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
                     android:padding="12dp">
 
                     <ImageView
@@ -276,12 +302,16 @@
 
                 <!-- Your Archival -->
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cardArchival"
                     android:layout_width="0dp"
                     android:layout_height="120dp"
                     android:layout_columnWeight="1"
                     android:layout_marginStart="8dp"
                     android:layout_marginBottom="16dp"
                     android:background="@drawable/ai_stylist_card_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
                     android:padding="12dp">
 
                     <ImageView
@@ -318,11 +348,15 @@
 
                 <!-- Virtual Fitting -->
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cardVirtualFitting"
                     android:layout_width="0dp"
                     android:layout_height="120dp"
                     android:layout_columnWeight="1"
                     android:layout_marginEnd="8dp"
                     android:background="@drawable/ai_stylist_card_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
                     android:padding="12dp">
 
                     <ImageView
@@ -449,6 +483,15 @@
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
+
+            <!-- Spacing for bottom navbar -->
+            <View
+                android:id="@+id/bottomSpacer"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                app:layout_constraintTop_toBottomOf="@id/cvBanner"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Layer 0: Glow Shadow (using a slightly larger size and lighter pink stroke) -->
+    <item>
+        <shape>
+            <solid android:color="#FFF5F7" />
+            <corners android:radius="24dp" />
+            <stroke
+                android:width="2dp"
+                android:color="#FFCCD5" /> <!-- Soft neon pink glow border -->
+        </shape>
+    </item>
+
+    <!-- Layer 1: Sparkle Icon on the Left side -->
+    <item
+        android:drawable="@drawable/ic_auto_awesome"
+        android:gravity="start|center_vertical"
+        android:left="16dp"
+        android:width="18dp"
+        android:height="18dp"
+        android:tint="#FB6F92" /> <!-- Pink tinted sparkles! -->
+
+    <!-- Layer 2: Custom Dropdown Arrow on the Right side -->
+    <item
+        android:drawable="@drawable/ic_chevron_down_pink"
+        android:gravity="end|center_vertical"
+        android:right="16dp"
+        android:width="20dp"
+        android:height="20dp" />
+</layer-list>
