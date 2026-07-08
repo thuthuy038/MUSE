@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:gravity="center">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="351dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_promotion_dialog"
+        android:paddingTop="29dp"
+        android:paddingBottom="24dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <!-- Reward Badge Card -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cardTop"
+            android:layout_width="286dp"
+            android:layout_height="170dp"
+            android:background="@drawable/bg_promotion_card"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tvDiscountValue"
+                android:layout_width="182dp"
+                android:layout_height="72dp"
+                android:layout_marginTop="23dp"
+                android:background="@drawable/bg_promotion_badge"
+                android:gravity="center"
+                android:rotation="-2"
+                android:text="15% OFF"
+                android:textColor="#6F002C"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tvPromoName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:text="Quà sinh nhật"
+                android:textColor="#24191A"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvDiscountValue" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Details Section -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutDetails"
+            android:layout_width="286dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardTop">
+
+            <ImageView
+                android:id="@+id/ivStar"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="16dp"
+                android:src="@android:drawable/btn_star_big_on"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="#A93054"
+                android:contentDescription="Star icon" />
+
+            <TextView
+                android:id="@+id/tvLabelDetail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="Chi tiết"
+                android:textColor="#24191A"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/ivStar"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tvDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Đang tải chi tiết..."
+                android:textColor="#574145"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/tvLabelDetail"
+                app:layout_constraintTop_toBottomOf="@id/tvLabelDetail" />
+
+            <TextView
+                android:id="@+id/tvDateRange"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="16dp"
+                android:text="KHẢ DỤNG: 15/05 - 30/05/2026"
+                android:textColor="#6C595F"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/tvLabelDetail"
+                app:layout_constraintTop_toBottomOf="@id/tvDescription" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#4DDDBFC3"
+                app:layout_constraintTop_toBottomOf="@id/tvDateRange"
+                android:layout_marginTop="8dp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Close Button (Giảm khoảng trống bằng cách để marginTop thay vì constraintBottom) -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnClose"
+            android:layout_width="286dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_promotion_button"
+            android:text="ĐÓNG"
+            android:textColor="#FB6F92"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutDetails" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.project.models.Notification;
+import com.project.models.Promotion;
 import com.project.muse_android.databinding.FragmentNotificationListBinding;
 import com.project.muse_android.main.MainActivity;
 import com.project.network.ApiClient;
@@ -71,10 +72,37 @@ public class NotificationListFragment extends Fragment {
             if ("unread".equals(n.getStatus())) {
                 markNotificationAsRead(n, position);
             }
+
+            if ("promotion".equals(n.getType()) && n.getTargetId() != null) {
+                showPromotionDetail(n.getTargetId());
+            }
         });
         binding.rvNotifications.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvNotifications.setAdapter(adapter);
     }
+
+    private void showPromotionDetail(String promoId) {
+        binding.progressBar.setVisibility(View.VISIBLE);
+        ApiClient.INSTANCE.getInstance().getPromotionById(promoId).enqueue(new Callback<Promotion>() {
+            @Override
+            public void onResponse(Call<Promotion> call, Response<Promotion> response) {
+                if (!isAdded()) return;
+                binding.progressBar.setVisibility(View.GONE);
+                if (response.isSuccessful() && response.body() != null) {
+                    PromotionDetailDialog dialog = PromotionDetailDialog.newInstance(response.body());
+                    dialog.show(getChildFragmentManager(), "PromotionDetailDialog");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Promotion> call, Throwable t) {
+                if (!isAdded()) return;
+                binding.progressBar.setVisibility(View.GONE);
+            }
+        });
+    }
+
+
 
     private void markNotificationAsRead(Notification n, int position) {
         if (n.getId() == null) {
