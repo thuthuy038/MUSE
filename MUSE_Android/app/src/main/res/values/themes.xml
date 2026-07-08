@@ -53,6 +53,12 @@
         <item name="android:layout_width">32dp</item>
         <item name="android:layout_height">32dp</item>
         <item name="android:layout_marginEnd">16dp</item>
+    <style name="CustomBottomSheetDialogTheme" parent="Theme.Material3.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
+    </style>
+
+    <style name="CustomBottomSheetStyle" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
     </style>
 
 </resources>
