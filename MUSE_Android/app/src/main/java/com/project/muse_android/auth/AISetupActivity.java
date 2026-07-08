@@ -75,6 +75,14 @@ public class AISetupActivity extends AppCompatActivity {
         sessionManager = new SessionManager(this);
         homeApiService = HomeApiClient.getHomeApiService();
 
+        // Load existing AI Profile values from AI_PREFS
+        android.content.SharedPreferences prefs = getSharedPreferences("AI_PREFS", MODE_PRIVATE);
+        selectedGender = prefs.getString("gender", "female");
+        selectedHeight = prefs.getInt("height", 170);
+        selectedWeight = prefs.getInt("weight", 62);
+        if (selectedHeight < 140) selectedHeight = 170;
+        if (selectedWeight < 40) selectedWeight = 62;
+
         setupLaunchers();
         setupHeader();
         setupStep1Listeners();
@@ -82,6 +90,44 @@ public class AISetupActivity extends AppCompatActivity {
         setupFooterActions();
         
         setupStep1Banners();
+
+        // Pre-fill fields from SharedPreferences
+        binding.sbHeight.setProgress(selectedHeight - 140);
+        binding.txtHeightDisplay.setText(selectedHeight + " CM");
+
+        binding.sbWeight.setProgress(selectedWeight - 40);
+        binding.txtWeightDisplay.setText(selectedWeight + " KG");
+
+        String vong1 = prefs.getString("vong1", "");
+        String vong2 = prefs.getString("vong2", "");
+        String vong3 = prefs.getString("vong3", "");
+        binding.etStep2Vong1.setText(vong1);
+        binding.etStep2Vong2.setText(vong2);
+        binding.etStep2Vong3.setText(vong3);
+
+        String styles = prefs.getString("styles", "");
+        if (!styles.isEmpty()) {
+            String[] styleArray = styles.split(",");
+            for (String s : styleArray) {
+                if ("thanh_lich".equalsIgnoreCase(s) || "Elegant".equalsIgnoreCase(s)) {
+                    binding.btnStyleThanhLich.setSelected(true);
+                } else if ("duong_pho".equalsIgnoreCase(s) || "Streetwear".equalsIgnoreCase(s)) {
+                    binding.btnStyleDuongPho.setSelected(true);
+                } else if ("co_dien".equalsIgnoreCase(s) || "Classic".equalsIgnoreCase(s) || "Vintage".equalsIgnoreCase(s)) {
+                    binding.btnStyleCoDien.setSelected(true);
+                } else if ("toi_gian".equalsIgnoreCase(s) || "Minimalist".equalsIgnoreCase(s)) {
+                    binding.btnStyleToiGian.setSelected(true);
+                }
+            }
+        }
+
+        int skin = prefs.getInt("skin", 0);
+        if (skin == 1) binding.btnSkin1.setSelected(true);
+        else if (skin == 2) binding.btnSkin2.setSelected(true);
+        else if (skin == 3) binding.btnSkin3.setSelected(true);
+        else if (skin == 4) binding.btnSkin4.setSelected(true);
+        else if (skin == 5) binding.btnSkin5.setSelected(true);
+
         updateGenderUI();
     }
 
@@ -239,7 +285,7 @@ public class AISetupActivity extends AppCompatActivity {
         });
         binding.btnSkipStep.setOnClickListener(v -> {
             if (currentStep < 3) { currentStep++; showStepLayout(); }
-            else { startActivity(new Intent(this, MainActivity.class)); finish(); }
+            else { saveDataAndFinish(); }
         });
 
         // Step 3 specific selection logic
@@ -360,15 +406,64 @@ public class AISetupActivity extends AppCompatActivity {
     }
 
     private void saveDataAndFinish() {
+        // Save locally to AI_PREFS
+        android.content.SharedPreferences.Editor editor = getSharedPreferences("AI_PREFS", MODE_PRIVATE).edit();
+        editor.putString("gender", selectedGender);
+        editor.putInt("height", selectedHeight);
+        editor.putInt("weight", selectedWeight);
+        editor.putString("vong1", binding.etStep2Vong1.getText().toString().trim());
+        editor.putString("vong2", binding.etStep2Vong2.getText().toString().trim());
+        editor.putString("vong3", binding.etStep2Vong3.getText().toString().trim());
+
+        // Save selected styles
+        StringBuilder stylesSb = new StringBuilder();
+        if (binding.btnStyleThanhLich.isSelected()) stylesSb.append("thanh_lich");
+        if (binding.btnStyleDuongPho.isSelected()) {
+            if (stylesSb.length() > 0) stylesSb.append(",");
+            stylesSb.append("duong_pho");
+        }
+        if (binding.btnStyleCoDien.isSelected()) {
+            if (stylesSb.length() > 0) stylesSb.append(",");
+            stylesSb.append("co_dien");
+        }
+        if (binding.btnStyleToiGian.isSelected()) {
+            if (stylesSb.length() > 0) stylesSb.append(",");
+            stylesSb.append("toi_gian");
+        }
+        editor.putString("styles", stylesSb.toString());
+
+        // Save selected skin
+        int skin = 0;
+        if (binding.btnSkin1.isSelected()) skin = 1;
+        else if (binding.btnSkin2.isSelected()) skin = 2;
+        else if (binding.btnSkin3.isSelected()) skin = 3;
+        else if (binding.btnSkin4.isSelected()) skin = 4;
+        else if (binding.btnSkin5.isSelected()) skin = 5;
+        editor.putInt("skin", skin);
+
+        editor.apply();
+
         String token = sessionManager.getToken();
         String userId = sessionManager.getUserId();
-        if (token == null || userId == null) return;
+        if (token == null || userId == null) {
+            // For guest, show success popup directly
+            showSuccessPopup();
+            return;
+        }
 
         Map<String, Object> userData = new HashMap<>();
         userData.put("gender", selectedGender);
         userData.put("height", selectedHeight);
         userData.put("weight", selectedWeight);
         userData.put("profileCompleted", true);
+
+        // Convert styles list for server
+        List<String> serverStyles = new ArrayList<>();
+        if (binding.btnStyleThanhLich.isSelected()) serverStyles.add("Elegant");
+        if (binding.btnStyleDuongPho.isSelected()) serverStyles.add("Streetwear");
+        if (binding.btnStyleCoDien.isSelected()) serverStyles.add("Classic");
+        if (binding.btnStyleToiGian.isSelected()) serverStyles.add("Minimalist");
+        userData.put("favoriteStyles", serverStyles);
 
         binding.btnNextStep.setEnabled(false);
         binding.btnNextStep.setText("Đang lưu...");
@@ -378,19 +473,46 @@ public class AISetupActivity extends AppCompatActivity {
             public void onResponse(Call<User> call, Response<User> response) {
                 if (response.isSuccessful()) {
                     sessionManager.saveProfileCompleted(true);
-                    startActivity(new Intent(AISetupActivity.this, MainActivity.class));
-                    finish();
+                    showSuccessPopup();
                 } else {
                     binding.btnNextStep.setEnabled(true);
                     binding.btnNextStep.setText("TIẾP THEO");
+                    Toast.makeText(AISetupActivity.this, "Không thể đồng bộ với máy chủ, đã lưu cục bộ.", Toast.LENGTH_LONG).show();
+                    showSuccessPopup();
                 }
             }
             @Override
             public void onFailure(Call<User> call, Throwable t) {
                 binding.btnNextStep.setEnabled(true);
                 binding.btnNextStep.setText("TIẾP THEO");
+                Toast.makeText(AISetupActivity.this, "Lỗi kết nối máy chủ, đã lưu cục bộ.", Toast.LENGTH_LONG).show();
+                showSuccessPopup();
             }
         });
+    }
+
+    private void showSuccessPopup() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_setup_completed);
+        dialog.setCancelable(false);
+
+        android.view.Window window = dialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+            window.setLayout(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
+        dialog.findViewById(R.id.btnOk).setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intent = new Intent(AISetupActivity.this, MainActivity.class);
+            intent.putExtra("open_ai", true);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
+
+        dialog.show();
     }
 
     @Override
