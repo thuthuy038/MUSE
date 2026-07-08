@@ -305,6 +305,86 @@ public class CartManager {
         }
     }
 
+    public void updateCartItemVariant(String productId, String oldColor, String oldSize, String newColor, String newSize, double price, CartCallback<Void> callback) {
+        String safeOldColor = oldColor != null ? oldColor : "";
+        String safeOldSize = oldSize != null ? oldSize : "";
+        String safeNewColor = newColor != null ? newColor : "";
+        String safeNewSize = newSize != null ? newSize : "";
+
+        if (sessionManager.isLoggedIn()) {
+            String userId = sessionManager.getUserId();
+            apiService.removeFromCart(userId, productId, safeOldSize, safeOldColor).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    new Thread(() -> {
+                        CartItem localOld = cartDao.getByVariant(productId, safeOldColor, safeOldSize);
+                        int qty = localOld != null ? localOld.getQuantity() : 1;
+                        
+                        if (localOld != null) {
+                            cartDao.delete(localOld);
+                        }
+
+                        CartRequest request = new CartRequest(userId, productId, qty, safeNewColor, safeNewSize, price);
+                        apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
+                            @Override
+                            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response2) {
+                                new Thread(() -> {
+                                    CartItem existingNew = cartDao.getByVariant(productId, safeNewColor, safeNewSize);
+                                    if (existingNew != null) {
+                                        existingNew.setQuantity(existingNew.getQuantity() + qty);
+                                        cartDao.update(existingNew);
+                                    } else {
+                                        CartItem newItem = new CartItem(
+                                                productId,
+                                                localOld != null ? localOld.getName() : "",
+                                                price,
+                                                localOld != null ? localOld.getDiscountPrice() : 0,
+                                                localOld != null ? localOld.getImageUrl() : "",
+                                                safeNewColor,
+                                                safeNewSize,
+                                                qty
+                                        );
+                                        cartDao.insert(newItem);
+                                    }
+                                    new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onSuccess(null));
+                                }).start();
+                            }
+
+                            @Override
+                            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onError(t.getMessage()));
+                            }
+                        });
+                    }).start();
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    callback.onError(t.getMessage());
+                }
+            });
+        } else {
+            new Thread(() -> {
+                CartItem localOld = cartDao.getByVariant(productId, safeOldColor, safeOldSize);
+                if (localOld != null) {
+                    int qty = localOld.getQuantity();
+                    cartDao.delete(localOld);
+
+                    CartItem existingNew = cartDao.getByVariant(productId, safeNewColor, safeNewSize);
+                    if (existingNew != null) {
+                        existingNew.setQuantity(existingNew.getQuantity() + qty);
+                        cartDao.update(existingNew);
+                    } else {
+                        localOld.setColor(safeNewColor);
+                        localOld.setSize(safeNewSize);
+                        cartDao.insert(localOld);
+                    }
+                }
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onSuccess(null));
+            }).start();
+        }
+    }
+
     public void syncLocalCart() {
         if (!sessionManager.isLoggedIn()) return;
 

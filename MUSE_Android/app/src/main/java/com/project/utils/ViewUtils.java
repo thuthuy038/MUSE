@@ -40,4 +40,43 @@ public class ViewUtils {
             return windowInsets;
         });
     }
+
+    /**
+     * Set up bottom navigation view to route navigation requests to MainActivity.
+     */
+    public static void setupBottomNavigation(
+            com.google.android.material.bottomnavigation.BottomNavigationView navView,
+            android.content.Context context) {
+        
+        applySystemBarsPadding(navView, false, true);
+
+        navView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            android.content.Intent intent = new android.content.Intent(context, com.project.muse_android.main.MainActivity.class);
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            
+            if (itemId == com.project.muse_android.R.id.navigation_home) {
+                intent.putExtra("open_home", true);
+                context.startActivity(intent);
+                return true;
+            } else if (itemId == com.project.muse_android.R.id.navigation_explore) {
+                intent.putExtra("open_explore", true);
+                context.startActivity(intent);
+                return true;
+            } else if (itemId == com.project.muse_android.R.id.navigation_profile) {
+                intent.putExtra("select_profile", true);
+                context.startActivity(intent);
+                return true;
+            } else if (itemId == com.project.muse_android.R.id.navigation_cart) {
+                intent.putExtra("open_cart", true);
+                context.startActivity(intent);
+                return true;
+            } else if (itemId == com.project.muse_android.R.id.navigation_notification) {
+                intent.putExtra("open_notification", true);
+                context.startActivity(intent);
+                return true;
+            }
+            return false;
+        });
+    }
 }

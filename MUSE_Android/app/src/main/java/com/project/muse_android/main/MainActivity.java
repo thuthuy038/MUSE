@@ -204,6 +204,15 @@ public class MainActivity extends AppCompatActivity {
             } else if (intent.getBooleanExtra("open_cart", false)) {
                 navController.navigate(R.id.navigation_cart);
                 intent.removeExtra("open_cart");
+            } else if (intent.getBooleanExtra("open_home", false)) {
+                navController.navigate(R.id.navigation_home);
+                intent.removeExtra("open_home");
+            } else if (intent.getBooleanExtra("open_explore", false)) {
+                navController.navigate(R.id.navigation_explore);
+                intent.removeExtra("open_explore");
+            } else if (intent.getBooleanExtra("open_notification", false)) {
+                navController.navigate(R.id.navigation_notification);
+                intent.removeExtra("open_notification");
             } else if (intent.hasExtra("category_id")) {
                 String categoryId = intent.getStringExtra("category_id");
                 if (categoryId != null) {
@@ -235,18 +244,33 @@ public class MainActivity extends AppCompatActivity {
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        v.setX(event.getRawX() + dX);
-                        v.setY(event.getRawY() + dY);
+                        float newX = event.getRawX() + dX;
+                        float newY = event.getRawY() + dY;
+
+                        // Restrict Y movement within parent container boundaries
+                        if (v.getParent() instanceof View) {
+                            View parent = (View) v.getParent();
+                            float parentHeight = parent.getHeight();
+                            float viewHeight = v.getHeight();
+                            if (newY < 100f) newY = 100f; // status bar boundary
+                            if (newY > parentHeight - viewHeight - 200f) {
+                                newY = parentHeight - viewHeight - 200f; // bottom navigation boundary
+                            }
+                        }
+
+                        v.setX(newX);
+                        v.setY(newY);
                         return true;
 
                     case MotionEvent.ACTION_UP:
                         float finalX = event.getRawX();
                         float finalY = event.getRawY();
-                        double distance = Math.sqrt(Math.pow(finalX - initialTouchX, 2) + Math.pow(finalY - initialTouchY, 2));
+                        double distance = Math.hypot(finalX - initialTouchX, finalY - initialTouchY);
 
                         if (distance < 10) {
                             v.performClick();
-                            navController.navigate(R.id.navigation_ai);
+                        } else {
+                            snapToEdges(v);
                         }
                         startAIFloatingAnimation();
                         return true;
@@ -254,12 +278,30 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        binding.btnAIDraggable.setOnClickListener(v -> {
+            if (navController != null) {
+                navController.navigate(R.id.navigation_ai);
+            }
+        });
+    }
+
+    private void snapToEdges(View v) {
+        float screenWidth = getResources().getDisplayMetrics().widthPixels;
+        float targetX = (v.getX() + v.getWidth() / 2f < screenWidth / 2f) ? 40f : screenWidth - v.getWidth() - 40f;
+        v.animate()
+                .x(targetX)
+                .setDuration(300)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
     }
 
     private void startAIFloatingAnimation() {
-        if (aiFloatAnim != null && aiFloatAnim.isRunning()) return;
-
-        aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", -20f, 20f);
+        if (aiFloatAnim != null) {
+            aiFloatAnim.cancel();
+        }
+        float currentY = binding.btnAIDraggable.getTranslationY();
+        aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", currentY - 20f, currentY + 20f);
         aiFloatAnim.setDuration(1500);
         aiFloatAnim.setRepeatMode(ValueAnimator.REVERSE);
         aiFloatAnim.setRepeatCount(ValueAnimator.INFINITE);
