@@ -20,6 +20,17 @@ public class User {
     private String createdAt = null;
     private int orderCount = 0;
 
+    @com.google.gson.annotations.SerializedName("wishlist")
+    private List<String> wishlist = new java.util.ArrayList<>();
+
+    public List<String> getWishlist() {
+        return wishlist;
+    }
+
+    public void setWishlist(List<String> wishlist) {
+        this.wishlist = wishlist;
+    }
+
     @com.google.gson.annotations.SerializedName("gender")
     private String gender = "other";
 

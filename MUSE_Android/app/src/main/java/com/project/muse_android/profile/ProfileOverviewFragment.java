@@ -280,6 +280,10 @@ public class ProfileOverviewFragment extends Fragment {
 
         binding.menuMembership.getRoot().setOnClickListener(v -> openMembership(v));
 
+        binding.menuFavorites.getRoot().setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_wishlist);
+        });
+
         binding.llMembershipBadge.setOnClickListener(v -> openMembership(v));
 
         binding.ivAvatar.setOnClickListener(v -> {
