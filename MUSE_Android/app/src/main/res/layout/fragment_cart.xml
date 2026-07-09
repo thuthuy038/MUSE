@@ -305,7 +305,8 @@
                 <CheckBox
                     android:id="@+id/cbSelectAll"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/primary_500" />
 
                 <TextView
                     android:layout_width="wrap_content"

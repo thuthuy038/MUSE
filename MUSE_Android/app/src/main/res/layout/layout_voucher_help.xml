@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_background"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat"
+        android:text="Hỗ Trợ"
+        android:textColor="@color/neutral_900"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvUseVoucherTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/montserrat"
+        android:text="Cách Sử Dụng Voucher"
+        android:textColor="@color/neutral_900"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <TextView
+        android:id="@+id/tvUseVoucherContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/montserrat"
+        android:text="Chọn voucher phù hợp trước khi thanh toán. Nếu đơn hàng đáp ứng điều kiện áp dụng, hệ thống sẽ tự động giảm giá và cập nhật tổng thanh toán."
+        android:textColor="@color/neutral_600"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tvUseVoucherTitle" />
+
+    <TextView
+        android:id="@+id/tvFindVoucherTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/montserrat"
+        android:text="Cách Tìm Voucher"
+        android:textColor="@color/neutral_900"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/tvUseVoucherContent" />
+
+    <TextView
+        android:id="@+id/tvFindVoucherContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/montserrat"
+        android:text="Bạn có thể nhận voucher từ các chương trình khuyến mãi, ưu đãi dành cho thành viên hoặc sự kiện của Muse. Hãy thường xuyên theo dõi mục Voucher để cập nhật các mã giảm giá mới."
+        android:textColor="@color/neutral_600"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tvFindVoucherTitle" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGotIt"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="@color/primary_500"
+        android:fontFamily="@font/montserrat"
+        android:text="Đã hiểu"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:cornerRadius="12dp"
+        app:layout_constraintTop_toBottomOf="@id/tvFindVoucherContent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

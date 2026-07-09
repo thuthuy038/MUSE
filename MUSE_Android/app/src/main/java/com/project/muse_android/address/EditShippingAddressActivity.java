@@ -118,7 +118,7 @@ public class EditShippingAddressActivity extends AppCompatActivity {
             }
         });
         
-        binding.btnTypeOffice.setOnClickListener(v -> setAddressType("office"));
+        binding.btnTypeOffice.setOnClickListener(v -> setAddressType("van_phong"));
         binding.btnTypeHome.setOnClickListener(v -> setAddressType("nha_rieng"));
         
         binding.btnDelete.setOnClickListener(v -> showDeleteConfirmation());
@@ -155,7 +155,7 @@ public class EditShippingAddressActivity extends AppCompatActivity {
 
     private void setAddressType(String type) {
         selectedType = type;
-        if ("office".equalsIgnoreCase(type)) {
+        if ("office".equalsIgnoreCase(type) || "van_phong".equalsIgnoreCase(type)) {
             binding.btnTypeOffice.setBackgroundResource(R.drawable.bg_default_address_badge);
             binding.btnTypeOffice.setTextColor(getColor(R.color.primary_700));
             

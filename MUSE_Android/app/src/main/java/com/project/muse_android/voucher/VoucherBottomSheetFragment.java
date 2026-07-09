@@ -63,6 +63,10 @@ public class VoucherBottomSheetFragment extends BottomSheetDialogFragment {
 
         binding.ivBack.setOnClickListener(v -> dismiss());
 
+        binding.ivHelp.setOnClickListener(v -> {
+            VoucherHelpBottomSheetFragment.newInstance().show(getParentFragmentManager(), "VoucherHelp");
+        });
+
         binding.etVoucherCode.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
