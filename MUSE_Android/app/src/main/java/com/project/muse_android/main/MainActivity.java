@@ -196,111 +196,153 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleIntent(Intent intent) {
-        if (intent == null || navController == null) return;
-
-        if (intent.getBooleanExtra("select_profile", false)) {
-            navController.navigate(R.id.navigation_profile);
-            intent.removeExtra("select_profile");
-        } else if (intent.getBooleanExtra("open_cart", false)) {
-            navController.navigate(R.id.navigation_cart);
-            intent.removeExtra("open_cart");
-        } else if (intent.getBooleanExtra("open_home", false)) {
-            navController.navigate(R.id.navigation_home);
-            intent.removeExtra("open_home");
-        } else if (intent.getBooleanExtra("open_explore", false)) {
-            navController.navigate(R.id.navigation_explore);
-            intent.removeExtra("open_explore");
-        } else if (intent.getBooleanExtra("open_notification", false)) {
-            navController.navigate(R.id.navigation_notification);
-            intent.removeExtra("open_notification");
-        } else if (intent.hasExtra("category_id")) {
-            String categoryId = intent.getStringExtra("category_id");
-            if (categoryId != null) {
-                Bundle args = new Bundle();
-                args.putString("category_id", categoryId);
-                try {
-                    navController.navigate(R.id.navigation_category_products, args);
-                } catch (Exception e) {
-                    android.util.Log.e("MainActivity", "Navigation failed", e);
+            if (intent == null || navController == null) return;
+    
+            if (intent.getBooleanExtra("select_profile", false)) {
+                navController.navigate(R.id.navigation_profile);
+                intent.removeExtra("select_profile");
+            } else if (intent.getBooleanExtra("open_cart", false)) {
+                navController.navigate(R.id.navigation_cart);
+                intent.removeExtra("open_cart");
+            } else if (intent.getBooleanExtra("open_ai_hub", false)) {
+                navController.navigate(R.id.navigation_ai);
+                intent.removeExtra("open_ai_hub");
+            } else if (intent.hasExtra("category_id")) {
+                String categoryId = intent.getStringExtra("category_id");
+                if (categoryId != null) {
+                    Bundle args = new Bundle();
+                    args.putString("category_id", categoryId);
+                    try {
+                        navController.navigate(R.id.navigation_category_products, args);
+                    } catch (Exception e) {
+                        android.util.Log.e("MainActivity", "Navigation failed", e);
+                    }
+                    intent.removeExtra("category_id");
                 }
-                intent.removeExtra("category_id");
             }
         }
-    }
+   
 
     private void setupDraggableAI() {
         binding.btnAIDraggable.setOnTouchListener(new View.OnTouchListener() {
             private float initialTouchX, initialTouchY;
+            private float lastX, lastY;
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        dX = v.getX() - event.getRawX();
-                        dY = v.getY() - event.getRawY();
+                        stopAIFloatingAnimation();
+                        v.animate().cancel();
+                        v.setTranslationY(0f);
+                        
+                        android.view.ViewGroup.MarginLayoutParams params = (android.view.ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                        if (params instanceof androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) {
+                            androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams lp = (androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) params;
+                            if (lp.gravity != (android.view.Gravity.TOP | android.view.Gravity.START)) {
+                                params.leftMargin = (int) v.getX();
+                                params.topMargin = (int) v.getY();
+                                params.rightMargin = 0;
+                                params.bottomMargin = 0;
+                                lp.gravity = android.view.Gravity.TOP | android.view.Gravity.START;
+                                v.setLayoutParams(params);
+                            }
+                        }
+                        
+                        lastX = event.getRawX();
+                        lastY = event.getRawY();
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
-                        stopAIFloatingAnimation();
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        float newX = event.getRawX() + dX;
-                        float newY = event.getRawY() + dY;
-
-                        // Restrict Y movement within parent container boundaries
-                        if (v.getParent() instanceof View) {
-                            View parent = (View) v.getParent();
-                            float parentHeight = parent.getHeight();
-                            float viewHeight = v.getHeight();
-                            if (newY < 100f) newY = 100f; // status bar boundary
-                            if (newY > parentHeight - viewHeight - 200f) {
-                                newY = parentHeight - viewHeight - 200f; // bottom navigation boundary
-                            }
+                        float deltaX = event.getRawX() - lastX;
+                        float deltaY = event.getRawY() - lastY;
+                        
+                        android.view.ViewGroup.MarginLayoutParams moveParams = (android.view.ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                        if (moveParams instanceof androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) {
+                            androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams lp = (androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) moveParams;
+                            lp.gravity = android.view.Gravity.TOP | android.view.Gravity.START;
                         }
-
-                        v.setX(newX);
-                        v.setY(newY);
+                        
+                        moveParams.leftMargin += deltaX;
+                        moveParams.topMargin += deltaY;
+                        
+                        View parent = (View) v.getParent();
+                        if (parent != null) {
+                            int parentWidth = parent.getWidth();
+                            int parentHeight = parent.getHeight();
+                            float density = getResources().getDisplayMetrics().density;
+                            
+                            int maxLeft = parentWidth - v.getWidth();
+                            int topBound = (int) (50 * density);
+                            int bottomBound = parentHeight - v.getHeight() - (int) (100 * density);
+                            
+                            if (moveParams.leftMargin < 0) moveParams.leftMargin = 0;
+                            if (moveParams.leftMargin > maxLeft) moveParams.leftMargin = maxLeft;
+                            if (moveParams.topMargin < topBound) moveParams.topMargin = topBound;
+                            if (moveParams.topMargin > bottomBound) moveParams.topMargin = bottomBound;
+                        }
+                        
+                        v.setLayoutParams(moveParams);
+                        lastX = event.getRawX();
+                        lastY = event.getRawY();
                         return true;
 
                     case MotionEvent.ACTION_UP:
                         float finalX = event.getRawX();
                         float finalY = event.getRawY();
-                        double distance = Math.hypot(finalX - initialTouchX, finalY - initialTouchY);
+                        double distance = Math.sqrt(Math.pow(finalX - initialTouchX, 2) + Math.pow(finalY - initialTouchY, 2));
 
                         if (distance < 10) {
                             v.performClick();
+                            navController.navigate(R.id.navigation_ai);
+                            startAIFloatingAnimation();
                         } else {
-                            snapToEdges(v);
+                            View p = (View) v.getParent();
+                            int pWidth = p != null ? p.getWidth() : 0;
+                            float dens = getResources().getDisplayMetrics().density;
+                            float margin = 16 * dens;
+                            
+                            float destX;
+                            if (v.getX() + v.getWidth() / 2f < pWidth / 2f) {
+                                destX = margin;
+                            } else {
+                                destX = pWidth - v.getWidth() - margin;
+                            }
+                            
+                            v.animate()
+                             .x(destX)
+                             .setDuration(250)
+                             .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                             .withEndAction(() -> {
+                                 android.view.ViewGroup.MarginLayoutParams endParams = (android.view.ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                                 if (endParams instanceof androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) {
+                                     androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams lp = (androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) endParams;
+                                     lp.gravity = android.view.Gravity.TOP | android.view.Gravity.START;
+                                 }
+                                 endParams.leftMargin = (int) destX;
+                                 endParams.topMargin = (int) v.getY();
+                                 endParams.rightMargin = 0;
+                                 endParams.bottomMargin = 0;
+                                 v.setLayoutParams(endParams);
+                                 v.setTranslationX(0f);
+                                 v.setTranslationY(0f);
+                                 
+                                 startAIFloatingAnimation();
+                             })
+                             .start();
                         }
-                        startAIFloatingAnimation();
                         return true;
                 }
                 return false;
             }
         });
-
-        binding.btnAIDraggable.setOnClickListener(v -> {
-            if (navController != null) {
-                navController.navigate(R.id.navigation_ai);
-            }
-        });
-    }
-
-    private void snapToEdges(View v) {
-        float screenWidth = getResources().getDisplayMetrics().widthPixels;
-        float targetX = (v.getX() + v.getWidth() / 2f < screenWidth / 2f) ? 40f : screenWidth - v.getWidth() - 40f;
-        v.animate()
-                .x(targetX)
-                .setDuration(300)
-                .setInterpolator(new DecelerateInterpolator())
-                .start();
     }
 
     private void startAIFloatingAnimation() {
-        if (aiFloatAnim != null) {
-            aiFloatAnim.cancel();
-        }
-        float currentY = binding.btnAIDraggable.getTranslationY();
-        aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", currentY - 20f, currentY + 20f);
+        if (aiFloatAnim != null && aiFloatAnim.isRunning()) return;
+
+        aiFloatAnim = ObjectAnimator.ofFloat(binding.btnAIDraggable, "translationY", -20f, 20f);
         aiFloatAnim.setDuration(1500);
         aiFloatAnim.setRepeatMode(ValueAnimator.REVERSE);
         aiFloatAnim.setRepeatCount(ValueAnimator.INFINITE);

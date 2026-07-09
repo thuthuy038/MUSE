@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Header -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutHeader"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:paddingHorizontal="16dp"
+            android:background="@color/white"
+            android:elevation="4dp"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_arrow_back"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/neutral_900" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat_bold"
+                android:text="KẾT QUẢ PHÂN TÍCH"
+                android:textColor="@color/neutral_900"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/btnAiAgent"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_airobot"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/primary_500" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Main Content -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutHeader">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:paddingBottom="120dp"
+                android:clipToPadding="false">
+
+                <!-- Result Image Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="360dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="#EEEEEE"
+                    app:strokeWidth="1dp">
+
+                    <ImageView
+                        android:id="@+id/ivResultImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/image" />
+
+                    <!-- Try-on Badge overlay -->
+                    <TextView
+                        android:id="@+id/tvModeBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|start"
+                        android:layout_margin="16dp"
+                        android:background="@drawable/bg_chip_pink"
+                        android:backgroundTint="#B30737"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:text="MUSE VIRTUAL TRY-ON"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Suitability Analysis Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="ĐỘ PHÙ HỢP HOÀN CẢNH"
+                    android:textColor="@color/neutral_700"
+                    android:textSize="14sp" />
+
+                <!-- Occasions grid/list -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_bottom_sheet"
+                    android:backgroundTint="#FAFAFA"
+                    android:padding="16dp">
+
+                    <!-- School -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+                        <TextView
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:text="Đi học"
+                            android:textSize="12sp"
+                            android:textColor="@color/neutral_700" />
+                        <ProgressBar
+                            android:id="@+id/pbSchool"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="0dp"
+                            android:layout_height="8dp"
+                            android:layout_weight="1"
+                            android:progress="80"
+                            android:progressTint="@color/primary_500"
+                            android:progressBackgroundTint="#EAEAEA" />
+                        <TextView
+                            android:id="@+id/tvSchoolScore"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:gravity="end"
+                            android:text="80đ"
+                            android:textSize="12sp"
+                            android:textColor="@color/primary_500" />
+                    </LinearLayout>
+
+                    <!-- Work -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+                        <TextView
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:text="Đi làm"
+                            android:textSize="12sp"
+                            android:textColor="@color/neutral_700" />
+                        <ProgressBar
+                            android:id="@+id/pbWork"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="0dp"
+                            android:layout_height="8dp"
+                            android:layout_weight="1"
+                            android:progress="90"
+                            android:progressTint="@color/primary_500"
+                            android:progressBackgroundTint="#EAEAEA" />
+                        <TextView
+                            android:id="@+id/tvWorkScore"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:gravity="end"
+                            android:text="90đ"
+                            android:textSize="12sp"
+                            android:textColor="@color/primary_500" />
+                    </LinearLayout>
+
+                    <!-- Dating -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+                        <TextView
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:text="Hẹn hò"
+                            android:textSize="12sp"
+                            android:textColor="@color/neutral_700" />
+                        <ProgressBar
+                            android:id="@+id/pbDate"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="0dp"
+                            android:layout_height="8dp"
+                            android:layout_weight="1"
+                            android:progress="75"
+                            android:progressTint="@color/primary_500"
+                            android:progressBackgroundTint="#EAEAEA" />
+                        <TextView
+                            android:id="@+id/tvDateScore"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:gravity="end"
+                            android:text="75đ"
+                            android:textSize="12sp"
+                            android:textColor="@color/primary_500" />
+                    </LinearLayout>
+
+                    <!-- Party -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+                        <TextView
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:text="Đi tiệc"
+                            android:textSize="12sp"
+                            android:textColor="@color/neutral_700" />
+                        <ProgressBar
+                            android:id="@+id/pbParty"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="0dp"
+                            android:layout_height="8dp"
+                            android:layout_weight="1"
+                            android:progress="60"
+                            android:progressTint="@color/primary_500"
+                            android:progressBackgroundTint="#EAEAEA" />
+                        <TextView
+                            android:id="@+id/tvPartyScore"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:gravity="end"
+                            android:text="60đ"
+                            android:textSize="12sp"
+                            android:textColor="@color/primary_500" />
+                    </LinearLayout>
+
+                    <!-- Travel -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:text="Du lịch"
+                            android:textSize="12sp"
+                            android:textColor="@color/neutral_700" />
+                        <ProgressBar
+                            android:id="@+id/pbTravel"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="0dp"
+                            android:layout_height="8dp"
+                            android:layout_weight="1"
+                            android:progress="85"
+                            android:progressTint="@color/primary_500"
+                            android:progressBackgroundTint="#EAEAEA" />
+                        <TextView
+                            android:id="@+id/tvTravelScore"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:gravity="end"
+                            android:text="85đ"
+                            android:textSize="12sp"
+                            android:textColor="@color/primary_500" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Style Card Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="PHÂN TÍCH PHONG CÁCH"
+                    android:textColor="@color/neutral_700"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="#EEEEEE"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:id="@+id/tvStyleName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_chip_pink"
+                            android:backgroundTint="#FFE5EC"
+                            android:paddingHorizontal="14dp"
+                            android:paddingVertical="6dp"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:text="ELEGANT CASUAL"
+                            android:textColor="@color/primary_500"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tvStylistAdvice"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:fontFamily="@font/montserrat"
+                            android:lineSpacingExtra="4dp"
+                            android:text="Set trang phục phối hợp màu sắc vô cùng tinh tế, mang sắc thái trang nhã và lịch thiệp. Bạn nên kết hợp với một chiếc túi xách cầm tay màu be và một chiếc kính râm gọng mảnh để tổng thể sang trọng hơn."
+                            android:textColor="@color/neutral_600"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Recommended Products Section -->
+                <TextView
+                    android:id="@+id/tvSectionRec"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="SẢN PHẨM KHUYÊN DÙNG"
+                    android:textColor="@color/neutral_700"
+                    android:textSize="14sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRecommendedProducts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <!-- Action Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnResultAction"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="32dp"
+                    android:backgroundTint="@color/primary_500"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="THÊM OUTFIT VÀO GIỎ HÀNG"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSaveOutfit"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="LƯU BỘ PHỐI ĐỒ NÀY"
+                    android:textColor="@color/primary_500"
+                    android:textSize="14sp"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/primary_500"
+                    app:strokeWidth="1dp" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

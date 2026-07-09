@@ -33,10 +33,19 @@ public class ArchivalActivity extends AppCompatActivity {
         com.project.utils.ViewUtils.applySystemBarsPadding(binding.layoutHeader, true, false);
 
         binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnAiAgent.setOnClickListener(v -> navigateToAiHub());
 
         setupRecyclerViews();
         setupTabs();
         loadHistoryData();
+    }
+
+    private void navigateToAiHub() {
+        Intent intent = new Intent(this, com.project.muse_android.main.MainActivity.class);
+        intent.putExtra("open_ai_hub", true);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
     }
 
     private void setupRecyclerViews() {

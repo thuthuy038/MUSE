@@ -41,8 +41,8 @@
 
             <ImageView
                 android:id="@+id/btnAiAgent"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_airobot"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -51,11 +51,13 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Main Content Scrollable if needed -->
+        <!-- STATE A: Hub Content (Initial menu) -->
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/layoutHubContent"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:fillViewport="true"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/layoutHeader">
 
@@ -202,12 +204,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <!-- Footer area within scrollable -->
+                <!-- Footer info -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -234,11 +231,279 @@
                         android:alpha="0.3"
                         android:textSize="10sp"
                         android:letterSpacing="0.2" />
-
                 </LinearLayout>
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
+
+        <!-- STATE B: Camera / Photo Selector Content -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/layoutCaptureContent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutHeader">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:paddingBottom="100dp"
+                android:clipToPadding="false">
+
+                <TextView
+                    android:id="@+id/tvCaptureHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="AI OUTFIT FITTING ROOM"
+                    android:textColor="@color/neutral_900"
+                    android:textSize="18sp"
+                    android:layout_gravity="center_horizontal" />
+
+                <!-- Target product info (Visible if Try-On) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTargetProduct"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="#FDF8F9"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/primary_100"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="12dp"
+                        android:gravity="center_vertical">
+                        <ImageView
+                            android:id="@+id/ivTargetProductImage"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/demo_product" />
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+                            <TextView
+                                android:id="@+id/tvTargetProductName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/montserrat_bold"
+                                android:text="Linen Blazer"
+                                android:textColor="@color/neutral_900"
+                                android:textSize="14sp" />
+                            <TextView
+                                android:id="@+id/tvTargetProductVariant"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/montserrat"
+                                android:text="Size M - Màu Trắng"
+                                android:textColor="@color/neutral_500"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Model Image / Placeholder -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardModelImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="360dp"
+                    android:layout_marginTop="20dp"
+                    app:cardBackgroundColor="#FFF2F5"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="4dp"
+                    app:strokeColor="@color/primary_500"
+                    app:strokeWidth="1.5dp">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:id="@+id/ivModelPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:visibility="gone" />
+
+                        <!-- Placeholder -->
+                        <LinearLayout
+                            android:id="@+id/layoutPlaceholder"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="32dp">
+
+                            <ImageView
+                                android:layout_width="80dp"
+                                android:layout_height="80dp"
+                                android:src="@drawable/ic_airobot"
+                                app:tint="@color/primary_500"
+                                android:layout_marginBottom="16dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/montserrat_bold"
+                                android:text="SẴN SÀNG THỬ ĐỒ AI ✨"
+                                android:textColor="@color/primary_500"
+                                android:textSize="18sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:fontFamily="@font/montserrat"
+                                android:gravity="center"
+                                android:text="Hãy chụp ảnh chân dung hoặc tải ảnh từ thư viện để hệ thống bắt đầu ướm thử trang phục."
+                                android:textColor="@color/neutral_600"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Media source buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCaptureCamera"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:backgroundTint="@color/white"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="CHỤP ẢNH MỚI"
+                        android:textColor="@color/primary_500"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/primary_500"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSelectGallery"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="@color/white"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="CHỌN TỪ THƯ VIỆN"
+                        android:textColor="@color/primary_500"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/primary_500"
+                        app:strokeWidth="1dp" />
+
+                </LinearLayout>
+
+                 <com.google.android.material.button.MaterialButton
+                     android:id="@+id/btnStartAnalysis"
+                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                     android:layout_width="match_parent"
+                     android:layout_height="56dp"
+                     android:layout_marginTop="28dp"
+                     android:backgroundTint="@color/white"
+                     android:fontFamily="@font/montserrat_bold"
+                     android:text="TIẾN HÀNH THỬ ĐỒ VỚI AI"
+                     android:textColor="@color/primary_500"
+                     android:textSize="14sp"
+                     app:strokeColor="@color/primary_500"
+                     app:strokeWidth="1dp"
+                     app:cornerRadius="12dp" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- STATE C: AI Scanning / Processing Overlay -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutProcessingContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#E6FFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- User Image Card to scan over -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="220dp"
+                    android:layout_height="300dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:strokeColor="@color/primary_100"
+                    app:strokeWidth="1dp">
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <ImageView
+                            android:id="@+id/ivScanBodyPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/image" />
+                        <!-- Horizontal scanning laser line -->
+                        <View
+                            android:id="@+id/vScanLaser"
+                            android:layout_width="match_parent"
+                            android:layout_height="4dp"
+                            android:background="@drawable/bg_chip_pink"
+                            android:backgroundTint="@color/primary_500" />
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Processing status spinner -->
+                <ProgressBar
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="32dp"
+                    android:indeterminateTint="@color/primary_500" />
+
+                <TextView
+                    android:id="@+id/tvProgressStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="MUSE AI ĐANG PHÂN TÍCH..."
+                    android:textColor="@color/primary_500"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="Quá trình quét và ướm đồ có thể mất vài giây"
+                    android:textColor="@color/neutral_500"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
