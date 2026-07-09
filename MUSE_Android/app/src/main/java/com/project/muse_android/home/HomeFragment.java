@@ -46,6 +46,8 @@ import com.project.network.HomeApiService;
 import com.project.network.ApiService;
 import com.project.utils.SessionManager;
 import com.project.utils.ViewUtils;
+import com.project.utils.WishlistManager;
+import com.project.models.WishlistResponse;
 import com.project.muse_android.dialog.NewMemberOfferBottomSheet;
 
 import java.util.ArrayList;
@@ -210,7 +212,36 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         });
         productAdapter.setOnFavoriteClickListener(product -> {
-            Toast.makeText(getContext(), "Đã thêm vào yêu thích: " + product.getName(), Toast.LENGTH_SHORT).show();
+            String productId = product.get_id() != null ? product.get_id() : product.getId();
+            if (product.isFavorite()) {
+                WishlistManager.getInstance(getContext()).addToWishlist(productId, new WishlistManager.WishlistCallback<WishlistResponse>() {
+                    @Override
+                    public void onSuccess(WishlistResponse result) {
+                        Toast.makeText(getContext(), "Đã thêm vào yêu thích: " + product.getName(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        product.setFavorite(false);
+                        productAdapter.notifyDataSetChanged();
+                        Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                WishlistManager.getInstance(getContext()).removeFromWishlist(productId, new WishlistManager.WishlistCallback<WishlistResponse>() {
+                    @Override
+                    public void onSuccess(WishlistResponse result) {
+                        Toast.makeText(getContext(), "Đã xóa khỏi yêu thích: " + product.getName(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        product.setFavorite(true);
+                        productAdapter.notifyDataSetChanged();
+                        Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
         binding.rvProducts.setAdapter(productAdapter);
 
@@ -444,25 +475,33 @@ public class HomeFragment extends Fragment {
                         }
                     }
 
-                    // 1. Sắp xếp NỔI BẬT (theo lượt bán) - Lấy tối đa 10 sản phẩm
-                    hotProducts.clear();
-                    List<Product> sortedHot = new ArrayList<>(allProducts);
-                    Collections.sort(sortedHot, (p1, p2) -> Integer.compare(p2.getSoldCount(), p1.getSoldCount()));
-                    int hotLimit = Math.min(sortedHot.size(), 10);
-                    hotProducts.addAll(sortedHot.subList(0, hotLimit));
+                    // Sync favorites with wishlist API if logged in
+                    WishlistManager.getInstance(getContext()).getWishlist(new WishlistManager.WishlistCallback<List<Product>>() {
+                        @Override
+                        public void onSuccess(List<Product> wishlist) {
+                            for (Product p : allProducts) {
+                                String pId = p.get_id() != null ? p.get_id() : p.getId();
+                                boolean isFav = false;
+                                for (Product fav : wishlist) {
+                                    String favId = fav.get_id() != null ? fav.get_id() : fav.getId();
+                                    if (pId.equals(favId)) {
+                                        isFav = true;
+                                        break;
+                                    }
+                                }
+                                p.setFavorite(isFav);
+                            }
+                            processProductsAndDisplay();
+                        }
 
-                    // 2. Sắp xếp MỚI (theo ID) - Lấy tối đa 10 sản phẩm mới nhất
-                    newProducts.clear();
-                    List<Product> sortedNew = new ArrayList<>(allProducts);
-                    Collections.sort(sortedNew, (p1, p2) -> {
-                        String id1 = p1.get_id() != null ? p1.get_id() : "";
-                        String id2 = p2.get_id() != null ? p2.get_id() : "";
-                        return id2.compareTo(id1);
+                        @Override
+                        public void onError(String message) {
+                            for (Product p : allProducts) {
+                                p.setFavorite(false);
+                            }
+                            processProductsAndDisplay();
+                        }
                     });
-                    int newLimit = Math.min(sortedNew.size(), 10);
-                    newProducts.addAll(sortedNew.subList(0, newLimit));
-
-                    updateProductList();
                 } else {
                     Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
@@ -474,6 +513,29 @@ public class HomeFragment extends Fragment {
                 Toast.makeText(getContext(), "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void processProductsAndDisplay() {
+        if (binding == null) return;
+        // 1. Sắp xếp NỔI BẬT (theo lượt bán) - Lấy tối đa 10 sản phẩm
+        hotProducts.clear();
+        List<Product> sortedHot = new ArrayList<>(allProducts);
+        Collections.sort(sortedHot, (p1, p2) -> Integer.compare(p2.getSoldCount(), p1.getSoldCount()));
+        int hotLimit = Math.min(sortedHot.size(), 10);
+        hotProducts.addAll(sortedHot.subList(0, hotLimit));
+
+        // 2. Sắp xếp MỚI (theo ID) - Lấy tối đa 10 sản phẩm mới nhất
+        newProducts.clear();
+        List<Product> sortedNew = new ArrayList<>(allProducts);
+        Collections.sort(sortedNew, (p1, p2) -> {
+            String id1 = p1.get_id() != null ? p1.get_id() : "";
+            String id2 = p2.get_id() != null ? p2.get_id() : "";
+            return id2.compareTo(id1);
+        });
+        int newLimit = Math.min(sortedNew.size(), 10);
+        newProducts.addAll(sortedNew.subList(0, newLimit));
+
+        updateProductList();
     }
 
     private void checkAndShowNewMemberOffer() {

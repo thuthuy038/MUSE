@@ -12,6 +12,7 @@ import com.project.models.Voucher;
 import com.project.models.ApplyVoucherRequest;
 import com.project.models.ApplyVoucherResponse;
 import com.project.models.CartRequest;
+import com.project.models.WishlistResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,24 @@ public interface ApiService {
     @GET("api/products/{id}")
     Call<Product> getProductDetail(
         @Path("id") String productId
+    );
+
+    // ========== WISHLIST ==========
+    @GET("api/users/wishlist")
+    Call<List<Product>> getWishlist(
+        @Header("Authorization") String token
+    );
+
+    @POST("api/users/wishlist/{productId}")
+    Call<WishlistResponse> addToWishlist(
+        @Header("Authorization") String token,
+        @Path("productId") String productId
+    );
+
+    @DELETE("api/users/wishlist/{productId}")
+    Call<WishlistResponse> removeFromWishlist(
+        @Header("Authorization") String token,
+        @Path("productId") String productId
     );
 
     // ========== CART ==========

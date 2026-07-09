@@ -40,6 +40,8 @@ import com.project.network.HomeApiClient;
 import com.project.network.ApiService;
 import com.project.network.HomeApiService;
 import com.project.utils.ViewUtils;
+import com.project.utils.WishlistManager;
+import com.project.models.WishlistResponse;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -198,11 +200,24 @@ public class ProductDetailActivity extends AppCompatActivity {
         // Cung cấp cả product để lấy được đầy đủ danh sách size (từ cả variants và sizes)
         setupSizes(product);
 
-        updateFavoriteUI(product.isFavorite());
+        // Check if product is in wishlist
+        String pId = product.get_id() != null ? product.get_id() : product.getId();
+        WishlistManager.getInstance(this).isInWishlist(pId, new WishlistManager.WishlistCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean inWishlist) {
+                product.setFavorite(inWishlist);
+                updateFavoriteUI(inWishlist);
+            }
+
+            @Override
+            public void onError(String message) {
+                product.setFavorite(false);
+                updateFavoriteUI(false);
+            }
+        });
+
         binding.btnFavoriteDetail.setOnClickListener(v -> {
-            product.setFavorite(!product.isFavorite());
-            updateFavoriteUI(product.isFavorite());
-            Toast.makeText(this, product.isFavorite() ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
+            toggleFavorite(product);
         });
     }
 
@@ -213,6 +228,43 @@ public class ProductDetailActivity extends AppCompatActivity {
         } else {
             binding.btnFavoriteDetail.setImageResource(R.drawable.ic_favorite);
             binding.btnFavoriteDetail.setImageTintList(ColorStateList.valueOf(Color.parseColor("#333333")));
+        }
+    }
+
+    private void toggleFavorite(Product product) {
+        if (product == null) return;
+        
+        String pId = product.get_id() != null ? product.get_id() : product.getId();
+        boolean isCurrentlyFavorite = product.isFavorite();
+        
+        if (isCurrentlyFavorite) {
+            WishlistManager.getInstance(this).removeFromWishlist(pId, new WishlistManager.WishlistCallback<WishlistResponse>() {
+                @Override
+                public void onSuccess(WishlistResponse result) {
+                    product.setFavorite(false);
+                    updateFavoriteUI(false);
+                    Toast.makeText(ProductDetailActivity.this, "Đã xóa khỏi danh sách yêu thích", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String message) {
+                    Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            WishlistManager.getInstance(this).addToWishlist(pId, new WishlistManager.WishlistCallback<WishlistResponse>() {
+                @Override
+                public void onSuccess(WishlistResponse result) {
+                    product.setFavorite(true);
+                    updateFavoriteUI(true);
+                    Toast.makeText(ProductDetailActivity.this, "Đã thêm vào danh sách yêu thích", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String message) {
+                    Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
@@ -522,9 +574,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         binding.btnFavoriteDetail.setOnClickListener(v -> {
             if (currentProduct == null) return;
-            currentProduct.setFavorite(!currentProduct.isFavorite());
-            updateFavoriteUI(currentProduct.isFavorite());
-            Toast.makeText(this, currentProduct.isFavorite() ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
+            toggleFavorite(currentProduct);
         });
 
         binding.btnSeeAllReviews.setOnClickListener(v -> {

@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        app:elevation="0dp">
+
+        <!-- Toolbar -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="41dp"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="5dp"
+            app:contentInsetStart="0dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/btnBack"
+                    android:layout_width="21dp"
+                    android:layout_height="21dp"
+                    android:src="@drawable/ic_arrow_back"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="#E63F69" />
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat"
+                    android:text="Yêu thích"
+                    android:textColor="#1F1C1C"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageView
+                        android:id="@+id/btnSearch"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="#E63F69" />
+
+                    <ImageView
+                        android:id="@+id/btnCart"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="10dp"
+                        android:padding="2dp"
+                        android:src="@drawable/ic_shopping_bag"
+                        app:tint="#E63F69" />
+
+                    <TextView
+                        android:id="@+id/btnEdit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="Chỉnh sửa"
+                        android:textColor="#1F1C1C"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.appcompat.widget.Toolbar>
+
+        <!-- Category Tabs -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="#FFFFFF"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAll"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="Tất cả"
+                    android:textColor="@android:color/white"
+                    app:chipBackgroundColor="#FB6F92"
+                    app:chipCornerRadius="2dp"
+                    app:chipStrokeWidth="0dp"
+                    android:fontFamily="@font/montserrat"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDiscount"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="Giảm giá"
+                    android:textColor="#4B5563"
+                    app:chipBackgroundColor="#F3F4F6"
+                    app:chipCornerRadius="2dp"
+                    app:chipStrokeWidth="0dp"
+                    android:fontFamily="@font/montserrat"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipStatus"
+                    style="@style/Widget.MaterialComponents.Chip.Action"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="Trạng Thái"
+                    android:textColor="#4B5563"
+                    app:chipBackgroundColor="#F3F4F6"
+                    app:chipCornerRadius="2dp"
+                    app:chipIcon="@drawable/ic_arrow_down"
+                    app:chipIconSize="12dp"
+                    app:chipIconVisible="true"
+                    app:chipStrokeWidth="0dp"
+                    android:fontFamily="@font/montserrat"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCategory"
+                    style="@style/Widget.MaterialComponents.Chip.Action"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="Danh mục"
+                    android:textColor="#4B5563"
+                    app:chipBackgroundColor="#F3F4F6"
+                    app:chipCornerRadius="2dp"
+                    app:chipIcon="@drawable/ic_arrow_down"
+                    app:chipIconSize="12dp"
+                    app:chipIconVisible="true"
+                    app:chipStrokeWidth="0dp"
+                    android:fontFamily="@font/montserrat"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="80dp">
+
+            <!-- Empty Wishlist State -->
+            <LinearLayout
+                android:id="@+id/layoutEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="49dp"
+                android:paddingVertical="10dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="190dp"
+                    android:layout_height="162dp"
+                    android:src="@drawable/empty_wishlist" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="11dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="“Hổng” có gì trong yêu thích hết"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExploreNow"
+                    android:layout_width="161dp"
+                    android:layout_height="42dp"
+                    android:layout_marginTop="11dp"
+                    android:backgroundTint="#FB6F92"
+                    android:fontFamily="@font/montserrat"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="Khám phá ngay"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="10dp" />
+
+            </LinearLayout>
+
+            <!-- Wishlist Items State -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvWishlist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:visibility="visible" />
+
+            <!-- Recommendation Section (Always Loaded, like Cart) -->
+            <TextView
+                android:id="@+id/tvRecommendationTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="32dp"
+                android:fontFamily="@font/montserrat"
+                android:text="Có thể bạn cũng thích"
+                android:textColor="#000000"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRecommended"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="11dp"
+                android:clipToPadding="false"
+                android:padding="8dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Edit Mode Footer -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/layoutEditFooter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:visibility="gone"
+        app:cardElevation="8dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp">
+
+            <CheckBox
+                android:id="@+id/cbSelectAll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="#FB6F92"
+                android:text="Tất cả"
+                android:textColor="#999999"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUnfavorite"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="Bỏ thích"
+                android:textColor="#333333"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btnDone"
+                app:layout_constraintTop_toTopOf="parent"
+                app:strokeColor="#E0E0E0" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hoàn tất"
+                android:backgroundTint="#FB6F92"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -80,6 +80,11 @@ public class CartFragment extends Fragment {
             Navigation.findNavController(view).popBackStack();
         });
 
+        // Nút liên kết tới trang Yêu thích (Wishlist)
+        binding.ivFavorite.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_wishlist);
+        });
+
         // Cấu hình RecyclerView cho giỏ hàng
         setupCartRecyclerView();
 

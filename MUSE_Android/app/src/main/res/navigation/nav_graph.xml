@@ -81,4 +81,10 @@
         android:label="AI Stylist"
         tools:layout="@layout/fragment_ai" />
 
+    <fragment
+        android:id="@+id/navigation_wishlist"
+        android:name="com.project.muse_android.wishlist.WishlistFragment"
+        android:label="Yêu thích"
+        tools:layout="@layout/fragment_wishlist" />
+
 </navigation>
