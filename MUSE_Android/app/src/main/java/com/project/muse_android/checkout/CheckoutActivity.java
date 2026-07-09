@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,11 +16,16 @@ import com.bumptech.glide.Glide;
 import com.project.adapters.HorizontalProductAdapter;
 import com.project.models.Product;
 import com.project.models.ProductVariant;
+import com.project.models.User;
 import com.project.models.enums.HorizontalProductMode;
 import com.project.muse_android.R;
 import com.project.muse_android.cart.PromotionDetailsBottomSheetFragment;
 import com.project.muse_android.databinding.ActivityCheckoutBinding;
 import com.project.muse_android.voucher.VoucherBottomSheetFragment;
+import com.project.network.ApiClient;
+import com.project.network.ApiResponse;
+import com.project.models.Order;
+import com.project.utils.SessionManager;
 import com.project.utils.ViewUtils;
 
 import java.text.DecimalFormat;
@@ -26,20 +34,70 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class CheckoutActivity extends AppCompatActivity {
 
     private ActivityCheckoutBinding binding;
     private List<Product> checkoutProducts = new ArrayList<>();
     private HorizontalProductAdapter adapter;
+    private SessionManager sessionManager;
     
     private double originalTotal = 0;
     private double productDiscount = 0;
     private double voucherDiscount = 0; 
-    private double shippingFee = 50000; 
-    private double shippingDiscount = 50000; 
+    private String selectedVoucherCode = "";
+    private double shippingFee = 23000; // Default to standard fee
+    private double shippingDiscount = 0; 
 
     private int selectedShippingMethod = 1; // 1: Standard, 2: Fast, 3: Express
     private int selectedPaymentMethod = 1; // 1: COD, 2: Bank, 3: Momo, 4: VNPay
+    private boolean isOnlinePaymentAuthorized = false;
+
+    private User currentUser;
+    private String selectedName;
+    private String selectedPhone;
+    private String selectedStreet;
+    private String selectedWard;
+    private String selectedDistrict;
+    private String selectedProvince;
+    private String orderNote = "";
+
+    private final ActivityResultLauncher<Intent> addressLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+                    selectedStreet = data.getStringExtra("selected_address_street");
+                    selectedWard = data.getStringExtra("selected_address_ward");
+                    selectedDistrict = data.getStringExtra("selected_address_district");
+                    selectedProvince = data.getStringExtra("selected_address_province");
+                    selectedName = data.getStringExtra("selected_user_name");
+                    selectedPhone = data.getStringExtra("selected_user_phone");
+
+                    binding.txtUserName.setText(selectedName);
+                    binding.txtUserPhone.setText(selectedPhone);
+
+                    StringBuilder sb = new StringBuilder();
+                    if (selectedStreet != null && !selectedStreet.isEmpty()) sb.append(selectedStreet);
+                    if (selectedWard != null && !selectedWard.isEmpty()) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(selectedWard);
+                    }
+                    if (selectedDistrict != null && !selectedDistrict.isEmpty()) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(selectedDistrict);
+                    }
+                    if (selectedProvince != null && !selectedProvince.isEmpty()) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(selectedProvince);
+                    }
+                    binding.txtAddress.setText(sb.toString());
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +110,84 @@ public class CheckoutActivity extends AppCompatActivity {
         ViewUtils.applySystemBarsPadding(binding.header, true, false);
         ViewUtils.applySystemBarsPadding(binding.bottomContainer, false, true);
 
+        sessionManager = new SessionManager(this);
         loadData();
         setupUI();
         updateShippingUI();
         updatePaymentUI();
         calculatePrices();
+        fetchUserProfile();
+    }
+
+    private void fetchUserProfile() {
+        String token = sessionManager.getToken();
+        if (token == null) return;
+
+        ApiClient.INSTANCE.getInstance().getProfile("Bearer " + token).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    currentUser = response.body();
+                    updateAddressUI();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
+                // Ignore failure for now
+            }
+        });
+    }
+
+    private void updateAddressUI() {
+        if (currentUser != null) {
+            if (currentUser.getAddresses() != null && !currentUser.getAddresses().isEmpty()) {
+                User.Address def = null;
+                for (User.Address a : currentUser.getAddresses()) {
+                    if (a.isDefault()) {
+                        def = a;
+                        break;
+                    }
+                }
+                if (def == null) def = currentUser.getAddresses().get(0);
+                
+                selectedStreet = def.getStreet();
+                selectedWard = def.getWard();
+                selectedDistrict = def.getDistrict();
+                selectedProvince = def.getProvince();
+
+                // Use address contact info if available, otherwise fallback to account info
+                selectedName = (def.getFullName() != null && !def.getFullName().isEmpty()) ? def.getFullName() : currentUser.getName();
+                selectedPhone = (def.getPhone() != null && !def.getPhone().isEmpty()) ? def.getPhone() : 
+                                (currentUser.getPhone() != null ? currentUser.getPhone() : "Chưa có số điện thoại");
+
+                binding.txtUserName.setText(selectedName);
+                binding.txtUserPhone.setText(selectedPhone);
+
+                StringBuilder sb = new StringBuilder();
+                if (selectedStreet != null && !selectedStreet.isEmpty()) sb.append(selectedStreet);
+                if (selectedWard != null && !selectedWard.isEmpty()) {
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(selectedWard);
+                }
+                if (selectedDistrict != null && !selectedDistrict.isEmpty()) {
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(selectedDistrict);
+                }
+                if (selectedProvince != null && !selectedProvince.isEmpty()) {
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(selectedProvince);
+                }
+                binding.txtAddress.setText(sb.toString());
+            } else {
+                selectedName = currentUser.getName();
+                selectedPhone = currentUser.getPhone() != null ? currentUser.getPhone() : "Chưa có số điện thoại";
+                
+                binding.txtUserName.setText(selectedName);
+                binding.txtUserPhone.setText(selectedPhone);
+                binding.txtAddress.setText("Vui lòng thiết lập địa chỉ giao hàng");
+            }
+        }
     }
 
     private void loadData() {
@@ -68,6 +199,8 @@ public class CheckoutActivity extends AppCompatActivity {
         
         // Retrieve voucher discount passed from CartFragment
         voucherDiscount = getIntent().getDoubleExtra("voucher_discount", 0);
+        selectedVoucherCode = getIntent().getStringExtra("voucher_code");
+        if (selectedVoucherCode == null) selectedVoucherCode = "";
     }
 
     private void setupUI() {
@@ -75,7 +208,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
         binding.cardAddress.setOnClickListener(v -> {
             Intent intent = new Intent(this, com.project.muse_android.address.ShippingAddressActivity.class);
-            startActivity(intent);
+            addressLauncher.launch(intent);
         });
 
         // Setup RecyclerView with Adapter in READ_ONLY mode
@@ -100,8 +233,10 @@ public class CheckoutActivity extends AppCompatActivity {
 
         binding.btnSelectVoucher.setOnClickListener(v -> {
             VoucherBottomSheetFragment voucherSheet = new VoucherBottomSheetFragment();
-            voucherSheet.setOnVoucherSelectedListener((discount, shipping) -> {
+            voucherSheet.setOnVoucherSelectedListener((discount, shipping, code) -> {
                 this.voucherDiscount = discount;
+                this.shippingDiscount = shipping;
+                this.selectedVoucherCode = code;
                 calculatePrices();
             });
             voucherSheet.show(getSupportFragmentManager(), "VoucherBottomSheet");
@@ -120,49 +255,238 @@ public class CheckoutActivity extends AppCompatActivity {
 
         binding.cardShippingStandard.setOnClickListener(v -> {
             selectedShippingMethod = 1;
+            shippingFee = 23000;
             updateShippingUI();
             calculatePrices();
         });
 
         binding.cardShippingFast.setOnClickListener(v -> {
             selectedShippingMethod = 2;
+            shippingFee = 38000;
             updateShippingUI();
             calculatePrices();
         });
 
         binding.cardShippingExpress.setOnClickListener(v -> {
             selectedShippingMethod = 3;
+            shippingFee = 55000;
             updateShippingUI();
             calculatePrices();
         });
 
         binding.cardPaymentCOD.setOnClickListener(v -> {
             selectedPaymentMethod = 1;
+            isOnlinePaymentAuthorized = false;
             updatePaymentUI();
         });
 
         binding.cardPaymentBank.setOnClickListener(v -> {
-            selectedPaymentMethod = 2;
-            updatePaymentUI();
+            showPaymentAuthorizationDialog(2);
         });
 
         binding.cardPaymentMomo.setOnClickListener(v -> {
-            selectedPaymentMethod = 3;
-            updatePaymentUI();
+            showPaymentAuthorizationDialog(3);
         });
 
         binding.cardPaymentVNPay.setOnClickListener(v -> {
-            selectedPaymentMethod = 4;
-            updatePaymentUI();
+            showPaymentAuthorizationDialog(4);
+        });
+
+        binding.btnNote.setOnClickListener(v -> {
+            MessageBottomSheetFragment messageSheet = MessageBottomSheetFragment.newInstance(orderNote);
+            messageSheet.setOnMessageSubmittedListener(message -> {
+                orderNote = message;
+                if (message.trim().isEmpty()) {
+                    binding.txtNoteValue.setText("Để lại lời nhắn");
+                    binding.txtNoteValue.setTextColor(android.graphics.Color.parseColor("#B4B4B4"));
+                } else {
+                    binding.txtNoteValue.setText(message);
+                    binding.txtNoteValue.setTextColor(android.graphics.Color.parseColor("#1F1C1C"));
+                }
+            });
+            messageSheet.show(getSupportFragmentManager(), "MessageBottomSheet");
         });
 
         binding.btnOrder.setOnClickListener(v -> {
-            // In a real app, you would send the order to the server here.
-            // For now, we just navigate to success screen.
-            Intent intent = new Intent(this, com.project.muse_android.order.OrderSuccessActivity.class);
-            startActivity(intent);
-            finish();
+            placeOrder();
         });
+    }
+
+    private void showPaymentAuthorizationDialog(int paymentMethod) {
+        String methodName = "";
+        switch (paymentMethod) {
+            case 2: methodName = "Ngân hàng"; break;
+            case 3: methodName = "MoMo"; break;
+            case 4: methodName = "VNPay"; break;
+        }
+
+        final String finalMethodName = methodName;
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Yêu cầu truy cập")
+                .setMessage("Cho phép ứng dụng MUSE truy cập vào ứng dụng " + finalMethodName + " để thực hiện thanh toán?")
+                .setPositiveButton("Đồng ý", (dialog, which) -> {
+                    isOnlinePaymentAuthorized = true;
+                    selectedPaymentMethod = paymentMethod;
+                    updatePaymentUI();
+                    Toast.makeText(CheckoutActivity.this, "Đã cấp quyền truy cập ứng dụng " + finalMethodName + " thành công. Bạn có thể tiến hành thanh toán.", Toast.LENGTH_LONG).show();
+                })
+                .setNegativeButton("Không đồng ý", (dialog, which) -> {
+                    isOnlinePaymentAuthorized = false;
+                    selectedPaymentMethod = paymentMethod;
+                    updatePaymentUI();
+                    Toast.makeText(CheckoutActivity.this, "Bạn đã từ chối quyền truy cập. Không thể thanh toán qua phương thức này.", Toast.LENGTH_LONG).show();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private void placeOrder() {
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(this, "Vui lòng đăng nhập để đặt hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (currentUser == null) {
+            Toast.makeText(this, "Đang tải thông tin người dùng, vui lòng thử lại sau", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Prepare Order data
+        Order order = new Order();
+        order.setUserId(currentUser.get_id());
+        order.setCustomerName(selectedName != null ? selectedName : currentUser.getName());
+        order.setEmail(currentUser.getEmail());
+        order.setPhone(selectedPhone != null && !selectedPhone.equals("Chưa có số điện thoại") ? selectedPhone : (currentUser.getPhone() != null ? currentUser.getPhone() : "0000000000"));
+        
+        String address = binding.txtAddress.getText().toString();
+        if (address.contains("Vui lòng thiết lập")) {
+            Toast.makeText(this, "Vui lòng thêm địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        order.setAddress(address);
+        
+        // Build nested ShippingAddress matching MongoDB
+        Order.ShippingAddress shippingAddress = new Order.ShippingAddress(
+            order.getCustomerName(),
+            order.getEmail(),
+            order.getPhone(),
+            selectedStreet != null ? selectedStreet : address,
+            selectedProvince != null ? selectedProvince : "",
+            selectedDistrict != null ? selectedDistrict : "",
+            selectedWard != null ? selectedWard : ""
+        );
+        order.setShippingAddress(shippingAddress);
+        
+        List<Order.OrderItem> items = new ArrayList<>();
+        double itemTotalDiscounted = 0;
+        for (Product p : checkoutProducts) {
+            items.add(createOrderItem(p));
+            
+            double discPrice = (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) 
+                    ? p.getDiscountPrice() : p.getPrice();
+            itemTotalDiscounted += discPrice * (p.getQuantity() > 0 ? p.getQuantity() : 1);
+        }
+        order.setItems(items);
+
+        // Build nested ShippingMethod
+        String shippingMethodName = "Giao hàng tiêu chuẩn";
+        if (selectedShippingMethod == 2) {
+            shippingMethodName = "Giao hàng nhanh";
+        } else if (selectedShippingMethod == 3) {
+            shippingMethodName = "Hỏa tốc";
+        }
+        order.setShippingMethod(new Order.ShippingMethod(shippingMethodName, shippingFee));
+
+        // Build nested Promotion
+        order.setPromotion(new Order.Promotion(voucherDiscount, selectedVoucherCode));
+
+        // Set prices
+        order.setSubTotal(itemTotalDiscounted);
+        double finalPrice = itemTotalDiscounted + shippingFee - shippingDiscount - voucherDiscount;
+        order.setTotalPrice(finalPrice);
+        order.setDiscount(voucherDiscount);
+        order.setFinalPrice(finalPrice);
+        
+        order.setStatus("Đang xử lý");
+        order.setNote(orderNote.trim().isEmpty() ? "Đặt hàng từ Android App" : orderNote.trim());
+        
+        // Map payment method
+        String pMethod = "COD";
+        switch (selectedPaymentMethod) {
+            case 2: pMethod = "BANK"; break;
+            case 3: pMethod = "MOMO"; break;
+            case 4: pMethod = "VNPAY"; break;
+        }
+
+        if (selectedPaymentMethod != 1 && !isOnlinePaymentAuthorized) {
+            Toast.makeText(this, "Vui lòng cho phép liên kết ứng dụng thanh toán hoặc chọn phương thức thanh toán khác.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        order.setPaymentMethod(pMethod);
+        if (selectedPaymentMethod != 1 && isOnlinePaymentAuthorized) {
+            order.setPaymentStatus("Đã thanh toán");
+            order.setStatus("Đang xử lý"); // Processing since it's already paid
+        } else {
+            order.setPaymentStatus("Chưa thanh toán");
+            order.setStatus("Đang xử lý");
+        }
+        order.setVoucherCode(selectedVoucherCode);
+
+        binding.btnOrder.setEnabled(false);
+        binding.btnOrder.setText("ĐANG XỬ LÝ...");
+
+        ApiClient.INSTANCE.getInstance().createOrder(order).enqueue(new Callback<Order>() {
+            @Override
+            public void onResponse(@NonNull Call<Order> call, @NonNull Response<Order> response) {
+                if (response.isSuccessful()) {
+                    Intent intent = new Intent(CheckoutActivity.this, com.project.muse_android.order.OrderSuccessActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    binding.btnOrder.setEnabled(true);
+                    binding.btnOrder.setText("ĐẶT HÀNG");
+                    Toast.makeText(CheckoutActivity.this, "Đặt hàng thất bại: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Order> call, @NonNull Throwable t) {
+                binding.btnOrder.setEnabled(true);
+                binding.btnOrder.setText("ĐẶT HÀNG");
+                android.util.Log.e("CheckoutActivity", "Lỗi kết nối khi đặt hàng", t);
+                t.printStackTrace();
+                Toast.makeText(CheckoutActivity.this, "Lỗi kết nối: " + t.toString(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private Order.OrderItem createOrderItem(Product p) {
+        String image = "";
+        if (p.getImages() != null && !p.getImages().isEmpty()) {
+            image = p.getImages().get(0).getUrl();
+        }
+        
+        String color = "";
+        String size = "";
+        if (p.getVariants() != null && !p.getVariants().isEmpty()) {
+            color = p.getVariants().get(0).getColor();
+            size = p.getVariants().get(0).getSize();
+        }
+
+        double price = (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) 
+                ? p.getDiscountPrice() : p.getPrice();
+        int quantity = p.getQuantity() > 0 ? p.getQuantity() : 1;
+
+        return new Order.OrderItem(
+                p.getId(),
+                p.getName(),
+                image,
+                size,
+                color,
+                quantity,
+                price
+        );
     }
 
     private void updateShippingUI() {

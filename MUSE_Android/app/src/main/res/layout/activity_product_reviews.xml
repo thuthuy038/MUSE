@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:fitsSystemWindows="true">
+
+    <!-- Custom Top Header -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_arrow_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:tint="@color/primary_500" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đánh giá"
+            android:textSize="18sp"
+            android:textColor="#333333"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/btnBack"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/headerDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"
+        app:layout_constraintTop_toBottomOf="@id/header" />
+
+    <!-- Product Name Tab-like view -->
+    <LinearLayout
+        android:id="@+id/productTab"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerDivider">
+
+        <TextView
+            android:id="@+id/txtProductNameHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Áo baby doll tay bồng"
+            android:textColor="@color/primary_500"
+            android:textSize="14sp"
+            android:fontFamily="@font/montserrat"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <View
+            android:layout_width="60dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="4dp"
+            android:background="@color/primary_500" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/tabDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"
+        app:layout_constraintTop_toBottomOf="@id/productTab" />
+
+    <!-- Summary Section -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
+        app:layout_constraintTop_toBottomOf="@id/tabDivider">
+
+        <TextView
+            android:id="@+id/txtAvgRatingLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4.5/5"
+            android:textColor="@color/primary_500"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/montserrat"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/txtSatisfactionDesc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="78% người dùng cảm thấy hài lòng"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:fontFamily="@font/montserrat"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/txtAvgRatingLarge"
+            app:layout_constraintTop_toTopOf="@id/txtAvgRatingLarge"
+            app:layout_constraintBottom_toBottomOf="@id/txtAvgRatingLarge" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Search Bar -->
+    <EditText
+        android:id="@+id/edtSearchReview"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginHorizontal="16dp"
+        android:background="@drawable/bg_search_bar"
+        android:hint="Tìm kiếm trong đánh giá..."
+        android:paddingHorizontal="16dp"
+        android:textSize="14sp"
+        android:fontFamily="@font/montserrat"
+        android:drawableStart="@drawable/ic_search"
+        android:drawablePadding="12dp"
+        android:drawableTint="#999999"
+        app:layout_constraintTop_toBottomOf="@id/layoutSummary" />
+
+    <!-- Filters -->
+    <HorizontalScrollView
+        android:id="@+id/scrollFilters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:paddingHorizontal="16dp"
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/edtSearchReview">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAll"
+                style="@style/Widget.MaterialComponents.Chip.Action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tất cả (1.8k)"
+                android:textColor="@android:color/white"
+                app:chipBackgroundColor="@color/primary_500"
+                app:chipCornerRadius="16dp"
+                app:chipStrokeWidth="0dp"
+                android:fontFamily="@font/montserrat"
+                android:textSize="11sp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipWithImages"
+                style="@style/Widget.MaterialComponents.Chip.Action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Có hình ảnh (235)"
+                android:textColor="#666666"
+                app:chipBackgroundColor="@android:color/white"
+                app:chipStrokeColor="#DDDDDD"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="16dp"
+                android:fontFamily="@font/montserrat"
+                android:textSize="11sp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipStar"
+                style="@style/Widget.MaterialComponents.Chip.Action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Số sao"
+                android:textColor="#666666"
+                app:chipBackgroundColor="@android:color/white"
+                app:chipStrokeColor="#DDDDDD"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="16dp"
+                app:chipIcon="@drawable/ic_arrow_down"
+                app:chipIconSize="14dp"
+                app:chipIconVisible="true"
+                android:fontFamily="@font/montserrat"
+                android:textSize="11sp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipVariant"
+                style="@style/Widget.MaterialComponents.Chip.Action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Phân loại"
+                android:textColor="#666666"
+                app:chipBackgroundColor="@android:color/white"
+                app:chipStrokeColor="#DDDDDD"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="16dp"
+                app:chipIcon="@drawable/ic_arrow_down"
+                app:chipIconSize="14dp"
+                app:chipIconVisible="true"
+                android:fontFamily="@font/montserrat"
+                android:textSize="11sp" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <View
+        android:id="@+id/filterDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/scrollFilters" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvAllReviews"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/filterDivider"
+        app:layout_constraintBottom_toTopOf="@id/bottomBar" />
+
+    <TextView
+        android:id="@+id/txtNoReviews"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Không có đánh giá phù hợp"
+        android:textColor="#999999"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/rvAllReviews"
+        app:layout_constraintBottom_toBottomOf="@id/rvAllReviews"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Bottom Action Bar -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@android:color/white"
+        android:elevation="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:id="@+id/btnChat"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_chat"
+                app:tint="@color/primary_500" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chat với shop"
+                android:textColor="#666666"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical"
+            android:background="#EEEEEE" />
+
+        <LinearLayout
+            android:id="@+id/btnAddToCart"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_add_shopping_cart"
+                app:tint="@color/primary_500" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thêm vào giỏ hàng"
+                android:textColor="#666666"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnBuyNow"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5"
+            android:backgroundTint="@color/primary_500"
+            android:text="MUA NGAY"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            app:cornerRadius="0dp" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

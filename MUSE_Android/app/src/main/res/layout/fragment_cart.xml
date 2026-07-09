@@ -294,40 +294,6 @@
                 android:layout_height="1dp"
                 android:background="@color/neutral_300" />
 
-            <!-- Reward Points Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="10dp">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_star" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/montserrat"
-                    android:text="@string/cart_reward_points"
-                    android:textColor="@color/neutral_900"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/neutral_300" />
-
             <!-- Buy Bar -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -339,7 +305,8 @@
                 <CheckBox
                     android:id="@+id/cbSelectAll"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/primary_500" />
 
                 <TextView
                     android:layout_width="wrap_content"

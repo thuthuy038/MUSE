@@ -1,6 +1,7 @@
 package com.project.adapters;
 
 import android.content.Context;
+import android.widget.Toast;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +14,15 @@ import com.project.models.Order;
 import com.project.models.Product;
 import com.project.models.enums.HorizontalProductMode;
 import com.project.muse_android.databinding.ItemOrderBinding;
+import com.project.muse_android.order.OrderDetailActivity;
+import com.project.muse_android.order.ReturnRefundActivity;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -113,10 +119,17 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             binding.txtTotalInfo.setText(totalInfo);
 
             // 4. Action Buttons based on Status
-            setupButtons(order.getStatus());
+            setupButtons(order);
+
+            // 5. Navigate to Detail
+            binding.getRoot().setOnClickListener(v -> {
+                android.content.Intent intent = new android.content.Intent(context, OrderDetailActivity.class);
+                intent.putExtra("order", order);
+                context.startActivity(intent);
+            });
         }
 
-        private void setupButtons(String status) {
+        private void setupButtons(Order order) {
             // Hide all buttons first
             binding.btnContact.setVisibility(View.GONE);
             binding.btnTrack.setVisibility(View.GONE);
@@ -125,25 +138,82 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             binding.btnCancelDetail.setVisibility(View.GONE);
             binding.btnReorder.setVisibility(View.GONE);
 
+            String status = order.getStatus();
             if (status == null) return;
 
-            switch (status.toUpperCase()) {
-                case "PENDING":
-                case "PROCESSING":
-                    binding.btnContact.setVisibility(View.VISIBLE);
-                    break;
-                case "SHIPPING":
-                    binding.btnTrack.setVisibility(View.VISIBLE);
-                    break;
-                case "DELIVERED":
-                case "COMPLETED":
+            String statusUpper = status.toUpperCase();
+
+            // DELIVERED, COMPLETED, ĐÃ GIAO, HOÀN THÀNH
+            if (statusUpper.equals("DELIVERED") || statusUpper.equals("COMPLETED") 
+                    || statusUpper.contains("ĐÃ GIAO") || statusUpper.contains("HOÀN THÀNH")) {
+                
+                // Logic 5 days: Trả hàng/Hoàn tiền vs Mua lại
+                boolean isOld = isOlderThan5Days(order.getUpdatedAt() != null ? order.getUpdatedAt() : order.getCreatedAt());
+                
+                if (isOld) {
+                    binding.btnReorder.setVisibility(View.VISIBLE);
+                    binding.btnReview.setVisibility(View.VISIBLE);
+                    
+                    binding.btnReorder.setOnClickListener(v -> {
+                        Toast.makeText(context, "Đã thêm lại các sản phẩm của đơn " + order.getId() + " vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
+                    });
+                } else {
                     binding.btnReturn.setVisibility(View.VISIBLE);
                     binding.btnReview.setVisibility(View.VISIBLE);
-                    break;
-                case "CANCELLED":
-                    binding.btnCancelDetail.setVisibility(View.VISIBLE);
-                    binding.btnReorder.setVisibility(View.VISIBLE);
-                    break;
+
+                    binding.btnReturn.setOnClickListener(v -> {
+                        android.content.Intent intent = new android.content.Intent(context, ReturnRefundActivity.class);
+                        intent.putExtra("order", order);
+                        context.startActivity(intent);
+                    });
+                }
+                
+                binding.btnReview.setOnClickListener(v -> {
+                    Toast.makeText(context, "Mở form đánh giá cho đơn hàng " + order.getId(), Toast.LENGTH_SHORT).show();
+                });
+            }
+            // PENDING, PROCESSING, ĐANG XỬ LÝ, CHỜ LẤY HÀNG
+            else if (statusUpper.equals("PENDING") || statusUpper.equals("PROCESSING") 
+                    || statusUpper.contains("XỬ LÝ") || statusUpper.contains("LẤY HÀNG")
+                    || statusUpper.contains("XÁC NHẬN")) {
+                binding.btnContact.setVisibility(View.VISIBLE);
+                binding.btnContact.setOnClickListener(v -> {
+                    Toast.makeText(context, "Đang kết nối liên hệ hỗ trợ đơn hàng " + order.getId(), Toast.LENGTH_SHORT).show();
+                });
+            }
+            // SHIPPING, ĐANG GIAO HÀNG
+            else if (statusUpper.equals("SHIPPING") || statusUpper.contains("GIAO")) {
+                binding.btnTrack.setVisibility(View.VISIBLE);
+                binding.btnTrack.setOnClickListener(v -> {
+                    Toast.makeText(context, "Đang định vị theo dõi hành trình đơn hàng " + order.getId(), Toast.LENGTH_SHORT).show();
+                });
+            }
+            // CANCELLED, ĐÃ HỦY
+            else if (statusUpper.equals("CANCELLED") || statusUpper.contains("HỦY")) {
+                binding.btnCancelDetail.setVisibility(View.VISIBLE);
+                binding.btnReorder.setVisibility(View.VISIBLE);
+
+                binding.btnCancelDetail.setOnClickListener(v -> {
+                    Toast.makeText(context, "Đơn hàng " + order.getId() + " đã bị hủy thành công.", Toast.LENGTH_SHORT).show();
+                });
+                binding.btnReorder.setOnClickListener(v -> {
+                    Toast.makeText(context, "Đã thêm lại các sản phẩm của đơn " + order.getId() + " vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
+                });
+            }
+        }
+
+        private boolean isOlderThan5Days(String dateStr) {
+            if (dateStr == null) return false;
+            try {
+                SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+                Date date = inputFormat.parse(dateStr);
+                if (date == null) return false;
+                
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.DAY_OF_YEAR, -5);
+                return date.before(cal.getTime());
+            } catch (Exception e) {
+                return false;
             }
         }
 

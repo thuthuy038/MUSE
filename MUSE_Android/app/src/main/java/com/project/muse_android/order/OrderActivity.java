@@ -21,6 +21,8 @@ import com.project.models.Product;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivityOrderBinding;
 import com.project.network.ApiClient;
+import com.project.network.ApiResponse;
+import com.project.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,7 @@ public class OrderActivity extends AppCompatActivity {
     private List<Product> suggestionList = new ArrayList<>();
 
     private String currentStatus = "ALL";
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +53,11 @@ public class OrderActivity extends AppCompatActivity {
         binding = ActivityOrderBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        sessionManager = new SessionManager(this);
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
@@ -60,8 +65,14 @@ public class OrderActivity extends AppCompatActivity {
         setupTabs();
         setupSuggestionRecyclerView();
         
-        loadMockOrders();
+        fetchOrders();
         loadSuggestions();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fetchOrders();
     }
 
     private void setupOrderRecyclerView() {
@@ -75,12 +86,12 @@ public class OrderActivity extends AppCompatActivity {
         binding.btnSearch.setOnClickListener(v -> Toast.makeText(this, "Tìm kiếm", Toast.LENGTH_SHORT).show());
 
         binding.tabAll.setOnClickListener(v -> filterOrders("ALL"));
-        binding.tabPending.setOnClickListener(v -> filterOrders("PENDING"));
-        binding.tabProcessing.setOnClickListener(v -> filterOrders("PROCESSING"));
-        binding.tabShipping.setOnClickListener(v -> filterOrders("SHIPPING"));
-        binding.tabDelivered.setOnClickListener(v -> filterOrders("DELIVERED"));
-        binding.tabReturned.setOnClickListener(v -> filterOrders("RETURNED"));
-        binding.tabCancelled.setOnClickListener(v -> filterOrders("CANCELLED"));
+        binding.tabPending.setOnClickListener(v -> filterOrders("Đang xử lý"));
+        binding.tabProcessing.setOnClickListener(v -> filterOrders("Đã xác nhận"));
+        binding.tabShipping.setOnClickListener(v -> filterOrders("Đang giao"));
+        binding.tabDelivered.setOnClickListener(v -> filterOrders("Đã giao"));
+        binding.tabReturned.setOnClickListener(v -> filterOrders("Trả hàng"));
+        binding.tabCancelled.setOnClickListener(v -> filterOrders("Đã hủy"));
         
         // Default select All
         filterOrders("ALL");
@@ -92,12 +103,12 @@ public class OrderActivity extends AppCompatActivity {
         // Update UI Tabs
         resetTabStyles();
         if (status.equals("ALL")) setTabSelected(binding.tabAll);
-        else if (status.equals("PENDING")) setTabSelected(binding.tabPending);
-        else if (status.equals("PROCESSING")) setTabSelected(binding.tabProcessing);
-        else if (status.equals("SHIPPING")) setTabSelected(binding.tabShipping);
-        else if (status.equals("DELIVERED")) setTabSelected(binding.tabDelivered);
-        else if (status.equals("RETURNED")) setTabSelected(binding.tabReturned);
-        else if (status.equals("CANCELLED")) setTabSelected(binding.tabCancelled);
+        else if (status.equalsIgnoreCase("Đang xử lý") || status.equalsIgnoreCase("PENDING")) setTabSelected(binding.tabPending);
+        else if (status.equalsIgnoreCase("Đã xác nhận") || status.equalsIgnoreCase("PROCESSING")) setTabSelected(binding.tabProcessing);
+        else if (status.equalsIgnoreCase("Đang giao") || status.equalsIgnoreCase("SHIPPING")) setTabSelected(binding.tabShipping);
+        else if (status.equalsIgnoreCase("Đã giao") || status.equalsIgnoreCase("DELIVERED") || status.equalsIgnoreCase("COMPLETED")) setTabSelected(binding.tabDelivered);
+        else if (status.equalsIgnoreCase("Trả hàng") || status.equalsIgnoreCase("RETURNED")) setTabSelected(binding.tabReturned);
+        else if (status.equalsIgnoreCase("Đã hủy") || status.equalsIgnoreCase("CANCELLED")) setTabSelected(binding.tabCancelled);
 
         // Filter Logic
         filteredOrders.clear();
@@ -105,8 +116,17 @@ public class OrderActivity extends AppCompatActivity {
             filteredOrders.addAll(allOrders);
         } else {
             for (Order o : allOrders) {
-                if (status.equalsIgnoreCase(o.getStatus())) {
+                String orderStatus = o.getStatus();
+                if (status.equalsIgnoreCase(orderStatus)) {
                     filteredOrders.add(o);
+                } else {
+                    // Map groups
+                    if (status.equalsIgnoreCase("Đang xử lý") && orderStatus.equalsIgnoreCase("PENDING")) filteredOrders.add(o);
+                    else if (status.equalsIgnoreCase("Đã xác nhận") && orderStatus.equalsIgnoreCase("PROCESSING")) filteredOrders.add(o);
+                    else if (status.equalsIgnoreCase("Đang giao") && orderStatus.equalsIgnoreCase("SHIPPING")) filteredOrders.add(o);
+                    else if (status.equalsIgnoreCase("Đã giao") && (orderStatus.equalsIgnoreCase("DELIVERED") || orderStatus.equalsIgnoreCase("COMPLETED"))) filteredOrders.add(o);
+                    else if (status.equalsIgnoreCase("Trả hàng") && orderStatus.equalsIgnoreCase("RETURNED")) filteredOrders.add(o);
+                    else if (status.equalsIgnoreCase("Đã hủy") && orderStatus.equalsIgnoreCase("CANCELLED")) filteredOrders.add(o);
                 }
             }
         }
@@ -138,27 +158,47 @@ public class OrderActivity extends AppCompatActivity {
         binding.rvOrderSuggestions.setAdapter(suggestionAdapter);
     }
 
-    private void loadMockOrders() {
-        // Product for mock
-        Product p1 = new Product();
-        p1.setName("Đầm babydoll xếp ly đính nơ lụa ngọt ngào Abeline");
-        p1.setPrice(790000);
-        p1.setDiscountPrice(690000.0);
-        p1.setQuantity(1);
-        List<com.project.models.ProductVariant> v1 = new ArrayList<>();
-        com.project.models.ProductVariant var1 = new com.project.models.ProductVariant();
-        var1.setColor("Hồng");
-        var1.setSize("S");
-        v1.add(var1);
-        p1.setVariants(v1);
+    private void fetchOrders() {
+        String userId = sessionManager.getUserId();
+        if (userId == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập để xem đơn hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        allOrders.add(new Order("1", "PENDING", Arrays.asList(p1), 700000));
-        allOrders.add(new Order("2", "SHIPPING", Arrays.asList(p1), 700000));
-        allOrders.add(new Order("3", "PROCESSING", Arrays.asList(p1, p1), 1390000));
-        allOrders.add(new Order("4", "DELIVERED", Arrays.asList(p1), 700000));
-        allOrders.add(new Order("5", "CANCELLED", Arrays.asList(p1), 700000));
+        binding.rvOrders.setVisibility(View.GONE);
         
-        filterOrders(currentStatus);
+        ApiClient.INSTANCE.getInstance().getMyOrders(userId).enqueue(new Callback<List<Order>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Order>> call, @NonNull Response<List<Order>> response) {
+                binding.rvOrders.setVisibility(View.VISIBLE);
+                android.util.Log.d("OrderActivity", "Response code: " + response.code());
+                if (response.isSuccessful() && response.body() != null) {
+                    allOrders.clear();
+                    allOrders.addAll(response.body());
+                    android.util.Log.d("OrderActivity", "Orders count: " + allOrders.size());
+                    filterOrders(currentStatus);
+                } else {
+                    String errorMsg = "Không thể lấy danh sách đơn hàng";
+                    if (response.errorBody() != null) {
+                        try {
+                            String errorStr = response.errorBody().string();
+                            android.util.Log.e("OrderActivity", "Error body: " + errorStr);
+                            errorMsg += ": " + errorStr;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Toast.makeText(OrderActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<Order>> call, @NonNull Throwable t) {
+                binding.rvOrders.setVisibility(View.VISIBLE);
+                android.util.Log.e("OrderActivity", "Fetch orders failed", t);
+                Toast.makeText(OrderActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void loadSuggestions() {

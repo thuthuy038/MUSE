@@ -41,19 +41,7 @@
             android:name=".auth.AuthActivity"
             android:exported="false" />
         <activity
-            android:name=".ai.ChatBotActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ai.ArchivalActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ai.VirtualFittingActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ai.FittingCartActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ai.FittingSearchActivity"
+            android:name=".auth.AuthActivity"
             android:exported="false" />
 
         <provider

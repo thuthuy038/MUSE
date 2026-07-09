@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:background="#DDDDDD" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:fontFamily="@font/montserrat_bold"
+        android:text="Phân loại sản phẩm"
+        android:textColor="@color/primary_500"
+        android:textSize="16sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:background="#EEEEEE" />
+
+    <!-- Product Info Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/imgProductThumb"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="#F5F5F5"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:id="@+id/txtProductNameVariant"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/montserrat"
+            android:text="Tên sản phẩm"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="#EEEEEE" />
+
+    <!-- Colors Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/montserrat"
+        android:text="Màu sắc"
+        android:textColor="#333333"
+        android:textSize="14sp" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:scrollbars="none">
+        <LinearLayout
+            android:id="@+id/layoutColorsFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="#EEEEEE" />
+
+    <!-- Sizes Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/montserrat"
+        android:text="Kích cỡ"
+        android:textColor="#333333"
+        android:textSize="14sp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupSizesFilter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:singleSelection="true" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="#EEEEEE" />
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnResetVariant"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:fontFamily="@font/montserrat_bold"
+            android:text="Bỏ lọc"
+            android:textColor="@color/primary_500"
+            app:cornerRadius="4dp"
+            app:strokeColor="@color/primary_500" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApplyVariant"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/primary_500"
+            android:fontFamily="@font/montserrat_bold"
+            android:text="Đồng ý"
+            android:textColor="@android:color/white"
+            app:cornerRadius="4dp" />
+    </LinearLayout>
+
+</LinearLayout>

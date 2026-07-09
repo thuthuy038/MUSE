@@ -52,8 +52,8 @@ public class EditProfileFragment extends Fragment {
     private String savedDistrict = null;
     private String savedWard = null;
 
-    private int currentProvinceCode = -1;
-    private int currentDistrictCode = -1;
+    private String currentProvinceCode = "";
+    private String currentDistrictCode = "";
 
     private String tempAvatarBase64 = null;
     private Uri selectedImageUri = null;
@@ -355,14 +355,14 @@ public class EditProfileFragment extends Fragment {
 
     private void loadDistricts(Province province) {
         if (province == null) return;
-        final int provinceCode = province.getCode();
+        final String provinceCode = province.getCode();
         currentProvinceCode = provinceCode;
 
         com.project.network.ApiClient.INSTANCE.getInstance().getProvinceDetails("https://provinces.open-api.vn/api/p/" + provinceCode + "?depth=2").enqueue(new Callback<Province>() {
             @Override
             public void onResponse(Call<Province> call, Response<Province> response) {
                 if (!isAdded()) return;
-                if (provinceCode != currentProvinceCode) {
+                if (provinceCode == null || !provinceCode.equals(currentProvinceCode)) {
                     return; // Discard outdated response
                 }
                 List<District> list = null;
@@ -378,7 +378,7 @@ public class EditProfileFragment extends Fragment {
             @Override
             public void onFailure(Call<Province> call, Throwable t) {
                 if (!isAdded()) return;
-                if (provinceCode != currentProvinceCode) {
+                if (provinceCode == null || !provinceCode.equals(currentProvinceCode)) {
                     return; // Discard outdated response
                 }
                 populateDistricts(getFallbackDistricts(province));
@@ -399,14 +399,14 @@ public class EditProfileFragment extends Fragment {
 
     private void loadWards(District district) {
         if (district == null) return;
-        final int districtCode = district.getCode();
+        final String districtCode = district.getCode();
         currentDistrictCode = districtCode;
 
         com.project.network.ApiClient.INSTANCE.getInstance().getDistrictDetails("https://provinces.open-api.vn/api/d/" + districtCode + "?depth=2").enqueue(new Callback<District>() {
             @Override
             public void onResponse(Call<District> call, Response<District> response) {
                 if (!isAdded()) return;
-                if (districtCode != currentDistrictCode) {
+                if (districtCode == null || !districtCode.equals(currentDistrictCode)) {
                     return; // Discard outdated response
                 }
                 List<Ward> list = null;
@@ -422,7 +422,7 @@ public class EditProfileFragment extends Fragment {
             @Override
             public void onFailure(Call<District> call, Throwable t) {
                 if (!isAdded()) return;
-                if (districtCode != currentDistrictCode) {
+                if (districtCode == null || !districtCode.equals(currentDistrictCode)) {
                     return; // Discard outdated response
                 }
                 populateWards(getFallbackWards(district));
@@ -473,7 +473,7 @@ public class EditProfileFragment extends Fragment {
                         if (user.getAvatar() != null && user.getAvatar().getUrl() != null && !user.getAvatar().getUrl().isEmpty()) {
                             String avatarUrl = user.getAvatar().getUrl();
                             setAvatarImage(avatarUrl);
-                            
+
                             // Cache the full URL
                             String fullCacheUrl = avatarUrl;
                             if (!avatarUrl.startsWith("http")) {
@@ -720,7 +720,7 @@ public class EditProfileFragment extends Fragment {
                 "Tỉnh Hậu Giang", "Tỉnh Sóc Trăng", "Tỉnh Bạc Liêu", "Tỉnh Cà Mau"
         };
         for (int i = 0; i < provinceNames.length; i++) {
-            list.add(new Province(provinceNames[i], i + 1, ""));
+            list.add(new Province(provinceNames[i], String.valueOf(i + 1), ""));
         }
         return list;
     }
@@ -728,9 +728,9 @@ public class EditProfileFragment extends Fragment {
     private List<District> getFallbackDistricts(Province province) {
         List<District> list = new ArrayList<>();
         if (savedDistrict != null) {
-            list.add(new District(savedDistrict, 1));
+            list.add(new District(savedDistrict, "1"));
         } else {
-            list.add(new District("Quận / Huyện mặc định", 1));
+            list.add(new District("Quận / Huyện mặc định", "1"));
         }
         return list;
     }
@@ -738,9 +738,9 @@ public class EditProfileFragment extends Fragment {
     private List<Ward> getFallbackWards(District district) {
         List<Ward> list = new ArrayList<>();
         if (savedWard != null) {
-            list.add(new Ward(savedWard, 1));
+            list.add(new Ward(savedWard, "1"));
         } else {
-            list.add(new Ward("Phường / Xã mặc định", 1));
+            list.add(new Ward("Phường / Xã mặc định", "1"));
         }
         return list;
     }

@@ -9,13 +9,11 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.project.muse_android.databinding.NotificationScreenBinding;
 import com.project.muse_android.main.MainActivity;
-import com.project.utils.ViewUtils;
 
 public class NotificationScreenActivity extends AppCompatActivity {
 

@@ -59,9 +59,9 @@ public class OrderSuccessActivity extends AppCompatActivity {
 
         binding.btnOrders.setOnClickListener(v -> {
             // Navigate to Order History
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra("select_profile", true);
+            Intent intent = new Intent(this, com.project.muse_android.order.OrderActivity.class);
             startActivity(intent);
+            finish();
         });
 
         // Setup Suggestions Grid

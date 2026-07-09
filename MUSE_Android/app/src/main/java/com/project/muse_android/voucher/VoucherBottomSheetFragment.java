@@ -33,7 +33,7 @@ import retrofit2.Response;
 public class VoucherBottomSheetFragment extends BottomSheetDialogFragment {
 
     public interface OnVoucherSelectedListener {
-        void onVouchersSelected(double discountAmount, double shippingDiscountAmount);
+        void onVouchersSelected(double discountAmount, double shippingDiscountAmount, String voucherCode);
     }
 
     private OnVoucherSelectedListener listener;
@@ -63,6 +63,10 @@ public class VoucherBottomSheetFragment extends BottomSheetDialogFragment {
 
         binding.ivBack.setOnClickListener(v -> dismiss());
 
+        binding.ivHelp.setOnClickListener(v -> {
+            VoucherHelpBottomSheetFragment.newInstance().show(getParentFragmentManager(), "VoucherHelp");
+        });
+
         binding.etVoucherCode.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -88,18 +92,20 @@ public class VoucherBottomSheetFragment extends BottomSheetDialogFragment {
             if (listener != null) {
                 double discount = 0;
                 double shipping = 0;
+                String selectedCode = "";
                 // Simple logic for demo: assume each discount voucher is 10k, shipping is 50k
                 if (discountAdapter != null) {
                     for (Voucher voucher : allVouchers) {
                         if (voucher.isSelected() && "DISCOUNT".equals(voucher.getType())) {
                             discount += 10000; // Replace with real value if available in model
+                            selectedCode = voucher.getCode();
                         }
                         if (voucher.isSelected() && "SHIPPING".equals(voucher.getType())) {
                             shipping += 50000;
                         }
                     }
                 }
-                listener.onVouchersSelected(discount, shipping);
+                listener.onVouchersSelected(discount, shipping, selectedCode);
             }
             dismiss();
         });
