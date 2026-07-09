@@ -546,7 +546,17 @@ public class ProductDetailActivity extends AppCompatActivity {
             public void onResponse(Call<ReviewResponse> call, Response<ReviewResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     List<com.project.models.ProductReview> allReviews = response.body().getData();
+
+                    // Cập nhật lại số lượng đánh giá thực tế từ API để đồng bộ
+                    int actualCount = response.body().getTotal();
+                    binding.txtReviewTitle.setText(String.format(Locale.getDefault(), "Đánh giá sản phẩm (%d)", actualCount));
+
                     if (!allReviews.isEmpty()) {
+                        double sum = 0;
+                        for (com.project.models.ProductReview r : allReviews) sum += r.getRating();
+                        double actualAvg = sum / allReviews.size();
+                        binding.txtRatingScore.setText(String.format(Locale.getDefault(), "%.1f", actualAvg));
+
                         // Display only 1 review in detail screen
                         List<com.project.models.ProductReview> singleReviewList = new ArrayList<>();
                         singleReviewList.add(allReviews.get(0));

@@ -574,7 +574,21 @@ public class ProductReviewsActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     allReviewsList = response.body().getData();
                     adapter.updateData(allReviewsList);
-                    
+
+                    // Cập nhật lại số lượng và đánh giá trung bình từ dữ liệu thực tế
+                    totalReviews = response.body().getTotal();
+                    binding.chipAll.setText(String.format(Locale.getDefault(), "Tất cả (%d)", totalReviews));
+
+                    if (!allReviewsList.isEmpty()) {
+                        double sum = 0;
+                        for (com.project.models.ProductReview r : allReviewsList) sum += r.getRating();
+                        avgRating = sum / allReviewsList.size();
+                        binding.txtAvgRatingLarge.setText(String.format(Locale.getDefault(), "%.1f/5", avgRating));
+
+                        int satisfaction = (int) (avgRating * 20);
+                        binding.txtSatisfactionDesc.setText(String.format(Locale.getDefault(), "%d%% người dùng cảm thấy hài lòng", satisfaction));
+                    }
+
                     // Update counts
                     int withImages = 0;
                     for (com.project.models.ProductReview r : allReviewsList) {
