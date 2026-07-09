@@ -202,6 +202,18 @@ public interface ApiService {
             @Path("productId") String productId
     );
 
+    @POST("api/reviews")
+    Call<com.project.network.ApiResponse<com.project.models.ProductReview>> postReview(
+            @Header("Authorization") String token,
+            @Body Map<String, Object> body
+    );
+
+    @retrofit2.http.Multipart
+    @POST("api/upload")
+    Call<Map<String, String>> uploadMedia(
+        @retrofit2.http.Part okhttp3.MultipartBody.Part image
+    );
+
     @GET
     Call<java.util.List<com.project.models.Province>> getProvinces(
         @retrofit2.http.Url String url

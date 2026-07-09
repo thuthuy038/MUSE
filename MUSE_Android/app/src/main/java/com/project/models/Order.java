@@ -34,6 +34,15 @@ public class Order implements Serializable {
     private String cancellationReason;
     private String cancelledBy;
     private String cancelledAt;
+    private boolean isReviewed;
+
+    public boolean isReviewed() {
+        return isReviewed;
+    }
+
+    public void setReviewed(boolean reviewed) {
+        isReviewed = reviewed;
+    }
 
     // MongoDB schema support fields
     private ShippingAddress shippingAddress;
