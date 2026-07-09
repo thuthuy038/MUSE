@@ -231,21 +231,42 @@ public class CartManager {
             apiService.removeFromCart(userId, productId, safeSize, safeColor).enqueue(new Callback<ApiResponse<Void>>() {
                 @Override
                 public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                    if (response.isSuccessful()) callback.onSuccess(null);
-                    else callback.onError("Error removing from server cart");
+                    if (response.isSuccessful()) {
+                        new Thread(() -> {
+                            CartItem item = cartDao.getByVariant(productId, safeColor, safeSize);
+                            if (item != null) {
+                                cartDao.delete(item);
+                            }
+                            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onSuccess(null));
+                        }).start();
+                    } else {
+                        String errMsg = "Error removing from server: " + response.code();
+                        try {
+                            if (response.errorBody() != null) {
+                                errMsg += " - " + response.errorBody().string();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Log.e(TAG, errMsg);
+                        callback.onError(errMsg);
+                    }
                 }
 
                 @Override
                 public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    Log.e(TAG, "removeFromCart onFailure: " + t.getMessage());
                     callback.onError(t.getMessage());
                 }
             });
         } else {
-            CartItem item = cartDao.getByVariant(productId, safeColor, safeSize);
-            if (item != null) {
-                cartDao.delete(item);
-            }
-            callback.onSuccess(null);
+            new Thread(() -> {
+                CartItem item = cartDao.getByVariant(productId, safeColor, safeSize);
+                if (item != null) {
+                    cartDao.delete(item);
+                }
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onSuccess(null));
+            }).start();
         }
     }
 

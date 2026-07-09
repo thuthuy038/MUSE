@@ -5,6 +5,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Order Model
+ */
 public class Order implements Serializable {
     @SerializedName("_id")
     private String _id;

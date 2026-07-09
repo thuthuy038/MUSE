@@ -14,6 +14,8 @@ import com.project.models.Order;
 import com.project.models.Product;
 import com.project.models.enums.HorizontalProductMode;
 import com.project.muse_android.databinding.ItemOrderBinding;
+import com.project.muse_android.order.OrderDetailActivity;
+import com.project.muse_android.order.ReturnRefundActivity;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -121,7 +123,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
             // 5. Navigate to Detail
             binding.getRoot().setOnClickListener(v -> {
-                android.content.Intent intent = new android.content.Intent(context, com.project.muse_android.order.OrderDetailActivity.class);
+                android.content.Intent intent = new android.content.Intent(context, OrderDetailActivity.class);
                 intent.putExtra("order", order);
                 context.startActivity(intent);
             });
@@ -160,7 +162,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     binding.btnReview.setVisibility(View.VISIBLE);
 
                     binding.btnReturn.setOnClickListener(v -> {
-                        Toast.makeText(context, "Yêu cầu Trả hàng/Hoàn tiền đã gửi cho đơn " + order.getId(), Toast.LENGTH_SHORT).show();
+                        android.content.Intent intent = new android.content.Intent(context, ReturnRefundActivity.class);
+                        intent.putExtra("order", order);
+                        context.startActivity(intent);
                     });
                 }
                 
