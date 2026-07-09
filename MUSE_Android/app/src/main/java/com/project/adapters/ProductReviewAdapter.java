@@ -26,7 +26,7 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
     private OnImageClickListener onImageClickListener;
 
     public interface OnImageClickListener {
-        void onImageClick(List<String> images, int position);
+        void onImageClick(List<String> images, int position, ProductReview review);
     }
 
     public ProductReviewAdapter(List<ProductReview> reviewList) {
@@ -60,7 +60,7 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
                 java.text.SimpleDateFormat inputFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US);
                 inputFormat.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
                 java.util.Date date = inputFormat.parse(rawDate);
-                java.text.SimpleDateFormat outputFormat = new java.text.SimpleDateFormat("HH:mm, dd/MM/yyyy", java.util.Locale.getDefault());
+                java.text.SimpleDateFormat outputFormat = new java.text.SimpleDateFormat("HH:mm , dd/MM/yyyy", java.util.Locale.getDefault());
                 holder.txtReviewDate.setText(outputFormat.format(date));
             } catch (Exception e) {
                 holder.txtReviewDate.setText(rawDate);
@@ -84,21 +84,52 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
                 variant = "-";
             }
         }
-        holder.txtVariantInfo.setText("Phân loại: " + variant);
-        holder.txtHelpful.setText(String.format(java.util.Locale.getDefault(), "Hữu ích (%d) 👍", review.getHelpfulCount()));
+        holder.txtVariantInfo.setText("PHÂN LOẠI: " + variant.toUpperCase());
 
-        if (review.getUserAvatar() != null && !review.getUserAvatar().isEmpty()) {
-            String avatarUrl = review.getUserAvatar();
-            if (!avatarUrl.startsWith("http")) {
+        updateHelpfulUI(holder, review);
+
+        holder.btnHelpful.setOnClickListener(v -> {
+            review.setLiked(!review.isLiked());
+            if (review.isLiked()) {
+                review.setHelpfulCount(review.getHelpfulCount() + 1);
+            } else {
+                review.setHelpfulCount(Math.max(0, review.getHelpfulCount() - 1));
+            }
+            updateHelpfulUI(holder, review);
+        });
+
+        String avatarUrl = review.getUserAvatar();
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            holder.imgUserAvatar.setVisibility(View.VISIBLE);
+            holder.txtUserInitial.setVisibility(View.GONE);
+            
+            // Fix localhost or relative URLs from backend
+            if (avatarUrl.contains("localhost:3000")) {
+                avatarUrl = avatarUrl.replace("http://localhost:3000", "https://server-testing-ymn9.onrender.com");
+            } else if (!avatarUrl.startsWith("http")) {
+                // Ensure correct path formatting: BASE_URL + /uploads/... or BASE_URL + path
                 avatarUrl = "https://server-testing-ymn9.onrender.com" + (avatarUrl.startsWith("/") ? "" : "/") + avatarUrl;
             }
+
+            android.util.Log.d("ReviewAvatar", "Final avatar URL: " + avatarUrl);
+
             Glide.with(holder.itemView.getContext())
                     .load(avatarUrl)
                     .placeholder(R.drawable.account_circle)
+                    .error(R.drawable.account_circle)
                     .circleCrop()
                     .into(holder.imgUserAvatar);
+
+            holder.imgUserAvatar.setColorFilter(null);
         } else {
-            holder.imgUserAvatar.setImageResource(R.drawable.account_circle);
+            holder.imgUserAvatar.setVisibility(View.GONE);
+            holder.txtUserInitial.setVisibility(View.VISIBLE);
+            String name = review.getCustomerName();
+            if (name != null && !name.isEmpty()) {
+                holder.txtUserInitial.setText(name.substring(0, 1).toUpperCase());
+            } else {
+                holder.txtUserInitial.setText("M");
+            }
         }
 
         // Handle stars visibility based on rating
@@ -121,11 +152,38 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             
             holder.rvReviewImages.setAdapter(new ReviewImageAdapter(limitedImages, actualCount, (imgPos) -> {
                 if (onImageClickListener != null) {
-                    onImageClickListener.onImageClick(review.getImages(), imgPos);
+                    onImageClickListener.onImageClick(review.getImages(), imgPos, review);
                 }
             }));
         } else {
             holder.rvReviewImages.setVisibility(View.GONE);
+        }
+
+        // Handle Admin Reply
+        String adminReply = review.getAdminReply();
+        if (adminReply != null && !adminReply.trim().isEmpty()) {
+            holder.layoutAdminReply.setVisibility(View.VISIBLE);
+            holder.txtAdminReply.setText(adminReply);
+        } else {
+            holder.layoutAdminReply.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateHelpfulUI(ReviewViewHolder holder, ProductReview review) {
+        holder.txtHelpful.setText(String.format(java.util.Locale.getDefault(), "Hữu ích (%d)", review.getHelpfulCount()));
+
+        if (review.isLiked()) {
+            holder.btnHelpful.setBackgroundResource(R.drawable.bg_helpful_button_selected);
+            holder.txtHelpful.setTextColor(androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.primary_500));
+            // Tint thumb icon pink
+            ImageView thumbIcon = (ImageView) ((ViewGroup) holder.btnHelpful).getChildAt(0);
+            thumbIcon.setColorFilter(androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.primary_500));
+        } else {
+            holder.btnHelpful.setBackgroundResource(R.drawable.bg_helpful_button);
+            holder.txtHelpful.setTextColor(android.graphics.Color.parseColor("#333333"));
+            // Reset thumb icon to gray
+            ImageView thumbIcon = (ImageView) ((ViewGroup) holder.btnHelpful).getChildAt(0);
+            thumbIcon.setColorFilter(android.graphics.Color.parseColor("#666666"));
         }
     }
 
@@ -180,8 +238,9 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
 
     static class ReviewViewHolder extends RecyclerView.ViewHolder {
         ImageView imgUserAvatar;
-        TextView txtUserName, txtComment, txtReviewDate, txtVariantInfo, txtHelpful;
+        TextView txtUserName, txtComment, txtReviewDate, txtVariantInfo, txtHelpful, txtUserInitial, txtAdminReply;
         RecyclerView rvReviewImages;
+        View btnHelpful, layoutAdminReply;
 
         public ReviewViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -191,7 +250,11 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             txtReviewDate = itemView.findViewById(R.id.txtReviewDate);
             txtVariantInfo = itemView.findViewById(R.id.txtVariantInfo);
             txtHelpful = itemView.findViewById(R.id.txtHelpful);
+            txtUserInitial = itemView.findViewById(R.id.txtUserInitial);
             rvReviewImages = itemView.findViewById(R.id.rvReviewImages);
+            btnHelpful = itemView.findViewById(R.id.btnHelpful);
+            layoutAdminReply = itemView.findViewById(R.id.layoutAdminReply);
+            txtAdminReply = itemView.findViewById(R.id.txtAdminReply);
         }
     }
 
@@ -221,8 +284,12 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
         @Override
         public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
             String url = images.get(position);
-            if (url != null && !url.startsWith("http")) {
-                url = BASE_URL + (url.startsWith("/") ? "" : "/") + url;
+            if (url != null) {
+                if (url.contains("localhost:3000")) {
+                    url = url.replace("http://localhost:3000", BASE_URL);
+                } else if (!url.startsWith("http")) {
+                    url = BASE_URL + (url.startsWith("/") ? "" : "/") + url;
+                }
             }
             
             android.util.Log.d("ReviewImage", "Loading image: " + url);
@@ -237,11 +304,11 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             // Overlay for the 3rd image if there are more
             if (position == 2 && totalCount > 3) {
                 holder.viewOverlay.setVisibility(View.VISIBLE);
-                holder.txtMoreImages.setVisibility(View.VISIBLE);
+                holder.layoutMoreImages.setVisibility(View.VISIBLE);
                 holder.txtMoreImages.setText("+" + (totalCount - 3));
             } else {
                 holder.viewOverlay.setVisibility(View.GONE);
-                holder.txtMoreImages.setVisibility(View.GONE);
+                holder.layoutMoreImages.setVisibility(View.GONE);
             }
 
             holder.itemView.setOnClickListener(v -> {
@@ -258,12 +325,14 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             ImageView imgReview;
             View viewOverlay;
             TextView txtMoreImages;
+            View layoutMoreImages;
 
             public ImageViewHolder(@NonNull View itemView) {
                 super(itemView);
                 imgReview = itemView.findViewById(R.id.imgReview);
                 viewOverlay = itemView.findViewById(R.id.viewOverlay);
                 txtMoreImages = itemView.findViewById(R.id.txtMoreImages);
+                layoutMoreImages = itemView.findViewById(R.id.layoutMoreImages);
             }
         }
     }
