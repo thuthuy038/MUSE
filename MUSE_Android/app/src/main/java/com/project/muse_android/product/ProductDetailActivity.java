@@ -529,6 +529,11 @@ public class ProductDetailActivity extends AppCompatActivity {
         binding.btnSeeAllReviews.setOnClickListener(v -> {
             Intent intent = new Intent(this, ProductReviewsActivity.class);
             intent.putExtra("product_id", productId);
+            if (currentProduct != null) {
+                intent.putExtra("product_name", currentProduct.getName());
+                intent.putExtra("avg_rating", currentProduct.getRating());
+                intent.putExtra("total_reviews", currentProduct.getReviewCount());
+            }
             startActivity(intent);
         });
     }
@@ -546,10 +551,29 @@ public class ProductDetailActivity extends AppCompatActivity {
                         singleReviewList.add(allReviews.get(0));
 
                         ProductReviewAdapter adapter = new ProductReviewAdapter(singleReviewList);
-                        adapter.setOnImageClickListener((images, imgPos) -> {
-                            Intent intent = new Intent(ProductDetailActivity.this, FullScreenImageActivity.class);
+                        adapter.setOnImageClickListener((images, imgPos, review) -> {
+                            Intent intent = new Intent(ProductDetailActivity.this, FullScreenReviewImageActivity.class);
                             intent.putStringArrayListExtra("images", new ArrayList<>(images));
                             intent.putExtra("position", imgPos);
+                            intent.putExtra("product_id", productId);
+                            
+                            intent.putExtra("user_name", review.getCustomerName());
+                            intent.putExtra("user_avatar", review.getUserAvatar());
+                            intent.putExtra("rating", review.getRating());
+                            intent.putExtra("comment", review.getContent());
+                            intent.putExtra("date", review.getCreatedAt());
+                            intent.putExtra("helpful_count", review.getHelpfulCount());
+                            
+                            String variant = review.getVariantInfo();
+                            if (variant == null || variant.isEmpty() || variant.equals("-")) {
+                                String color = review.getColor();
+                                String size = review.getSize();
+                                if (color != null && size != null) variant = color + ", " + size;
+                                else if (color != null) variant = color;
+                                else if (size != null) variant = size;
+                            }
+                            intent.putExtra("variant", variant);
+
                             startActivity(intent);
                         });
 
@@ -623,6 +647,20 @@ public class ProductDetailActivity extends AppCompatActivity {
                     .load(imageUrl)
                     .placeholder(R.drawable.image)
                     .into(holder.imageView);
+
+            final String finalUrl = imageUrl;
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(ProductDetailActivity.this, FullScreenReviewImageActivity.class);
+                java.util.ArrayList<String> imageUrls = new java.util.ArrayList<>();
+                for (Product.ProductImage image : images) {
+                    imageUrls.add(image.getUrl());
+                }
+                intent.putStringArrayListExtra("images", imageUrls);
+                intent.putExtra("position", position);
+                intent.putExtra("product_id", productId);
+                intent.putExtra("is_review", false);
+                startActivity(intent);
+            });
         }
 
         @Override
