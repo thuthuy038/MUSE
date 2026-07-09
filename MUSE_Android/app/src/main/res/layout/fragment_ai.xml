@@ -95,7 +95,7 @@
                     android:scaleType="centerCrop"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent"
+                    app:shapeAppearanceOverlay="@style/CircleImage"
                     android:src="@drawable/ic_account_circle"
                     android:contentDescription="@string/profile_personal_info" />
 
@@ -104,14 +104,13 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:layout_marginEnd="8dp"
                     android:fontFamily="@font/montserrat_bold"
                     android:textColor="@color/neutral_900"
                     android:textSize="18sp"
                     android:maxLines="1"
                     android:ellipsize="end"
                     app:layout_constraintStart_toEndOf="@id/ivUserAvatar"
-                    app:layout_constraintEnd_toStartOf="@id/btnEditProfile"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/ivUserAvatar"
                     tools:text="Ngọc" />
 
@@ -119,7 +118,6 @@
                     android:id="@+id/tvUserLabel"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
                     android:fontFamily="@font/montserrat"
                     android:text="@string/label_profile_caps"
                     android:textColor="@color/primary_500"
@@ -127,21 +125,21 @@
                     android:maxLines="1"
                     android:ellipsize="end"
                     app:layout_constraintStart_toStartOf="@id/tvUserName"
-                    app:layout_constraintEnd_toStartOf="@id/btnEditProfile"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tvUserName" />
 
                 <Button
                     android:id="@+id/btnEditProfile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:fontFamily="@font/montserrat_bold"
                     android:text="@string/btn_edit_caps"
                     android:textColor="@android:color/white"
                     android:backgroundTint="@color/primary_500"
                     app:cornerRadius="8dp"
-                    app:layout_constraintBottom_toBottomOf="@id/ivUserAvatar"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/ivUserAvatar" />
+                    app:layout_constraintTop_toBottomOf="@id/tvUserLabel"
+                    app:layout_constraintStart_toStartOf="@id/tvUserName" />
 
                 <!-- Dropdowns -->
                 <LinearLayout
@@ -150,7 +148,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:orientation="vertical"
-                    app:layout_constraintTop_toBottomOf="@id/ivUserAvatar">
+                    app:layout_constraintTop_toBottomOf="@id/btnEditProfile">
 
                     <!-- Favorite Style -->
                     <TextView
@@ -393,6 +391,7 @@
 
                 <!-- Outfit Space -->
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cardOutfitSpace"
                     android:layout_width="0dp"
                     android:layout_height="120dp"
                     android:layout_columnWeight="1"

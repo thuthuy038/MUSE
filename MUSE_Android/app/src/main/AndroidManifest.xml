@@ -41,7 +41,34 @@
             android:name=".auth.AuthActivity"
             android:exported="false" />
         <activity
-            android:name=".auth.AuthActivity"
+            android:name=".ai.ChatBotActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ai.ArchivalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ai.VirtualFittingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ai.FittingCartActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ai.FittingSearchActivity"
+            android:exported="false" />
+        <activity
+            android:name=".order.OrderDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".order.ReturnRefundActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.FullScreenImageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.FullScreenReviewImageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.ProductReviewsActivity"
             android:exported="false" />
 
         <provider
@@ -79,6 +106,12 @@
             android:exported="false" />
         <activity
             android:name=".search.SearchResultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ai.OutfitAnalysisResultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ai.VirtualFittingResultActivity"
             android:exported="false" />
         <activity
             android:name=".main.MainActivity"
