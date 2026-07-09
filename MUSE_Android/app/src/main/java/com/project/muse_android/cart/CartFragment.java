@@ -422,6 +422,16 @@ public class CartFragment extends Fragment {
                     cartProducts.addAll(result);
                 }
                 cartAdapter.setData(cartProducts);
+                
+                com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+                if (sessionManager.isLoggedIn() && !cartProducts.isEmpty()) {
+                    for (Product p : cartProducts) {
+                        p.setSelected(true);
+                    }
+                    binding.cbSelectAll.setChecked(true);
+                    binding.cbSelectAllEdit.setChecked(true);
+                }
+                
                 updateCartUI();
             }
 
@@ -463,9 +473,6 @@ public class CartFragment extends Fragment {
         binding.layoutEmptyCart.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         binding.rvCartProducts.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
-        // Banner Free Shipping chỉ hiện khi có đồ
-        binding.layoutFreeShipping.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-
         // Cập nhật số lượng trên Header
         String countText = "(" + cartProducts.size() + ")";
         binding.tvCartCount.setText(countText);
@@ -473,7 +480,7 @@ public class CartFragment extends Fragment {
         // Hiện/ẩn summary giá
         binding.layoutPriceSummary.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
-        // Cập nhật nút Thanh toán
+        // Cập nhật nút Thanh toán (và ẩn/hiện banner Free Shipping)
         updateCheckoutButtonState();
     }
 
@@ -509,6 +516,7 @@ public class CartFragment extends Fragment {
             binding.btnCheckout.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
                     ContextCompat.getColor(getContext(), R.color.neutral_300)));
             binding.btnCheckout.setText("Mua ngay (0)");
+            binding.layoutFreeShipping.setVisibility(View.GONE);
         } else {
             binding.btnCheckout.setEnabled(true);
             binding.btnCheckout.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
@@ -516,6 +524,7 @@ public class CartFragment extends Fragment {
 
             String checkoutText = "Mua ngay (" + selectedCount + ")";
             binding.btnCheckout.setText(checkoutText);
+            binding.layoutFreeShipping.setVisibility(View.VISIBLE);
         }
     }
 
