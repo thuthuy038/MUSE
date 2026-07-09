@@ -164,7 +164,7 @@ public class OrderDetailActivity extends AppCompatActivity {
         // 3. Address Section
         binding.txtCustomerName.setText(order.getCustomerName());
         binding.txtCustomerPhone.setText(order.getPhone());
-        binding.txtCustomerAddress.setText("Địa chỉ: " + order.getAddress());
+        binding.txtCustomerAddress.setText("Địa chỉ: " + getFullAddress(order));
 
         // 4. Order Items
         adapter.setData(order.getProducts());
@@ -284,7 +284,9 @@ public class OrderDetailActivity extends AppCompatActivity {
                     Toast.makeText(this, "Mở chức năng đánh giá đơn hàng", Toast.LENGTH_SHORT).show();
                 });
                 binding.btnRequestRefund.setOnClickListener(v -> {
-                    Toast.makeText(this, "Yêu cầu trả hàng cho đơn " + (order != null ? order.getId() : "") + " đã được ghi nhận", Toast.LENGTH_SHORT).show();
+                    android.content.Intent intent = new android.content.Intent(this, com.project.muse_android.order.ReturnRefundActivity.class);
+                    intent.putExtra("order", order);
+                    startActivity(intent);
                 });
             }
             
@@ -395,6 +397,31 @@ public class OrderDetailActivity extends AppCompatActivity {
         }
     }
 
+    private String getFullAddress(Order order) {
+        if (order == null) return "";
+        Order.ShippingAddress sa = order.getShippingAddress();
+        if (sa != null) {
+            StringBuilder sb = new StringBuilder();
+            if (sa.getAddress() != null && !sa.getAddress().isEmpty()) {
+                sb.append(sa.getAddress());
+            }
+            if (sa.getWard() != null && !sa.getWard().isEmpty()) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(sa.getWard());
+            }
+            if (sa.getDistrict() != null && !sa.getDistrict().isEmpty()) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(sa.getDistrict());
+            }
+            if (sa.getCity() != null && !sa.getCity().isEmpty()) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(sa.getCity());
+            }
+            return sb.toString();
+        }
+        return order.getAddress() != null ? order.getAddress() : "";
+    }
+
     private void fetchOrderDetail(String orderId) {
         ApiClient.INSTANCE.getInstance().getOrderDetail(orderId).enqueue(new Callback<Order>() {
             @Override
@@ -408,31 +435,6 @@ public class OrderDetailActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call<Order> call, @NonNull Throwable t) {
                 // Fallback to local passed intent order
-            }
-        });
-    }
-
-    private void cancelOrderOnServer() {
-        if (order == null || order.get_id() == null) return;
-
-        java.util.Map<String, String> statusBody = new java.util.HashMap<>();
-        statusBody.put("status", "Đã hủy");
-
-        ApiClient.INSTANCE.getInstance().updateOrderStatus(order.get_id(), statusBody).enqueue(new Callback<Order>() {
-            @Override
-            public void onResponse(@NonNull Call<Order> call, @NonNull Response<Order> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    order = response.body();
-                    populateData();
-                    Toast.makeText(OrderDetailActivity.this, "Đã hủy đơn hàng thành công", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(OrderDetailActivity.this, "Không thể hủy đơn hàng", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<Order> call, @NonNull Throwable t) {
-                Toast.makeText(OrderDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -12,7 +12,8 @@
         android:id="@+id/rbSelect"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:buttonTint="#FB6F92"
+        android:buttonTint="@color/radio_button_tint"
+        app:buttonTint="@color/radio_button_tint"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="4dp" />

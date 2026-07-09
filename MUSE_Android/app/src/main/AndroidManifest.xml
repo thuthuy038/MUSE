@@ -24,6 +24,9 @@
             android:name=".order.OrderDetailActivity"
             android:exported="false" />
         <activity
+            android:name=".order.ReturnRefundActivity"
+            android:exported="false" />
+        <activity
             android:name=".address.EditShippingAddressActivity"
             android:exported="false" />
         <activity
