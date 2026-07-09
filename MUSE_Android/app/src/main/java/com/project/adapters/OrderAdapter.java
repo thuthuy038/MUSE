@@ -17,7 +17,10 @@ import com.project.muse_android.databinding.ItemOrderBinding;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -138,8 +141,35 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
             String statusUpper = status.toUpperCase();
 
+            // DELIVERED, COMPLETED, ĐÃ GIAO, HOÀN THÀNH
+            if (statusUpper.equals("DELIVERED") || statusUpper.equals("COMPLETED") 
+                    || statusUpper.contains("ĐÃ GIAO") || statusUpper.contains("HOÀN THÀNH")) {
+                
+                // Logic 5 days: Trả hàng/Hoàn tiền vs Mua lại
+                boolean isOld = isOlderThan5Days(order.getUpdatedAt() != null ? order.getUpdatedAt() : order.getCreatedAt());
+                
+                if (isOld) {
+                    binding.btnReorder.setVisibility(View.VISIBLE);
+                    binding.btnReview.setVisibility(View.VISIBLE);
+                    
+                    binding.btnReorder.setOnClickListener(v -> {
+                        Toast.makeText(context, "Đã thêm lại các sản phẩm của đơn " + order.getId() + " vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
+                    });
+                } else {
+                    binding.btnReturn.setVisibility(View.VISIBLE);
+                    binding.btnReview.setVisibility(View.VISIBLE);
+
+                    binding.btnReturn.setOnClickListener(v -> {
+                        Toast.makeText(context, "Yêu cầu Trả hàng/Hoàn tiền đã gửi cho đơn " + order.getId(), Toast.LENGTH_SHORT).show();
+                    });
+                }
+                
+                binding.btnReview.setOnClickListener(v -> {
+                    Toast.makeText(context, "Mở form đánh giá cho đơn hàng " + order.getId(), Toast.LENGTH_SHORT).show();
+                });
+            }
             // PENDING, PROCESSING, ĐANG XỬ LÝ, CHỜ LẤY HÀNG
-            if (statusUpper.equals("PENDING") || statusUpper.equals("PROCESSING") 
+            else if (statusUpper.equals("PENDING") || statusUpper.equals("PROCESSING") 
                     || statusUpper.contains("XỬ LÝ") || statusUpper.contains("LẤY HÀNG")
                     || statusUpper.contains("XÁC NHẬN")) {
                 binding.btnContact.setVisibility(View.VISIBLE);
@@ -154,19 +184,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     Toast.makeText(context, "Đang định vị theo dõi hành trình đơn hàng " + order.getId(), Toast.LENGTH_SHORT).show();
                 });
             }
-            // DELIVERED, COMPLETED, ĐÃ GIAO, HOÀN THÀNH
-            else if (statusUpper.equals("DELIVERED") || statusUpper.equals("COMPLETED") 
-                    || statusUpper.contains("ĐÃ GIAO") || statusUpper.contains("HOÀN THÀNH")) {
-                binding.btnReturn.setVisibility(View.VISIBLE);
-                binding.btnReview.setVisibility(View.VISIBLE);
-
-                binding.btnReturn.setOnClickListener(v -> {
-                    Toast.makeText(context, "Yêu cầu Trả hàng/Hoàn tiền đã gửi cho đơn " + order.getId(), Toast.LENGTH_SHORT).show();
-                });
-                binding.btnReview.setOnClickListener(v -> {
-                    Toast.makeText(context, "Mở form đánh giá cho đơn hàng " + order.getId(), Toast.LENGTH_SHORT).show();
-                });
-            }
             // CANCELLED, ĐÃ HỦY
             else if (statusUpper.equals("CANCELLED") || statusUpper.contains("HỦY")) {
                 binding.btnCancelDetail.setVisibility(View.VISIBLE);
@@ -178,6 +195,21 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 binding.btnReorder.setOnClickListener(v -> {
                     Toast.makeText(context, "Đã thêm lại các sản phẩm của đơn " + order.getId() + " vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
                 });
+            }
+        }
+
+        private boolean isOlderThan5Days(String dateStr) {
+            if (dateStr == null) return false;
+            try {
+                SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+                Date date = inputFormat.parse(dateStr);
+                if (date == null) return false;
+                
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.DAY_OF_YEAR, -5);
+                return date.before(cal.getTime());
+            } catch (Exception e) {
+                return false;
             }
         }
 

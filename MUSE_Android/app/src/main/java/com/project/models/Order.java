@@ -27,6 +27,11 @@ public class Order implements Serializable {
     private String createdAt;
     private String updatedAt;
 
+    // Cancellation info
+    private String cancellationReason;
+    private String cancelledBy;
+    private String cancelledAt;
+
     // MongoDB schema support fields
     private ShippingAddress shippingAddress;
     private ShippingMethod shippingMethod;
@@ -341,6 +346,15 @@ public class Order implements Serializable {
 
     public String getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getCancellationReason() { return cancellationReason; }
+    public void setCancellationReason(String cancellationReason) { this.cancellationReason = cancellationReason; }
+
+    public String getCancelledBy() { return cancelledBy; }
+    public void setCancelledBy(String cancelledBy) { this.cancelledBy = cancelledBy; }
+
+    public String getCancelledAt() { return cancelledAt; }
+    public void setCancelledAt(String cancelledAt) { this.cancelledAt = cancelledAt; }
 
     // New getters and setters for MongoDB Schema
     public ShippingAddress getShippingAddress() { return shippingAddress; }
