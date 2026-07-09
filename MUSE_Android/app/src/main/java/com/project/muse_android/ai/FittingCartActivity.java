@@ -63,6 +63,9 @@ public class FittingCartActivity extends AppCompatActivity {
             if (currentProduct != null) {
                 Intent intent = new Intent(this, VirtualFittingActivity.class);
                 intent.putExtra("product_id", currentProduct.get_id() != null ? currentProduct.get_id() : currentProduct.getId());
+                intent.putExtra("size", selectedSize);
+                intent.putExtra("color", selectedColor);
+                intent.putExtra("from_cart", true);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 finish();
@@ -85,8 +88,18 @@ public class FittingCartActivity extends AppCompatActivity {
             }
         });
 
+        binding.btnAiAgent.setOnClickListener(v -> navigateToAiHub());
+
         // Setup Bottom Navigation
         com.project.utils.ViewUtils.setupBottomNavigation(binding.bottomNavigationView, this);
+    }
+
+    private void navigateToAiHub() {
+        Intent intent = new Intent(this, com.project.muse_android.main.MainActivity.class);
+        intent.putExtra("open_ai_hub", true);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
     }
 
     private void loadCartItems() {

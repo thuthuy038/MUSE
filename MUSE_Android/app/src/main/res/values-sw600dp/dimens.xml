@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Kích thước cho máy tính bảng -->
+    <dimen name="home_banner_height">600dp</dimen>
+    <dimen name="product_detail_image_height">550dp</dimen>
+    <dimen name="auth_welcome_text_size">48sp</dimen>
+    <dimen name="screen_padding">24dp</dimen>
+    <dimen name="card_corner_radius">16dp</dimen>
+    <dimen name="btn_ai_margin_bottom">120dp</dimen>
+</resources>

@@ -105,6 +105,13 @@ public class AIFragment extends Fragment {
             startActivity(intent);
         });
 
+        // Link Outfit Space to VirtualFittingActivity in Scan Mode
+        binding.cardOutfitSpace.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), VirtualFittingActivity.class);
+            intent.putExtra("outfit_scan", true);
+            startActivity(intent);
+        });
+
         // Initialize ViewPager2 for AI seasonal banners
         bannerAdapter = new com.project.adapters.BannerAdapter(bannerList);
         binding.vpBannersAI.setAdapter(bannerAdapter);
@@ -172,6 +179,7 @@ public class AIFragment extends Fragment {
         binding.ivUserAvatar.setImageResource(R.drawable.ic_account_circle);
 
         setupSpinnersFromPrefs();
+        updateProfileStatusUI();
 
         if (isAIProfileEmpty()) {
             showSetupPopup();
@@ -226,6 +234,7 @@ public class AIFragment extends Fragment {
         }
 
         setupSpinnersFromPrefs();
+        updateProfileStatusUI();
 
         if (isAIProfileEmpty()) {
             showSetupPopup();
@@ -391,6 +400,18 @@ public class AIFragment extends Fragment {
         });
     }
 
+    private void updateProfileStatusUI() {
+        if (binding == null) return;
+        boolean isEmpty = isAIProfileEmpty();
+        if (isEmpty) {
+            binding.tvUserLabel.setText("Chưa có Profile");
+            binding.btnEditProfile.setText("THIẾT LẬP");
+        } else {
+            binding.tvUserLabel.setText("Đã có Profile");
+            binding.btnEditProfile.setText("CHỈNH SỬA");
+        }
+    }
+
     private void loadCachedFallback() {
         binding.tvWelcomeTitle.setText("Xin chào, " + sessionManager.getUserName() + " ✨");
         binding.tvUserName.setText(sessionManager.getUserName());
@@ -398,6 +419,7 @@ public class AIFragment extends Fragment {
         binding.ivUserAvatar.setImageResource(R.drawable.ic_account_circle);
 
         setupSpinnersFromPrefs();
+        updateProfileStatusUI();
     }
 
     private void loadBannersAndStartRotation() {

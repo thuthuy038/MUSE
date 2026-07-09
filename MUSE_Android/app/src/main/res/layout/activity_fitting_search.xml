@@ -80,160 +80,149 @@
                         android:layout_height="20dp"
                         android:src="@drawable/ic_search"
                         app:tint="@color/primary_500" />
-                    <EditText
+                    <AutoCompleteTextView
                         android:id="@+id/edtSearch"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:background="@android:color/transparent"
-                        android:hint="Linen Tailored Blazer"
+                        android:hint="Nhập tên sản phẩm"
                         android:textColor="@color/primary_500"
                         android:textColorHint="@color/primary_500"
                         android:textSize="14sp"
                         android:fontFamily="@font/montserrat"
                         android:inputType="text"
-                        android:imeOptions="actionSearch" />
+                        android:imeOptions="actionSearch"
+                        android:completionThreshold="1" />
                 </LinearLayout>
 
-                <!-- Product Card -->
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <!-- Product Card (Vertical Style) -->
+                <LinearLayout
+                    android:id="@+id/layoutProductCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp">
+                    android:layout_marginTop="24dp"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardProductImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="320dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="#EEEEEE"
+                        app:strokeWidth="1dp">
+
+                        <ImageView
+                            android:id="@+id/ivProductDetailImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/demo_product" />
+                    </com.google.android.material.card.MaterialCardView>
 
                     <TextView
                         android:id="@+id/tvSubtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
                         android:fontFamily="@font/montserrat"
                         android:text="BỘ SƯU TẬP MÙA HÈ"
                         android:textColor="@color/neutral_600"
-                        android:textSize="12sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/tvProductName"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="@font/montserrat_bold"
                         android:text="Linen Tailored Blazer"
                         android:textColor="@color/neutral_900"
                         android:textSize="22sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/tvSubtitle" />
+                        android:maxLines="2"
+                        android:ellipsize="end" />
 
-                    <TextView
-                        android:id="@+id/tvPrice"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:fontFamily="@font/montserrat_bold"
-                        android:text="$285.00"
-                        android:textColor="@color/primary_500"
-                        android:textSize="18sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/tvProductName" />
+                        android:orientation="horizontal"
+                        android:gravity="bottom">
 
-                    <TextView
-                        android:id="@+id/tvOriginalPriceDemo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:fontFamily="@font/montserrat"
-                        android:text="$340.00"
-                        android:textColor="@color/neutral_400"
-                        android:textSize="14sp"
-                        app:layout_constraintBottom_toBottomOf="@id/tvPrice"
-                        app:layout_constraintStart_toEndOf="@id/tvPrice" />
+                        <TextView
+                            android:id="@+id/tvPrice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:text="$285.00"
+                            android:textColor="@color/primary_500"
+                            android:textSize="20sp" />
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        app:cardCornerRadius="24dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="#FFF0F3"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_favorite"
-                            app:tint="@color/primary_500" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                        <TextView
+                            android:id="@+id/tvOriginalPriceDemo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:fontFamily="@font/montserrat"
+                            android:text="$340.00"
+                            android:textColor="@color/neutral_400"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                </LinearLayout>
 
                 <!-- Selectors -->
-                <TextView
-                    android:layout_width="wrap_content"
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:text="SELECT SIZE"
-                    android:textSize="11sp"
-                    android:textColor="@color/neutral_600"
-                    android:fontFamily="@font/montserrat_bold" />
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_marginTop="24dp">
+
+                    <TextView
+                        android:id="@+id/tvSelectSizeLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="KÍCH CỠ"
+                        android:textSize="11sp"
+                        android:textColor="@color/neutral_600"
+                        android:fontFamily="@font/montserrat_bold" />
+
+                    <ImageView
+                        android:id="@+id/btnFavoriteSearch"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/ic_favorite"
+                        app:tint="#333333"
+                        android:padding="4dp"
+                        android:contentDescription="Yêu thích" />
+                </RelativeLayout>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupSizes"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/bg_selectable_item"
-                        android:gravity="center"
-                        android:text="S"
-                        android:fontFamily="@font/montserrat" />
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/bg_chip_pink"
-                        android:gravity="center"
-                        android:text="M"
-                        android:textColor="@color/primary_500"
-                        android:fontFamily="@font/montserrat" />
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_selectable_item"
-                        android:gravity="center"
-                        android:text="L"
-                        android:fontFamily="@font/montserrat" />
-                </LinearLayout>
+                    app:singleSelection="true" />
 
                 <TextView
+                    android:id="@+id/tvSelectColorLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="SELECT COLOR"
+                    android:text="MÀU SẮC"
                     android:textSize="11sp"
                     android:textColor="@color/neutral_600"
                     android:fontFamily="@font/montserrat_bold" />
+
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:id="@+id/layoutColors"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-                    <View
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginEnd="16dp"
-                        android:background="#F5F5DC" />
-                    <View
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginEnd="16dp"
-                        android:background="#222222" />
-                    <View
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:background="#8B4513" />
-                </LinearLayout>
+                    android:orientation="horizontal" />
 
                 <!-- Search Results -->
                 <LinearLayout

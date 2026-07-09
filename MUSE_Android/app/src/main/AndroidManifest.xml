@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.project.muse_android">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -21,12 +20,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MUSE_Android">
         <activity
-            android:name=".order.OrderDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".order.ReturnRefundActivity"
-            android:exported="false" />
-        <activity
             android:name=".address.EditShippingAddressActivity"
             android:exported="false" />
         <activity
@@ -45,6 +38,9 @@
             android:name=".checkout.CheckoutActivity"
             android:exported="false" />
         <activity
+            android:name=".auth.AuthActivity"
+            android:exported="false" />
+        <activity
             android:name=".ai.ChatBotActivity"
             android:exported="false" />
         <activity
@@ -53,8 +49,26 @@
         <activity
             android:name=".ai.VirtualFittingActivity"
             android:exported="false" />
-                <activity
-            android:name=".auth.AuthActivity"
+        <activity
+            android:name=".ai.FittingCartActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ai.FittingSearchActivity"
+            android:exported="false" />
+        <activity
+            android:name=".order.OrderDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".order.ReturnRefundActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.FullScreenImageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.FullScreenReviewImageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.ProductReviewsActivity"
             android:exported="false" />
 
         <provider
@@ -66,7 +80,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
         <activity
             android:name=".auth.AISetupActivity"
             android:exported="false" />
@@ -104,6 +117,12 @@
             android:name=".search.SearchResultActivity"
             android:exported="false" />
         <activity
+            android:name=".ai.OutfitAnalysisResultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ai.VirtualFittingResultActivity"
+            android:exported="false" />
+        <activity
             android:name=".main.MainActivity"
             android:exported="true">
             <intent-filter>
@@ -112,11 +131,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".product.FullScreenReviewImageActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.MUSE_Android" />
     </application>
 
 </manifest>

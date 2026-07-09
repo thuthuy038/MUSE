@@ -74,8 +74,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         binding = ActivityProductDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Đẩy Header (nút Back) xuống dưới Status Bar
+        // Đẩy Header (nút Back) xuống dưới Status Bar và Bottom Bar lên trên Navigation Bar
         ViewUtils.applySystemBarsPadding(binding.header, true, false);
+        ViewUtils.applySystemBarsPadding(binding.bottomBar, false, true);
 
         productId = getIntent().getStringExtra("product_id");
 

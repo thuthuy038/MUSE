@@ -1,7 +1,9 @@
 package com.project.utils;
 
+
 import android.content.Context;
 import android.util.Log;
+
 
 import com.project.database.AppDatabase;
 import com.project.database.CartDao;
@@ -13,12 +15,15 @@ import com.project.network.ApiClient;
 import com.project.network.ApiService;
 import com.project.network.ApiResponse;
 
+
 import java.util.ArrayList;
 import java.util.List;
+
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 
 public class CartManager {
     private static final String TAG = "CartManager";
@@ -28,12 +33,14 @@ public class CartManager {
     private final SessionManager sessionManager;
     private final ApiService apiService;
 
+
     private CartManager(Context context) {
         this.context = context.getApplicationContext();
         this.cartDao = AppDatabase.getInstance(this.context).cartDao();
         this.sessionManager = new SessionManager(this.context);
         this.apiService = ApiClient.INSTANCE.getInstance();
     }
+
 
     public static synchronized CartManager getInstance(Context context) {
         if (instance == null) {
@@ -42,26 +49,29 @@ public class CartManager {
         return instance;
     }
 
+
     public interface CartCallback<T> {
         void onSuccess(T result);
         void onError(String message);
     }
 
+
     public void addToCart(Product product, String color, String size, int quantity, CartCallback<Void> callback) {
         String activeId = sessionManager.isLoggedIn() ? sessionManager.getUserId() : sessionManager.getGuestId();
-        
+
         String prodId = product.get_id() != null ? product.get_id() : product.getId();
         String name = product.getName();
-        String imageUrl = (product.getImages() != null && !product.getImages().isEmpty()) 
+        String imageUrl = (product.getImages() != null && !product.getImages().isEmpty())
                 ? product.getImages().get(0).getUrl() : "";
-        double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
+        double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0
                 ? product.getDiscountPrice() : product.getPrice();
-        
+
         String safeColor = color != null ? color : "";
         String safeSize = size != null ? size : "";
 
+
         Log.d(TAG, "Adding to server cart: ID=" + activeId + ", Product=" + prodId + ", Qty=" + quantity);
-        
+
         CartRequest request = new CartRequest(activeId, prodId, name, imageUrl, safeSize, safeColor, quantity, price);
         apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
@@ -75,6 +85,7 @@ public class CartManager {
                 }
             }
 
+
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 Log.e(TAG, "Server cart request failure: " + t.getMessage());
@@ -84,18 +95,19 @@ public class CartManager {
         });
     }
 
+
     private void updateLocalRoomAfterServer(Product product, String color, String size, int quantity, CartCallback<Void> callback) {
         String prodId = product.get_id() != null ? product.get_id() : product.getId();
         String safeColor = color != null ? color : "";
         String safeSize = size != null ? size : "";
-        
+
         new Thread(() -> {
             CartItem existing = cartDao.getByVariant(prodId, safeColor, safeSize);
             if (existing != null) {
                 existing.setQuantity(existing.getQuantity() + quantity);
                 cartDao.update(existing);
             } else {
-                String imageUrl = (product.getImages() != null && !product.getImages().isEmpty()) 
+                String imageUrl = (product.getImages() != null && !product.getImages().isEmpty())
                         ? product.getImages().get(0).getUrl() : "";
                 CartItem newItem = new CartItem(
                         prodId,
@@ -113,12 +125,14 @@ public class CartManager {
         }).start();
     }
 
+
     public void getCartItems(CartCallback<List<Product>> callback) {
         String activeId = sessionManager.isLoggedIn() ? sessionManager.getUserId() : sessionManager.getGuestId();
-        
+
         new Thread(() -> {
             List<CartItem> localItems = cartDao.getAll();
             List<Product> products = convertToProducts(localItems);
+
 
             apiService.getCart(activeId).enqueue(new Callback<ApiResponse<List<Product>>>() {
                 @Override
@@ -136,6 +150,7 @@ public class CartManager {
                     }
                 }
 
+
                 @Override
                 public void onFailure(Call<ApiResponse<List<Product>>> call, Throwable t) {
                     callback.onSuccess(products);
@@ -144,11 +159,13 @@ public class CartManager {
         }).start();
     }
 
+
     public void mergeGuestCart(String userId) {
         String guestId = sessionManager.getGuestId();
         java.util.Map<String, String> body = new java.util.HashMap<>();
         body.put("guestId", guestId);
         body.put("userId", userId);
+
 
         apiService.mergeCart(body).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
@@ -171,6 +188,7 @@ public class CartManager {
         });
     }
 
+
     private List<Product> convertToProducts(List<CartItem> localItems) {
         List<Product> products = new ArrayList<>();
         for (CartItem item : localItems) {
@@ -186,6 +204,7 @@ public class CartManager {
             images.add(img);
             p.setImages(images);
 
+
             // Add to variants for HorizontalProductAdapter display
             List<ProductVariant> variants = new ArrayList<>();
             ProductVariant pv = new ProductVariant();
@@ -195,11 +214,13 @@ public class CartManager {
             variants.add(pv);
             p.setVariants(variants);
 
+
             p.setQuantity(item.getQuantity());
             products.add(p);
         }
         return products;
     }
+
 
     private void syncLocalCacheWithServer(List<Product> serverProducts) {
         new Thread(() -> {
@@ -210,7 +231,7 @@ public class CartManager {
                 double price = p.getPrice();
                 double discount = p.getDiscountPrice() != null ? p.getDiscountPrice() : 0;
                 String img = (p.getImages() != null && !p.getImages().isEmpty()) ? p.getImages().get(0).getUrl() : "";
-                
+
                 if (p.getVariants() != null && !p.getVariants().isEmpty()) {
                     for (ProductVariant v : p.getVariants()) {
                         cartDao.insert(new CartItem(prodId, name, price, discount, img, v.getColor(), v.getSize(), v.getQuantity()));
@@ -222,10 +243,11 @@ public class CartManager {
         }).start();
     }
 
+
     public void removeFromCart(String productId, String size, String color, CartCallback<Void> callback) {
         String safeColor = color != null ? color : "";
         String safeSize = size != null ? size : "";
-        
+
         if (sessionManager.isLoggedIn()) {
             String userId = sessionManager.getUserId();
             apiService.removeFromCart(userId, productId, safeSize, safeColor).enqueue(new Callback<ApiResponse<Void>>() {
@@ -253,6 +275,7 @@ public class CartManager {
                     }
                 }
 
+
                 @Override
                 public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                     Log.e(TAG, "removeFromCart onFailure: " + t.getMessage());
@@ -270,24 +293,30 @@ public class CartManager {
         }
     }
 
+
     public void updateQuantity(String productId, int quantity, double price, String color, String size, CartCallback<Void> callback) {
         String safeColor = color != null ? color : "";
         String safeSize = size != null ? size : "";
 
+
         CartItem existing = cartDao.getByVariant(productId, safeColor, safeSize);
+
 
         if (sessionManager.isLoggedIn()) {
             String userId = sessionManager.getUserId();
             int oldQuantity = (existing != null) ? existing.getQuantity() : 0;
             int delta = quantity - oldQuantity;
 
+
             if (delta == 0) {
                 callback.onSuccess(null);
                 return;
             }
 
+
             String name = (existing != null) ? existing.getName() : "";
             String imageUrl = (existing != null) ? existing.getImageUrl() : "";
+
 
             CartRequest request = new CartRequest(userId, productId, name, imageUrl, safeSize, safeColor, delta, price);
             apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
@@ -312,6 +341,7 @@ public class CartManager {
                     }
                 }
 
+
                 @Override
                 public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                     callback.onError("Fail: " + t.toString());
@@ -326,11 +356,13 @@ public class CartManager {
         }
     }
 
+
     public void updateCartItemVariant(String productId, String oldColor, String oldSize, String newColor, String newSize, double price, CartCallback<Void> callback) {
         String safeOldColor = oldColor != null ? oldColor : "";
         String safeOldSize = oldSize != null ? oldSize : "";
         String safeNewColor = newColor != null ? newColor : "";
         String safeNewSize = newSize != null ? newSize : "";
+
 
         if (sessionManager.isLoggedIn()) {
             String userId = sessionManager.getUserId();
@@ -340,10 +372,11 @@ public class CartManager {
                     new Thread(() -> {
                         CartItem localOld = cartDao.getByVariant(productId, safeOldColor, safeOldSize);
                         int qty = localOld != null ? localOld.getQuantity() : 1;
-                        
+
                         if (localOld != null) {
                             cartDao.delete(localOld);
                         }
+
 
                         CartRequest request = new CartRequest(userId, productId, qty, safeNewColor, safeNewSize, price);
                         apiService.addToCart(request).enqueue(new Callback<ApiResponse<Void>>() {
@@ -371,6 +404,7 @@ public class CartManager {
                                 }).start();
                             }
 
+
                             @Override
                             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                                 new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onError(t.getMessage()));
@@ -378,6 +412,7 @@ public class CartManager {
                         });
                     }).start();
                 }
+
 
                 @Override
                 public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
@@ -390,6 +425,7 @@ public class CartManager {
                 if (localOld != null) {
                     int qty = localOld.getQuantity();
                     cartDao.delete(localOld);
+
 
                     CartItem existingNew = cartDao.getByVariant(productId, safeNewColor, safeNewSize);
                     if (existingNew != null) {
@@ -406,18 +442,22 @@ public class CartManager {
         }
     }
 
+
     public void syncLocalCart() {
         if (!sessionManager.isLoggedIn()) return;
+
 
         new Thread(() -> {
             List<CartItem> localItems = cartDao.getAll();
             if (localItems.isEmpty()) return;
+
 
             String userId = sessionManager.getUserId();
             List<CartRequest> requests = new ArrayList<>();
             for (CartItem item : localItems) {
                 requests.add(new CartRequest(userId, item.getProductId(), item.getName(), item.getImageUrl(), item.getSize(), item.getColor(), item.getQuantity(), item.getDiscountPrice() > 0 ? item.getDiscountPrice() : item.getPrice()));
             }
+
 
             apiService.syncCart(requests).enqueue(new Callback<ApiResponse<Void>>() {
                 @Override
@@ -430,6 +470,7 @@ public class CartManager {
                     }
                 }
 
+
                 @Override
                 public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                     Log.e(TAG, "Failed to sync cart", t);
@@ -438,3 +479,4 @@ public class CartManager {
         }).start();
     }
 }
+
