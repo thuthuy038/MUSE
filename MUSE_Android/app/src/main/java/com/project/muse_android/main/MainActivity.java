@@ -90,11 +90,16 @@ public class MainActivity extends AppCompatActivity {
                 if (itemId == R.id.navigation_notification) {
                     return NavigationUI.onNavDestinationSelected(item, navController);
                 }
-                
+
                 // Sử dụng NavigationUI để xử lý chuyển trang và quản lý backstack
                 boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
-                if (!handled && itemId == R.id.navigation_home) {
-                    return true;
+                if (!handled) {
+                    try {
+                        navController.navigate(itemId);
+                        return true;
+                    } catch (Exception e) {
+                        return false;
+                    }
                 }
                 return handled;
             });
@@ -143,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call<com.project.models.NotificationResponse> call, @NonNull Response<com.project.models.NotificationResponse> response) {
                 android.util.Log.d("NotificationBadge", "onResponse: code=" + response.code() + ", isSuccessful=" + response.isSuccessful());
                 int unreadCount = 0;
-                
+
                 // Server notifications
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     android.util.Log.d("NotificationBadge", "Server notifications fetched: " + response.body().getData().size());
@@ -161,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-                
+
                 // Local notifications
                 List<Notification> locals = sessionManager.getLocalNotifications();
                 android.util.Log.d("NotificationBadge", "Local notifications found: " + locals.size());
@@ -201,18 +206,23 @@ public class MainActivity extends AppCompatActivity {
         if (intent.getBooleanExtra("select_profile", false)) {
             navController.navigate(R.id.navigation_profile);
             intent.removeExtra("select_profile");
+            if (getIntent() != null) getIntent().removeExtra("select_profile");
         } else if (intent.getBooleanExtra("open_cart", false)) {
             navController.navigate(R.id.navigation_cart);
             intent.removeExtra("open_cart");
+            if (getIntent() != null) getIntent().removeExtra("open_cart");
         } else if (intent.getBooleanExtra("open_home", false)) {
             navController.navigate(R.id.navigation_home);
             intent.removeExtra("open_home");
+            if (getIntent() != null) getIntent().removeExtra("open_home");
         } else if (intent.getBooleanExtra("open_explore", false)) {
             navController.navigate(R.id.navigation_explore);
             intent.removeExtra("open_explore");
+            if (getIntent() != null) getIntent().removeExtra("open_explore");
         } else if (intent.getBooleanExtra("open_notification", false)) {
             navController.navigate(R.id.navigation_notification);
             intent.removeExtra("open_notification");
+            if (getIntent() != null) getIntent().removeExtra("open_notification");
         } else if (intent.hasExtra("category_id")) {
             String categoryId = intent.getStringExtra("category_id");
             if (categoryId != null) {
