@@ -235,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-   
+    }
 
     private void setupDraggableAI() {
         binding.btnAIDraggable.setOnTouchListener(new View.OnTouchListener() {
