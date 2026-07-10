@@ -1,5 +1,6 @@
 package com.project.muse_android.order;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -40,6 +41,13 @@ public class OrderActivity extends AppCompatActivity {
     private List<Order> allOrders = new ArrayList<>();
     private List<Order> filteredOrders = new ArrayList<>();
 
+    private final androidx.activity.result.ActivityResultLauncher<Intent> reviewLauncher =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    fetchOrders(); // Refresh to see updated "Đã đánh giá"
+                }
+            });
+
     private ProductAdapter suggestionAdapter;
     private List<Product> suggestionList = new ArrayList<>();
 
@@ -77,6 +85,11 @@ public class OrderActivity extends AppCompatActivity {
 
     private void setupOrderRecyclerView() {
         orderAdapter = new OrderAdapter(this, filteredOrders);
+        orderAdapter.setOnReviewClickListener(order -> {
+            Intent intent = new Intent(this, com.project.muse_android.product.WriteReviewActivity.class);
+            intent.putExtra("order", order);
+            reviewLauncher.launch(intent);
+        });
         binding.rvOrders.setLayoutManager(new LinearLayoutManager(this));
         binding.rvOrders.setAdapter(orderAdapter);
     }
@@ -125,7 +138,7 @@ public class OrderActivity extends AppCompatActivity {
                     else if (status.equalsIgnoreCase("Đã xác nhận") && orderStatus.equalsIgnoreCase("PROCESSING")) filteredOrders.add(o);
                     else if (status.equalsIgnoreCase("Đang giao") && orderStatus.equalsIgnoreCase("SHIPPING")) filteredOrders.add(o);
                     else if (status.equalsIgnoreCase("Đã giao") && (orderStatus.equalsIgnoreCase("DELIVERED") || orderStatus.equalsIgnoreCase("COMPLETED"))) filteredOrders.add(o);
-                    else if (status.equalsIgnoreCase("Trả hàng") && orderStatus.equalsIgnoreCase("RETURNED")) filteredOrders.add(o);
+                    else if (status.equalsIgnoreCase("Trả hàng") && (orderStatus.equalsIgnoreCase("RETURNED") || orderStatus.contains("trả hàng") || orderStatus.contains("Trả hàng"))) filteredOrders.add(o);
                     else if (status.equalsIgnoreCase("Đã hủy") && orderStatus.equalsIgnoreCase("CANCELLED")) filteredOrders.add(o);
                 }
             }

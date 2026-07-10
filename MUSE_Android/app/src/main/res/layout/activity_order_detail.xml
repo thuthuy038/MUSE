@@ -916,12 +916,32 @@
             tools:visibility="visible">
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancelledLeft"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/montserrat"
+                android:text="Liên hệ"
+                android:textAllCaps="false"
+                android:textColor="#6B6464"
+                android:textSize="14sp"
+                app:cornerRadius="10dp"
+                app:strokeColor="#6B6464" />
+
+            <View
+                android:id="@+id/spaceCancelled"
+                android:layout_width="12dp"
+                android:layout_height="match_parent" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnViewOrderDetail"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="48dp"
+                android:layout_weight="1"
                 android:fontFamily="@font/montserrat"
-                android:text="Chi tiết đơn hàng"
+                android:text="Mua lại"
                 android:textAllCaps="false"
                 android:textColor="#1F1C1C"
                 android:textSize="14sp"

@@ -25,10 +25,11 @@ public class AuthActivity extends AppCompatActivity {
 
         boolean fromProfile = getIntent().getBooleanExtra("from_profile", false);
         boolean fromOffer = getIntent().getBooleanExtra("from_offer", false);
-        android.util.Log.d("MUSE_NAV", "AuthActivity onCreate: fromProfile=" + fromProfile + ", fromOffer=" + fromOffer + ", isFirstLaunch=" + sessionManager.isFirstLaunch() + ", isLoggedIn=" + sessionManager.isLoggedIn());
+        boolean fromCheckout = getIntent().getBooleanExtra("from_checkout", false);
+        android.util.Log.d("MUSE_NAV", "AuthActivity onCreate: fromProfile=" + fromProfile + ", fromOffer=" + fromOffer + ", fromCheckout=" + fromCheckout + ", isFirstLaunch=" + sessionManager.isFirstLaunch() + ", isLoggedIn=" + sessionManager.isLoggedIn());
 
-        // 1. If not first launch and not opened from the profile or offer button, redirect to MainActivity (homepage)
-        if (!fromProfile && !fromOffer && !sessionManager.isFirstLaunch()) {
+        // 1. If not first launch and not opened from the profile, offer or checkout button, redirect to MainActivity (homepage)
+        if (!fromProfile && !fromOffer && !fromCheckout && !sessionManager.isFirstLaunch()) {
             android.util.Log.d("MUSE_NAV", "Redirecting to MainActivity from AuthActivity");
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);

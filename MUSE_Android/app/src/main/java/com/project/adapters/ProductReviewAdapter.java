@@ -5,6 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.content.Intent;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,7 +58,6 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
         String rawDate = review.getCreatedAt();
         if (rawDate != null && !rawDate.isEmpty()) {
             try {
-                // ISO format: 2024-03-20T10:00:00.000Z or similar
                 java.text.SimpleDateFormat inputFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US);
                 inputFormat.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
                 java.util.Date date = inputFormat.parse(rawDate);
@@ -69,7 +70,7 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             holder.txtReviewDate.setText("-");
         }
 
-        // Display variant info or combine color/size
+        // Display variant info
         String variant = review.getVariantInfo();
         if (variant == null || variant.isEmpty() || variant.equals("-")) {
             String color = review.getColor();
@@ -103,15 +104,11 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             holder.imgUserAvatar.setVisibility(View.VISIBLE);
             holder.txtUserInitial.setVisibility(View.GONE);
             
-            // Fix localhost or relative URLs from backend
             if (avatarUrl.contains("localhost:3000")) {
                 avatarUrl = avatarUrl.replace("http://localhost:3000", "https://server-testing-ymn9.onrender.com");
             } else if (!avatarUrl.startsWith("http")) {
-                // Ensure correct path formatting: BASE_URL + /uploads/... or BASE_URL + path
                 avatarUrl = "https://server-testing-ymn9.onrender.com" + (avatarUrl.startsWith("/") ? "" : "/") + avatarUrl;
             }
-
-            android.util.Log.d("ReviewAvatar", "Final avatar URL: " + avatarUrl);
 
             Glide.with(holder.itemView.getContext())
                     .load(avatarUrl)
@@ -132,7 +129,7 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             }
         }
 
-        // Handle stars visibility based on rating
+        // Handle stars
         int rating = review.getRating();
         ViewGroup starLayout = (ViewGroup) holder.itemView.findViewById(R.id.layoutStars);
         for (int i = 0; i < starLayout.getChildCount(); i++) {
@@ -140,19 +137,43 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             star.setVisibility(i < rating ? View.VISIBLE : View.GONE);
         }
 
-        // Handle images
-        if (review.getImages() != null && !review.getImages().isEmpty()) {
+        // Handle Media (Combined Images & Videos)
+        List<MediaItem> allMedia = new ArrayList<>();
+        List<String> images = review.getImages();
+        List<String> videos = review.getVideos();
+        
+        if (images != null) {
+            for (String img : images) allMedia.add(new MediaItem(img, false));
+        }
+        if (videos != null) {
+            for (String vid : videos) allMedia.add(new MediaItem(vid, true));
+        }
+
+        if (!allMedia.isEmpty()) {
             holder.rvReviewImages.setVisibility(View.VISIBLE);
             holder.rvReviewImages.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(holder.itemView.getContext(), androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false));
             
-            // Show max 3 images
-            List<String> displayImages = review.getImages();
-            int actualCount = displayImages.size();
-            List<String> limitedImages = actualCount > 3 ? displayImages.subList(0, 3) : displayImages;
+            int actualCount = allMedia.size();
+            List<MediaItem> limitedMedia = actualCount > 3 ? allMedia.subList(0, 3) : allMedia;
             
-            holder.rvReviewImages.setAdapter(new ReviewImageAdapter(limitedImages, actualCount, (imgPos) -> {
-                if (onImageClickListener != null) {
-                    onImageClickListener.onImageClick(review.getImages(), imgPos, review);
+            holder.rvReviewImages.setAdapter(new ReviewMediaAdapter(limitedMedia, actualCount, (pos) -> {
+                MediaItem selected = allMedia.get(pos);
+                if (selected.isVideo) {
+                    try {
+                        String fullUrl = selected.url;
+                        if (!fullUrl.startsWith("http")) {
+                            fullUrl = "https://server-testing-ymn9.onrender.com" + (fullUrl.startsWith("/") ? "" : "/") + fullUrl;
+                        }
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.parse(fullUrl), "video/*");
+                        holder.itemView.getContext().startActivity(intent);
+                    } catch (Exception e) {
+                        android.widget.Toast.makeText(holder.itemView.getContext(), "Không thể phát video", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    if (onImageClickListener != null) {
+                        onImageClickListener.onImageClick(images, pos, review);
+                    }
                 }
             }));
         } else {
@@ -175,13 +196,11 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
         if (review.isLiked()) {
             holder.btnHelpful.setBackgroundResource(R.drawable.bg_helpful_button_selected);
             holder.txtHelpful.setTextColor(androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.primary_500));
-            // Tint thumb icon pink
             ImageView thumbIcon = (ImageView) ((ViewGroup) holder.btnHelpful).getChildAt(0);
             thumbIcon.setColorFilter(androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.primary_500));
         } else {
             holder.btnHelpful.setBackgroundResource(R.drawable.bg_helpful_button);
             holder.txtHelpful.setTextColor(android.graphics.Color.parseColor("#333333"));
-            // Reset thumb icon to gray
             ImageView thumbIcon = (ImageView) ((ViewGroup) holder.btnHelpful).getChildAt(0);
             thumbIcon.setColorFilter(android.graphics.Color.parseColor("#666666"));
         }
@@ -236,6 +255,12 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
         };
     }
 
+    private static class MediaItem {
+        String url;
+        boolean isVideo;
+        MediaItem(String url, boolean isVideo) { this.url = url; this.isVideo = isVideo; }
+    }
+
     static class ReviewViewHolder extends RecyclerView.ViewHolder {
         ImageView imgUserAvatar;
         TextView txtUserName, txtComment, txtReviewDate, txtVariantInfo, txtHelpful, txtUserInitial, txtAdminReply;
@@ -258,8 +283,8 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
         }
     }
 
-    private static class ReviewImageAdapter extends RecyclerView.Adapter<ReviewImageAdapter.ImageViewHolder> {
-        private List<String> images;
+    private static class ReviewMediaAdapter extends RecyclerView.Adapter<ReviewMediaAdapter.ImageViewHolder> {
+        private List<MediaItem> mediaItems;
         private int totalCount;
         private OnItemClickListener listener;
         private static final String BASE_URL = "https://server-testing-ymn9.onrender.com";
@@ -268,8 +293,8 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             void onItemClick(int position);
         }
 
-        public ReviewImageAdapter(List<String> images, int totalCount, OnItemClickListener listener) {
-            this.images = images;
+        public ReviewMediaAdapter(List<MediaItem> items, int totalCount, OnItemClickListener listener) {
+            this.mediaItems = items;
             this.totalCount = totalCount;
             this.listener = listener;
         }
@@ -283,7 +308,8 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
 
         @Override
         public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
-            String url = images.get(position);
+            MediaItem item = mediaItems.get(position);
+            String url = item.url;
             if (url != null) {
                 if (url.contains("localhost:3000")) {
                     url = url.replace("http://localhost:3000", BASE_URL);
@@ -292,14 +318,14 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
                 }
             }
             
-            android.util.Log.d("ReviewImage", "Loading image: " + url);
-            
             Glide.with(holder.itemView.getContext())
                     .load(url)
                     .placeholder(R.drawable.image)
                     .error(R.drawable.image)
                     .centerCrop()
                     .into(holder.imgReview);
+
+            holder.ivPlay.setVisibility(item.isVideo ? View.VISIBLE : View.GONE);
 
             // Overlay for the 3rd image if there are more
             if (position == 2 && totalCount > 3) {
@@ -318,11 +344,11 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
 
         @Override
         public int getItemCount() {
-            return images != null ? images.size() : 0;
+            return mediaItems != null ? mediaItems.size() : 0;
         }
 
         static class ImageViewHolder extends RecyclerView.ViewHolder {
-            ImageView imgReview;
+            ImageView imgReview, ivPlay;
             View viewOverlay;
             TextView txtMoreImages;
             View layoutMoreImages;
@@ -330,6 +356,7 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
             public ImageViewHolder(@NonNull View itemView) {
                 super(itemView);
                 imgReview = itemView.findViewById(R.id.imgReview);
+                ivPlay = itemView.findViewById(R.id.ivPlay);
                 viewOverlay = itemView.findViewById(R.id.viewOverlay);
                 txtMoreImages = itemView.findViewById(R.id.txtMoreImages);
                 layoutMoreImages = itemView.findViewById(R.id.layoutMoreImages);

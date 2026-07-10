@@ -80,6 +80,11 @@ public class CartFragment extends Fragment {
             Navigation.findNavController(view).popBackStack();
         });
 
+        // Nút liên kết tới trang Yêu thích (Wishlist)
+        binding.ivFavorite.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_wishlist);
+        });
+
         // Cấu hình RecyclerView cho giỏ hàng
         setupCartRecyclerView();
 
@@ -110,7 +115,14 @@ public class CartFragment extends Fragment {
 
         // Mở BottomSheet chọn Voucher
         binding.layoutVoucher.setOnClickListener(v -> {
-            VoucherBottomSheetFragment voucherSheet = new VoucherBottomSheetFragment();
+            double selectedOriginalTotal = 0;
+            for (Product p : cartProducts) {
+                if (p.isSelected()) {
+                    double price = (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) ? p.getDiscountPrice() : p.getPrice();
+                    selectedOriginalTotal += price * (p.getQuantity() > 0 ? p.getQuantity() : 1);
+                }
+            }
+            VoucherBottomSheetFragment voucherSheet = VoucherBottomSheetFragment.newInstance(selectedOriginalTotal);
             voucherSheet.setOnVoucherSelectedListener((discount, shipping, code) -> {
                 this.selectedVoucherDiscount = discount;
                 this.selectedShippingDiscount = shipping;
@@ -126,6 +138,15 @@ public class CartFragment extends Fragment {
         });
 
         binding.btnCheckout.setOnClickListener(v -> {
+            com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+            if (!sessionManager.isLoggedIn()) {
+                Toast.makeText(getContext(), "Vui lòng đăng nhập hoặc đăng ký để tiếp tục mua hàng", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getContext(), com.project.muse_android.auth.AuthActivity.class);
+                intent.putExtra("from_checkout", true);
+                startActivity(intent);
+                return;
+            }
+
             ArrayList<Product> selectedProducts = new ArrayList<>();
             for (Product p : cartProducts) {
                 if (p.isSelected()) {

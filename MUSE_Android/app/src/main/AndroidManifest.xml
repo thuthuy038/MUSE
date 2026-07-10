@@ -96,6 +96,15 @@
             android:name=".policy.TermsOfUseActivity"
             android:exported="false" />
         <activity
+            android:name=".product.ProductReviewsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.WriteReviewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.FullScreenImageActivity"
+            android:exported="false" />
+        <activity
             android:name=".product.ProductDetailActivity"
             android:exported="false" />
         <activity

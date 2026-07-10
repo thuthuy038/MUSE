@@ -1,6 +1,7 @@
 package com.project.models;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProductReview {
@@ -18,20 +19,19 @@ public class ProductReview {
     @SerializedName(value = "content", alternate = {"comment", "text", "description", "review_text"})
     private String content;
 
-    @SerializedName(value = "color", alternate = {"productColor", "selectedColor", "chosenColor"})
     private String color;
-    
-    @SerializedName(value = "size", alternate = {"productSize", "selectedSize", "chosenSize"})
     private String size;
-
-    @SerializedName(value = "variantInfo", alternate = {"variant_info", "variant", "product_variant", "color_size", "classification", "variant_name"})
     private String variantInfo;
-
-    private List<String> images;
-    private List<String> videos;
     private String createdAt;
     private int helpfulCount;
     private boolean isLiked; // Local state for UI toggle
+
+    // Handle both formats: array of strings (from product list) or array of objects (if any)
+    @SerializedName(value = "images", alternate = {"reviewImages", "images_list"})
+    private com.google.gson.JsonElement rawImages;
+
+    @SerializedName(value = "videos", alternate = {"reviewVideos", "videos_list"})
+    private com.google.gson.JsonElement rawVideos;
 
     public boolean isLiked() {
         return isLiked;
@@ -53,6 +53,8 @@ public class ProductReview {
     public static class ReviewAvatar {
         @SerializedName("url")
         private String url;
+        @SerializedName("fileId")
+        private String fileId;
 
         public String getUrl() {
             return url;
@@ -60,6 +62,14 @@ public class ProductReview {
 
         public void setUrl(String url) {
             this.url = url;
+        }
+
+        public String getFileId() {
+            return fileId;
+        }
+
+        public void setFileId(String fileId) {
+            this.fileId = fileId;
         }
     }
 
@@ -81,10 +91,6 @@ public class ProductReview {
         return null;
     }
 
-    public void setCustomerName(String customerName) {
-        this.rawName = new com.google.gson.JsonPrimitive(customerName);
-    }
-
     public String getUserAvatar() {
         if (rawAvatar != null) {
             if (rawAvatar.isJsonPrimitive()) return rawAvatar.getAsString();
@@ -104,10 +110,6 @@ public class ProductReview {
             }
         }
         return null;
-    }
-
-    public void setUserAvatar(String userAvatar) {
-        this.rawAvatar = new com.google.gson.JsonPrimitive(userAvatar);
     }
 
     public int getRating() {
@@ -151,23 +153,34 @@ public class ProductReview {
     }
 
     public List<String> getImages() {
-        if (images != null) return images;
-        if (reviewImages != null) {
-            java.util.List<String> urls = new java.util.ArrayList<>();
-            for (ReviewAvatar img : reviewImages) {
-                if (img.getUrl() != null) urls.add(img.getUrl());
+        List<String> list = new ArrayList<>();
+        if (rawImages != null && rawImages.isJsonArray()) {
+            com.google.gson.JsonArray array = rawImages.getAsJsonArray();
+            for (com.google.gson.JsonElement el : array) {
+                if (el.isJsonPrimitive()) list.add(el.getAsString());
+                else if (el.isJsonObject()) {
+                    com.google.gson.JsonObject obj = el.getAsJsonObject();
+                    if (obj.has("url")) list.add(obj.get("url").getAsString());
+                }
             }
-            return urls;
         }
-        return null;
+        return list;
     }
 
-    public void setImages(List<String> images) {
-        this.images = images;
+    public List<String> getVideos() {
+        List<String> list = new ArrayList<>();
+        if (rawVideos != null && rawVideos.isJsonArray()) {
+            com.google.gson.JsonArray array = rawVideos.getAsJsonArray();
+            for (com.google.gson.JsonElement el : array) {
+                if (el.isJsonPrimitive()) list.add(el.getAsString());
+                else if (el.isJsonObject()) {
+                    com.google.gson.JsonObject obj = el.getAsJsonObject();
+                    if (obj.has("url")) list.add(obj.get("url").getAsString());
+                }
+            }
+        }
+        return list;
     }
-
-    @SerializedName(value = "reviewImages", alternate = {"images_list", "images_data"})
-    private List<ReviewAvatar> reviewImages;
 
     public String getCreatedAt() {
         return createdAt;
@@ -209,4 +222,3 @@ public class ProductReview {
         this.userId = userId;
     }
 }
-

@@ -49,7 +49,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private double productDiscount = 0;
     private double voucherDiscount = 0; 
     private String selectedVoucherCode = "";
-    private double shippingFee = 23000; // Default to standard fee
+    private double shippingFee = 0; // Always free shipping
     private double shippingDiscount = 0; 
 
     private int selectedShippingMethod = 1; // 1: Standard, 2: Fast, 3: Express
@@ -232,7 +232,12 @@ public class CheckoutActivity extends AppCompatActivity {
         adapter.setData(checkoutProducts);
 
         binding.btnSelectVoucher.setOnClickListener(v -> {
-            VoucherBottomSheetFragment voucherSheet = new VoucherBottomSheetFragment();
+            double tempTotal = 0;
+            for (Product p : checkoutProducts) {
+                double price = (p.getDiscountPrice() != null && p.getDiscountPrice() > 0) ? p.getDiscountPrice() : p.getPrice();
+                tempTotal += price * (p.getQuantity() > 0 ? p.getQuantity() : 1);
+            }
+            VoucherBottomSheetFragment voucherSheet = VoucherBottomSheetFragment.newInstance(tempTotal);
             voucherSheet.setOnVoucherSelectedListener((discount, shipping, code) -> {
                 this.voucherDiscount = discount;
                 this.shippingDiscount = shipping;
@@ -255,21 +260,21 @@ public class CheckoutActivity extends AppCompatActivity {
 
         binding.cardShippingStandard.setOnClickListener(v -> {
             selectedShippingMethod = 1;
-            shippingFee = 23000;
+            shippingFee = 0;
             updateShippingUI();
             calculatePrices();
         });
 
         binding.cardShippingFast.setOnClickListener(v -> {
             selectedShippingMethod = 2;
-            shippingFee = 38000;
+            shippingFee = 0;
             updateShippingUI();
             calculatePrices();
         });
 
         binding.cardShippingExpress.setOnClickListener(v -> {
             selectedShippingMethod = 3;
-            shippingFee = 55000;
+            shippingFee = 0;
             updateShippingUI();
             calculatePrices();
         });
@@ -413,7 +418,7 @@ public class CheckoutActivity extends AppCompatActivity {
         // Map payment method
         String pMethod = "COD";
         switch (selectedPaymentMethod) {
-            case 2: pMethod = "BANK"; break;
+            case 2: pMethod = "VNPAY"; break; // Map BANK to VNPAY to match backend enum ['COD', 'MOMO', 'VNPAY']
             case 3: pMethod = "MOMO"; break;
             case 4: pMethod = "VNPAY"; break;
         }
@@ -439,25 +444,28 @@ public class CheckoutActivity extends AppCompatActivity {
         ApiClient.INSTANCE.getInstance().createOrder(order).enqueue(new Callback<Order>() {
             @Override
             public void onResponse(@NonNull Call<Order> call, @NonNull Response<Order> response) {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null) {
                     Order createdOrder = response.body();
-                    if (createdOrder != null) {
-                        String orderIdStr = createdOrder.getId() != null ? createdOrder.getId() : "";
-                        String displayId = orderIdStr.length() > 8 ? orderIdStr.substring(orderIdStr.length() - 8) : orderIdStr;
-                        
-                        com.project.models.Notification localNotif = new com.project.models.Notification();
-                        localNotif.setTitle("Đặt hàng thành công");
-                        localNotif.setMessage("Đơn hàng #" + displayId + " của bạn đã được đặt thành công!");
-                        localNotif.setType("order");
-                        localNotif.setStatus("unread");
-                        localNotif.setCreatedAt(new java.util.Date());
-                        
-                        sessionManager.addLocalNotification(localNotif);
-                    }
                     
-                    Intent intent = new Intent(CheckoutActivity.this, com.project.muse_android.order.OrderSuccessActivity.class);
-                    startActivity(intent);
-                    finish();
+                    // Add local notification for order placement
+                    String orderIdStr = createdOrder.getId() != null ? createdOrder.getId() : "";
+                    String displayId = orderIdStr.length() > 8 ? orderIdStr.substring(orderIdStr.length() - 8) : orderIdStr;
+                    
+                    com.project.models.Notification localNotif = new com.project.models.Notification();
+                    localNotif.setTitle("Đặt hàng thành công");
+                    localNotif.setMessage("Đơn hàng #" + displayId + " của bạn đã được đặt thành công!");
+                    localNotif.setType("order");
+                    localNotif.setStatus("unread");
+                    localNotif.setCreatedAt(new java.util.Date());
+                    
+                    sessionManager.addLocalNotification(localNotif);
+
+                    // Apply voucher code if exists, otherwise navigate to success screen
+                    if (selectedVoucherCode != null && !selectedVoucherCode.isEmpty()) {
+                        applyVoucherToServer(selectedVoucherCode, createdOrder.get_id());
+                    } else {
+                        navigateToSuccess();
+                    }
                 } else {
                     binding.btnOrder.setEnabled(true);
                     binding.btnOrder.setText("ĐẶT HÀNG");
@@ -474,6 +482,33 @@ public class CheckoutActivity extends AppCompatActivity {
                 Toast.makeText(CheckoutActivity.this, "Lỗi kết nối: " + t.toString(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void applyVoucherToServer(String code, String orderId) {
+        com.project.models.ApplyVoucherRequest request = new com.project.models.ApplyVoucherRequest(code, orderId);
+        ApiClient.INSTANCE.getInstance().applyVoucher(request).enqueue(new Callback<com.project.models.ApplyVoucherResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<com.project.models.ApplyVoucherResponse> call, @NonNull Response<com.project.models.ApplyVoucherResponse> response) {
+                if (response.isSuccessful()) {
+                    android.util.Log.d("CheckoutActivity", "Áp dụng voucher thành công trên server");
+                } else {
+                    android.util.Log.e("CheckoutActivity", "Áp dụng voucher thất bại trên server: " + response.code());
+                }
+                navigateToSuccess();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<com.project.models.ApplyVoucherResponse> call, @NonNull Throwable t) {
+                android.util.Log.e("CheckoutActivity", "Lỗi kết nối khi áp dụng voucher", t);
+                navigateToSuccess();
+            }
+        });
+    }
+
+    private void navigateToSuccess() {
+        Intent intent = new Intent(CheckoutActivity.this, com.project.muse_android.order.OrderSuccessActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private Order.OrderItem createOrderItem(Product p) {
