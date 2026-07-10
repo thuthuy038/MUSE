@@ -365,6 +365,18 @@ public class OrderDetailActivity extends AppCompatActivity {
                     order = response.body();
                     populateData();
                     Toast.makeText(OrderDetailActivity.this, "Đã hủy đơn hàng thành công", Toast.LENGTH_SHORT).show();
+                    
+                    String orderIdStr = order.getId() != null ? order.getId() : (order.get_id() != null ? order.get_id() : "");
+                    String displayId = orderIdStr.length() > 8 ? orderIdStr.substring(orderIdStr.length() - 8) : orderIdStr;
+                    
+                    com.project.models.Notification localNotif = new com.project.models.Notification();
+                    localNotif.setTitle("Đơn hàng đã hủy");
+                    localNotif.setMessage("Đơn hàng #" + displayId + " của bạn đã được hủy thành công.");
+                    localNotif.setType("order");
+                    localNotif.setStatus("unread");
+                    localNotif.setCreatedAt(new java.util.Date());
+                    
+                    new com.project.utils.SessionManager(OrderDetailActivity.this).addLocalNotification(localNotif);
                 } else {
                     Toast.makeText(OrderDetailActivity.this, "Không thể hủy đơn hàng", Toast.LENGTH_SHORT).show();
                 }

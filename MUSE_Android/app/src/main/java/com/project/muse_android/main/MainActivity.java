@@ -153,11 +153,16 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     android.util.Log.d("NotificationBadge", "Server notifications fetched: " + response.body().getData().size());
                     for (Notification n : response.body().getData()) {
-                        android.util.Log.d("NotificationBadge", "Server Notification: id=" + n.getId() + ", title=" + n.getTitle() + ", status=" + n.getStatus());
-                        if ("unread".equals(n.getStatus())) {
+                        String nType = n.getType() != null ? n.getType().toLowerCase().trim() : "";
+                        boolean isTabType = nType.equals("promotion") || nType.equals("stock") 
+                                || nType.equals("system") || nType.equals("review") 
+                                || nType.equals("order");
+                                
+                        if (isTabType && "unread".equalsIgnoreCase(n.getStatus())) {
                             unreadCount++;
                         }
                     }
+                    android.util.Log.d("NotificationBadge", "Server unreadCount (3 tabs): " + unreadCount);
                 } else {
                     try {
                         String err = response.errorBody() != null ? response.errorBody().string() : "empty";
@@ -171,8 +176,13 @@ public class MainActivity extends AppCompatActivity {
                 List<Notification> locals = sessionManager.getLocalNotifications();
                 android.util.Log.d("NotificationBadge", "Local notifications found: " + locals.size());
                 for (Notification n : locals) {
+                    String nType = n.getType() != null ? n.getType().toLowerCase().trim() : "";
+                    boolean isTabType = nType.equals("promotion") || nType.equals("stock") 
+                            || nType.equals("system") || nType.equals("review") 
+                            || nType.equals("order");
+                            
                     android.util.Log.d("NotificationBadge", "Local Notification: title=" + n.getTitle() + ", status=" + n.getStatus());
-                    if ("unread".equals(n.getStatus())) {
+                    if (isTabType && "unread".equalsIgnoreCase(n.getStatus())) {
                         unreadCount++;
                     }
                 }

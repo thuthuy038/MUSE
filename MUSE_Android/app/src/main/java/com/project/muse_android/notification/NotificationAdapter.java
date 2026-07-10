@@ -101,6 +101,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     binding.txtPromoDate.setText(dateStr);
                     break;
                 case "system":
+                case "review":
                     binding.layoutSystem.setVisibility(View.VISIBLE);
                     binding.txtSystemMessage.setText(n.getMessage());
                     binding.txtSystemDate.setText(dateStr);

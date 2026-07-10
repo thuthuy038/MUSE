@@ -440,6 +440,21 @@ public class CheckoutActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<Order> call, @NonNull Response<Order> response) {
                 if (response.isSuccessful()) {
+                    Order createdOrder = response.body();
+                    if (createdOrder != null) {
+                        String orderIdStr = createdOrder.getId() != null ? createdOrder.getId() : "";
+                        String displayId = orderIdStr.length() > 8 ? orderIdStr.substring(orderIdStr.length() - 8) : orderIdStr;
+                        
+                        com.project.models.Notification localNotif = new com.project.models.Notification();
+                        localNotif.setTitle("Đặt hàng thành công");
+                        localNotif.setMessage("Đơn hàng #" + displayId + " của bạn đã được đặt thành công!");
+                        localNotif.setType("order");
+                        localNotif.setStatus("unread");
+                        localNotif.setCreatedAt(new java.util.Date());
+                        
+                        sessionManager.addLocalNotification(localNotif);
+                    }
+                    
                     Intent intent = new Intent(CheckoutActivity.this, com.project.muse_android.order.OrderSuccessActivity.class);
                     startActivity(intent);
                     finish();

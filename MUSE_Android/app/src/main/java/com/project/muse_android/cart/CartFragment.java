@@ -183,6 +183,7 @@ public class CartFragment extends Fragment {
         }
 
         ConfirmDeleteDialog dialog = new ConfirmDeleteDialog(toDelete.size(), () -> {
+            if (!isAdded()) return;
             for (Product p : toDelete) {
                 String color = "";
                 String size = "";
@@ -193,6 +194,7 @@ public class CartFragment extends Fragment {
                 CartManager.getInstance(requireContext()).removeFromCart(p.getId(), size, color, new CartManager.CartCallback<Void>() {
                     @Override
                     public void onSuccess(Void result) {
+                        if (!isAdded() || binding == null) return;
                         cartProducts.remove(p);
                         cartAdapter.notifyDataSetChanged();
                         updateCartUI();
@@ -204,7 +206,9 @@ public class CartFragment extends Fragment {
                     }
                 });
             }
-            Toast.makeText(getContext(), "Đã xóa " + toDelete.size() + " sản phẩm", Toast.LENGTH_SHORT).show();
+            if (isAdded()) {
+                Toast.makeText(getContext(), "Đã xóa " + toDelete.size() + " sản phẩm", Toast.LENGTH_SHORT).show();
+            }
         });
         dialog.show(getParentFragmentManager(), "ConfirmDeleteDialog");
     }
@@ -282,6 +286,7 @@ public class CartFragment extends Fragment {
                         CartManager.getInstance(requireContext()).removeFromCart(product.getId(), size, color, new CartManager.CartCallback<Void>() {
                             @Override
                             public void onSuccess(Void result) {
+                                if (!isAdded() || binding == null) return;
                                 cartProducts.remove(position);
                                 cartAdapter.notifyItemRemoved(position);
                                 cartAdapter.notifyItemRangeChanged(position, cartProducts.size());
@@ -291,6 +296,7 @@ public class CartFragment extends Fragment {
 
                             @Override
                             public void onError(String message) {
+                                if (!isAdded()) return;
                                 Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -319,11 +325,13 @@ public class CartFragment extends Fragment {
                         CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, color, size, new CartManager.CartCallback<Void>() {
                             @Override
                             public void onSuccess(Void result) {
+                                if (!isAdded() || binding == null) return;
                                 updateCheckoutButtonState();
                             }
 
                             @Override
                             public void onError(String message) {
+                                if (!isAdded()) return;
                                 Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -336,6 +344,7 @@ public class CartFragment extends Fragment {
                         service.getProductDetail(product.getId()).enqueue(new Callback<Product>() {
                             @Override
                             public void onResponse(Call<Product> call, Response<Product> response) {
+                                if (!isAdded() || binding == null) return;
                                 if (response.isSuccessful() && response.body() != null) {
                                     Product fullProduct = response.body();
                                     
@@ -366,10 +375,12 @@ public class CartFragment extends Fragment {
                                         CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, color, size, new CartManager.CartCallback<Void>() {
                                             @Override
                                             public void onSuccess(Void result) {
+                                                if (!isAdded() || binding == null) return;
                                                 updateCheckoutButtonState();
                                             }
                                             @Override
                                             public void onError(String message) {
+                                                if (!isAdded()) return;
                                                 Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
                                             }
                                         });
@@ -380,6 +391,7 @@ public class CartFragment extends Fragment {
 
                             @Override
                             public void onFailure(Call<Product> call, Throwable t) {
+                                if (!isAdded()) return;
                                 Toast.makeText(getContext(), "Lỗi tải thông tin sản phẩm", Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -409,14 +421,14 @@ public class CartFragment extends Fragment {
     }
 
     private void fetchDataFromServer() {
-        if (isAdded()) {
-            Toast.makeText(getContext(), "Đang tải dữ liệu...", Toast.LENGTH_SHORT).show();
-        }
+        if (!isAdded()) return;
+        Toast.makeText(getContext(), "Đang tải dữ liệu...", Toast.LENGTH_SHORT).show();
 
         // Get Cart Items
         CartManager.getInstance(requireContext()).getCartItems(new CartManager.CartCallback<List<Product>>() {
             @Override
             public void onSuccess(List<Product> result) {
+                if (!isAdded() || binding == null) return;
                 cartProducts.clear();
                 if (result != null) {
                     cartProducts.addAll(result);
@@ -445,6 +457,7 @@ public class CartFragment extends Fragment {
         ApiClient.INSTANCE.getInstance().getProducts().enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(@NonNull Call<List<Product>> call, @NonNull Response<List<Product>> response) {
+                if (!isAdded() || binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> products = response.body();
                     List<Product> activeProducts = new ArrayList<>();
