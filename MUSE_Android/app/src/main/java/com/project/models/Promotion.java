@@ -16,11 +16,15 @@ public class Promotion implements Serializable {
     private String promotionType;
     private String promotionMethod;
     private List<Condition> conditions;
+    private VoucherInfo voucher;
 
     public Promotion() {}
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public VoucherInfo getVoucher() { return voucher; }
+    public void setVoucher(VoucherInfo voucher) { this.voucher = voucher; }
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
@@ -78,5 +82,18 @@ public class Promotion implements Serializable {
 
         public Integer getGiftQuantity() { return giftQuantity; }
         public void setGiftQuantity(Integer giftQuantity) { this.giftQuantity = giftQuantity; }
+    }
+
+    public static class VoucherInfo implements java.io.Serializable {
+        private int quantity;
+        private String prefix;
+        private String suffix;
+
+        public int getQuantity() { return quantity; }
+        public void setQuantity(int quantity) { this.quantity = quantity; }
+        public String getPrefix() { return prefix; }
+        public void setPrefix(String prefix) { this.prefix = prefix; }
+        public String getSuffix() { return suffix; }
+        public void setSuffix(String suffix) { this.suffix = suffix; }
     }
 }
