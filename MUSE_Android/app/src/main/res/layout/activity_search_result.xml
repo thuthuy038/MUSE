@@ -97,6 +97,17 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Search Suggestions -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSuggestions"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@android:color/white"
+        android:visibility="gone"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchArea" />
+
     <!-- Filters -->
     <LinearLayout
         android:id="@+id/filterBar"
