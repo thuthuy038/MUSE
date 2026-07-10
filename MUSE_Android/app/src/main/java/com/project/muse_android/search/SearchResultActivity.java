@@ -624,45 +624,325 @@ public class SearchResultActivity extends AppCompatActivity {
 
     private void performSearch(String searchQuery) {
         String finalQuery = (searchQuery == null) ? "" : searchQuery.trim();
+        boolean isVoice = getIntent().getBooleanExtra("is_voice", false);
+        boolean isCamera = getIntent().getBooleanExtra("is_camera", false);
+        String imagePath = getIntent().getStringExtra("image_path");
+
         binding.loadingLayout.setVisibility(View.VISIBLE);
         binding.rvProducts.setVisibility(View.GONE);
+        binding.txtSimilarProductsLabel.setVisibility(View.GONE);
+        binding.txtLoadingMessage.setText("Đang tìm kiếm sản phẩm...");
         binding.txtProductCount.setText(finalQuery.isEmpty() ? "Đang tải sản phẩm..." : "Đang tìm kiếm...");
+
         apiService.searchProducts("").enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
-                binding.loadingLayout.setVisibility(View.GONE);
-                binding.rvProducts.setVisibility(View.VISIBLE);
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> results = response.body();
+                    if (isCamera && imagePath != null && !imagePath.isEmpty()) {
+                        getIntent().putExtra("is_camera", false);
+                        runGeminiCameraSearch(imagePath, results);
+                    } else if (isVoice && !finalQuery.isEmpty()) {
+                        getIntent().putExtra("is_voice", false);
+                        runGeminiVoiceSearch(finalQuery, results);
+                    } else {
+                        binding.loadingLayout.setVisibility(View.GONE);
+                        binding.rvProducts.setVisibility(View.VISIBLE);
+                        allSearchResults.clear();
+                        String normalizedQuery = removeAccents(finalQuery).trim();
+                        for (Product p : results) {
+                            if (p.getStatus() != null && !p.getStatus().equalsIgnoreCase("active")) continue;
+                            if (finalQuery.isEmpty() || (p.getName() != null && removeAccents(p.getName()).contains(normalizedQuery))) allSearchResults.add(p);
+                        }
+                        if (!finalQuery.isEmpty()) {
+                            Collections.sort(allSearchResults, (p1, p2) -> {
+                                String n1 = removeAccents(p1.getName()); String n2 = removeAccents(p2.getName());
+                                boolean s1 = n1.startsWith(normalizedQuery); boolean s2 = n2.startsWith(normalizedQuery);
+                                if (s1 && !s2) return -1; if (!s1 && s2) return 1;
+                                return Integer.compare(n1.indexOf(normalizedQuery), n2.indexOf(normalizedQuery));
+                            });
+                            historyManager.addHistory(finalQuery);
+                            String userId = sessionManager.getUserId();
+                            apiService.recordSearch(finalQuery, (userId != null) ? userId : "guest").enqueue(new Callback<ApiResponse<Void>>() {
+                                @Override public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {}
+                                @Override public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
+                            });
+                        }
+                        applyFiltersAndSort();
+                    }
+                } else {
+                    binding.loadingLayout.setVisibility(View.GONE);
+                    binding.rvProducts.setVisibility(View.VISIBLE);
                     allSearchResults.clear();
-                    String normalizedQuery = removeAccents(finalQuery).trim();
-                    for (Product p : results) {
-                        if (p.getStatus() != null && !p.getStatus().equalsIgnoreCase("active")) continue;
-                        if (finalQuery.isEmpty() || (p.getName() != null && removeAccents(p.getName()).contains(normalizedQuery))) allSearchResults.add(p);
-                    }
-                    if (!finalQuery.isEmpty()) {
-                        Collections.sort(allSearchResults, (p1, p2) -> {
-                            String n1 = removeAccents(p1.getName()); String n2 = removeAccents(p2.getName());
-                            boolean s1 = n1.startsWith(normalizedQuery); boolean s2 = n2.startsWith(normalizedQuery);
-                            if (s1 && !s2) return -1; if (!s1 && s2) return 1;
-                            return Integer.compare(n1.indexOf(normalizedQuery), n2.indexOf(normalizedQuery));
-                        });
-                        historyManager.addHistory(finalQuery);
-                        String userId = sessionManager.getUserId();
-                        apiService.recordSearch(finalQuery, (userId != null) ? userId : "guest").enqueue(new Callback<ApiResponse<Void>>() {
-                            @Override public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {}
-                            @Override public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
-                        });
-                    }
                     applyFiltersAndSort();
-                } else { allSearchResults.clear(); applyFiltersAndSort(); }
+                }
             }
+
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
-                binding.loadingLayout.setVisibility(View.GONE); binding.rvProducts.setVisibility(View.VISIBLE);
+                binding.loadingLayout.setVisibility(View.GONE);
+                binding.rvProducts.setVisibility(View.VISIBLE);
                 Toast.makeText(SearchResultActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void runGeminiCameraSearch(String imagePath, List<Product> allProducts) {
+        android.util.Log.d("MUSE_CameraSearch", "Starting runGeminiCameraSearch for path: " + imagePath);
+        binding.loadingLayout.setVisibility(View.VISIBLE);
+        binding.rvProducts.setVisibility(View.GONE);
+        binding.txtLoadingMessage.setText("MUSE AI đang xử lý yêu cầu...");
+        binding.txtProductCount.setText("Đang phân tích hình ảnh...");
+
+        new Thread(() -> {
+            String base64 = getBase64FromImagePath(imagePath);
+            if (base64.isEmpty()) {
+                android.util.Log.e("MUSE_CameraSearch", "Base64 encoding failed for image: " + imagePath);
+                runOnUiThread(() -> performLocalTextSearch("", allProducts, true));
+                return;
+            }
+            android.util.Log.d("MUSE_CameraSearch", "Base64 encoding succeeded. Length: " + base64.length());
+
+            StringBuilder productsCtx = new StringBuilder();
+            productsCtx.append("Danh sách sản phẩm cửa hàng:\n");
+            for (Product p : allProducts) {
+                String pid = p.get_id() != null ? p.get_id() : p.getId();
+                productsCtx.append(String.format("- ID: %s | Tên: %s | Danh mục: %s\n", pid, p.getName(), p.getCategory()));
+            }
+
+            String prompt = "Hãy phân tích hình ảnh trang phục/phụ kiện của người này. Xác định xem có món đồ nào khớp hoặc gần giống nhất với danh sách sản phẩm hiện có ở shop dưới đây hay không.\n" +
+                    "Hãy trả về duy nhất một chuỗi JSON thô chứa các trường sau:\n" +
+                    "{\n" +
+                    "  \"matched_product_id\": \"ID sản phẩm khớp nhất từ danh sách của shop (nếu khớp trên 85%, ngược lại để null)\",\n" +
+                    "  \"similar_product_ids\": [\"ID_1\", \"ID_2\", \"ID_3\"]\n" +
+                    "}\n" +
+                    "Lưu ý: Chỉ trả về JSON thô, không kèm định dạng markdown ```json.\n\n" +
+                    productsCtx.toString();
+
+            java.util.Map<String, Object> body = new java.util.HashMap<>();
+            List<java.util.Map<String, Object>> contents = new ArrayList<>();
+            java.util.Map<String, Object> contentMap = new java.util.HashMap<>();
+            List<java.util.Map<String, Object>> parts = new ArrayList<>();
+
+            java.util.Map<String, Object> textPart = new java.util.HashMap<>();
+            textPart.put("text", prompt);
+            parts.add(textPart);
+
+            java.util.Map<String, Object> imagePart = new java.util.HashMap<>();
+            java.util.Map<String, Object> inlineData = new java.util.HashMap<>();
+            inlineData.put("mimeType", "image/jpeg");
+            inlineData.put("data", base64);
+            imagePart.put("inlineData", inlineData);
+            parts.add(imagePart);
+
+            contentMap.put("parts", parts);
+            contents.add(contentMap);
+            body.put("contents", contents);
+
+            java.util.Map<String, Object> generationConfig = new java.util.HashMap<>();
+            generationConfig.put("responseMimeType", "application/json");
+            body.put("generationConfig", generationConfig);
+
+            String apiKey = com.project.muse_android.BuildConfig.GEMINI_API_KEY;
+            android.util.Log.d("MUSE_CameraSearch", "Sending request to Gemini API key: " + (apiKey != null && !apiKey.isEmpty() ? "Present" : "Empty"));
+            
+            com.project.muse_android.ai.GeminiClient.getClient().generateContent(apiKey, body).enqueue(new Callback<com.project.muse_android.ai.GeminiResponse>() {
+                @Override
+                public void onResponse(Call<com.project.muse_android.ai.GeminiResponse> call, Response<com.project.muse_android.ai.GeminiResponse> response) {
+                    binding.loadingLayout.setVisibility(View.GONE);
+                    binding.rvProducts.setVisibility(View.VISIBLE);
+
+                    android.util.Log.d("MUSE_CameraSearch", "Gemini response code: " + response.code() + ", isSuccessful: " + response.isSuccessful());
+                    if (response.isSuccessful() && response.body() != null) {
+                        try {
+                            String rawText = response.body().getText().trim();
+                            android.util.Log.d("MUSE_CameraSearch", "Gemini raw response text: " + rawText);
+                            if (rawText.startsWith("```json")) rawText = rawText.substring(7);
+                            if (rawText.endsWith("```")) rawText = rawText.substring(0, rawText.length() - 3);
+                            rawText = rawText.trim();
+
+                            org.json.JSONObject jsonObject = new org.json.JSONObject(rawText);
+                            String matchedId = jsonObject.optString("matched_product_id", "").trim();
+                            org.json.JSONArray similarArray = jsonObject.optJSONArray("similar_product_ids");
+                            
+                            boolean hasExactMatch = (matchedId != null && !matchedId.isEmpty() && !matchedId.equalsIgnoreCase("null") && !matchedId.equalsIgnoreCase("none"));
+                            android.util.Log.d("MUSE_CameraSearch", "Extracted matchedId: " + matchedId + ", hasExactMatch: " + hasExactMatch);
+                            
+                            // Set similar products label visibility
+                            binding.txtSimilarProductsLabel.setVisibility(hasExactMatch ? View.GONE : View.VISIBLE);
+                            android.util.Log.d("MUSE_CameraSearch", "Setting txtSimilarProductsLabel visibility to: " + (hasExactMatch ? "GONE" : "VISIBLE"));
+
+                            List<String> matchedIds = new ArrayList<>();
+                            if (hasExactMatch) {
+                                matchedIds.add(matchedId);
+                            }
+                            if (similarArray != null) {
+                                for (int i = 0; i < similarArray.length(); i++) {
+                                    matchedIds.add(similarArray.getString(i));
+                                }
+                            }
+                            android.util.Log.d("MUSE_CameraSearch", "Parsed matchedIds: " + matchedIds.toString());
+
+                            allSearchResults.clear();
+                            List<Product> orderedResults = new ArrayList<>();
+                            for (String id : matchedIds) {
+                                for (Product p : allProducts) {
+                                    if (p.getStatus() != null && !p.getStatus().equalsIgnoreCase("active")) continue;
+                                    String pid = p.get_id() != null ? p.get_id() : p.getId();
+                                    if (pid != null && pid.equalsIgnoreCase(id.trim()) && !orderedResults.contains(p)) {
+                                        orderedResults.add(p);
+                                        break;
+                                    }
+                                }
+                            }
+                            allSearchResults.addAll(orderedResults);
+                            android.util.Log.d("MUSE_CameraSearch", "Filtered search results count: " + allSearchResults.size());
+
+                            if (allSearchResults.isEmpty()) {
+                                android.util.Log.d("MUSE_CameraSearch", "No matching products found in database. Falling back to local search.");
+                                performLocalTextSearch("", allProducts, true);
+                            } else {
+                                applyFiltersAndSort();
+                            }
+                        } catch (Exception e) {
+                            android.util.Log.e("MUSE_CameraSearch", "JSON parsing failed", e);
+                            performLocalTextSearch("", allProducts, true);
+                        }
+                    } else {
+                        try {
+                            String err = response.errorBody() != null ? response.errorBody().string() : "Empty error";
+                            android.util.Log.e("MUSE_CameraSearch", "API error: " + err);
+                        } catch (Exception ignored) {}
+                        performLocalTextSearch("", allProducts, true);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<com.project.muse_android.ai.GeminiResponse> call, Throwable t) {
+                    binding.loadingLayout.setVisibility(View.GONE);
+                    binding.rvProducts.setVisibility(View.VISIBLE);
+                    android.util.Log.e("MUSE_CameraSearch", "Network failure calling Gemini", t);
+                    performLocalTextSearch("", allProducts, true);
+                }
+            });
+        }).start();
+    }
+
+    private String getBase64FromImagePath(String path) {
+        try {
+            android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeFile(path);
+            if (bitmap == null) return "";
+            android.graphics.Bitmap resized = android.graphics.Bitmap.createScaledBitmap(
+                    bitmap, 600, 800, true
+            );
+            java.io.ByteArrayOutputStream byteArrayOutputStream = new java.io.ByteArrayOutputStream();
+            resized.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            return android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    private void runGeminiVoiceSearch(String query, List<Product> allProducts) {
+        binding.loadingLayout.setVisibility(View.VISIBLE);
+        binding.rvProducts.setVisibility(View.GONE);
+        binding.txtLoadingMessage.setText("MUSE AI đang xử lý yêu cầu...");
+        binding.txtProductCount.setText("Đang phân tích...");
+        
+        StringBuilder productsCtx = new StringBuilder();
+        productsCtx.append("Danh sách sản phẩm hiện có:\n");
+        for (Product p : allProducts) {
+            String pid = p.get_id() != null ? p.get_id() : p.getId();
+            productsCtx.append(String.format("- ID: %s | Tên: %s | Danh mục: %s\n", pid, p.getName(), p.getCategory()));
+        }
+
+        String prompt = "Người dùng tìm kiếm bằng giọng nói với từ khóa: \"" + query + "\".\n" +
+                "Dựa vào danh sách sản phẩm dưới đây, hãy tìm những sản phẩm phù hợp nhất với yêu cầu tìm kiếm của người dùng (ví dụ: khớp về loại quần áo, màu sắc, phong cách).\n" +
+                "Hãy trả về duy nhất một chuỗi JSON thô chứa mảng các ID sản phẩm phù hợp nhất (tối đa 10 sản phẩm). Định dạng trả về:\n" +
+                "[\"id1\", \"id2\", ...]\n" +
+                "Lưu ý: Chỉ trả về JSON thô, không kèm định dạng markdown ```json.\n\n" +
+                productsCtx.toString();
+
+        java.util.Map<String, Object> body = new java.util.HashMap<>();
+        List<java.util.Map<String, Object>> contents = new ArrayList<>();
+        java.util.Map<String, Object> contentMap = new java.util.HashMap<>();
+        List<java.util.Map<String, Object>> parts = new ArrayList<>();
+        java.util.Map<String, Object> partMap = new java.util.HashMap<>();
+        partMap.put("text", prompt);
+        parts.add(partMap);
+        contentMap.put("parts", parts);
+        contents.add(contentMap);
+        body.put("contents", contents);
+
+        java.util.Map<String, Object> generationConfig = new java.util.HashMap<>();
+        generationConfig.put("responseMimeType", "application/json");
+        body.put("generationConfig", generationConfig);
+
+        String apiKey = com.project.muse_android.BuildConfig.GEMINI_API_KEY;
+        com.project.muse_android.ai.GeminiClient.getClient().generateContent(apiKey, body).enqueue(new Callback<com.project.muse_android.ai.GeminiResponse>() {
+            @Override
+            public void onResponse(Call<com.project.muse_android.ai.GeminiResponse> call, Response<com.project.muse_android.ai.GeminiResponse> response) {
+                binding.loadingLayout.setVisibility(View.GONE);
+                binding.rvProducts.setVisibility(View.VISIBLE);
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        String rawText = response.body().getText().trim();
+                        if (rawText.startsWith("```json")) rawText = rawText.substring(7);
+                        if (rawText.endsWith("```")) rawText = rawText.substring(0, rawText.length() - 3);
+                        rawText = rawText.trim();
+                        
+                        org.json.JSONArray jsonArray = new org.json.JSONArray(rawText);
+                        List<String> matchedIds = new ArrayList<>();
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            matchedIds.add(jsonArray.getString(i));
+                        }
+
+                        allSearchResults.clear();
+                        for (Product p : allProducts) {
+                            if (p.getStatus() != null && !p.getStatus().equalsIgnoreCase("active")) continue;
+                            String pid = p.get_id() != null ? p.get_id() : p.getId();
+                            if (pid != null && matchedIds.contains(pid)) {
+                                allSearchResults.add(p);
+                            }
+                        }
+
+                        if (allSearchResults.isEmpty()) {
+                            performLocalTextSearch(query, allProducts, false);
+                        } else {
+                            applyFiltersAndSort();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        performLocalTextSearch(query, allProducts, false);
+                    }
+                } else {
+                    performLocalTextSearch(query, allProducts, false);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.project.muse_android.ai.GeminiResponse> call, Throwable t) {
+                binding.loadingLayout.setVisibility(View.GONE);
+                binding.rvProducts.setVisibility(View.VISIBLE);
+                performLocalTextSearch(query, allProducts, false);
+            }
+        });
+    }
+
+    private void performLocalTextSearch(String query, List<Product> allProducts, boolean isCamera) {
+        binding.txtSimilarProductsLabel.setVisibility(isCamera ? View.VISIBLE : View.GONE);
+        allSearchResults.clear();
+        String normalizedQuery = removeAccents(query).trim();
+        for (Product p : allProducts) {
+            if (p.getStatus() != null && !p.getStatus().equalsIgnoreCase("active")) continue;
+            if (query.isEmpty() || (p.getName() != null && removeAccents(p.getName()).contains(normalizedQuery))) {
+                allSearchResults.add(p);
+            }
+        }
+        applyFiltersAndSort();
     }
 
     private String removeAccents(String s) {

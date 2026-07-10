@@ -73,6 +73,15 @@ public class SearchActivity extends AppCompatActivity {
             }
     );
 
+    private final ActivityResultLauncher<String> recordAudioPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    showVoiceSearchDialog();
+                } else {
+                    Toast.makeText(this, "Quyền ghi âm âm thanh bị từ chối.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -174,9 +183,16 @@ public class SearchActivity extends AppCompatActivity {
             finish();
         });
 
-        binding.imgVoiceSearch.setOnClickListener(v -> Toast.makeText(this, "Đang nghe giọng nói...", Toast.LENGTH_SHORT).show());
+        binding.imgVoiceSearch.setOnClickListener(v -> {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
+                    == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                showVoiceSearchDialog();
+            } else {
+                recordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+            }
+        });
 
-        binding.imgCameraSearch.setOnClickListener(v -> Toast.makeText(this, "Mở Camera tìm kiếm", Toast.LENGTH_SHORT).show());
+        binding.imgCameraSearch.setOnClickListener(v -> showCameraSearchBottomSheet());
 
         // Auto focus and show keyboard
         binding.edtSearch.requestFocus();
@@ -265,6 +281,10 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void performSearch() {
+        performSearch(false);
+    }
+
+    private void performSearch(boolean isVoice) {
         String query = binding.edtSearch.getText().toString().trim();
         if (!query.isEmpty()) {
             binding.rvSuggestions.setVisibility(View.GONE);
@@ -290,6 +310,7 @@ public class SearchActivity extends AppCompatActivity {
 
             android.content.Intent intent = new android.content.Intent(this, SearchResultActivity.class);
             intent.putExtra("query", query);
+            intent.putExtra("is_voice", isVoice);
             resultLauncher.launch(intent);
         } else {
             Toast.makeText(this, "Vui lòng nhập nội dung tìm kiếm", Toast.LENGTH_SHORT).show();
@@ -390,6 +411,30 @@ public class SearchActivity extends AppCompatActivity {
         String nfdNormalizedString = Normalizer.normalize(s, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(nfdNormalizedString).replaceAll("").toLowerCase(Locale.getDefault()).replace("đ", "d").replace("Đ", "d");
+    }
+
+    private void showVoiceSearchDialog() {
+        VoiceSearchDialog dialog = new VoiceSearchDialog();
+        dialog.setVoiceSearchListener(result -> {
+            if (result != null && !result.trim().isEmpty()) {
+                binding.edtSearch.setText(result);
+                performSearch(true);
+            }
+        });
+        dialog.show(getSupportFragmentManager(), "VoiceSearchDialog");
+    }
+
+    private void showCameraSearchBottomSheet() {
+        CameraSearchBottomSheet bottomSheet = new CameraSearchBottomSheet();
+        bottomSheet.setCameraSearchListener(imagePath -> {
+            if (imagePath != null && !imagePath.isEmpty()) {
+                android.content.Intent intent = new android.content.Intent(SearchActivity.this, SearchResultActivity.class);
+                intent.putExtra("image_path", imagePath);
+                intent.putExtra("is_camera", true);
+                resultLauncher.launch(intent);
+            }
+        });
+        bottomSheet.show(getSupportFragmentManager(), "CameraSearchBottomSheet");
     }
 
     // --- Suggestion Models ---
