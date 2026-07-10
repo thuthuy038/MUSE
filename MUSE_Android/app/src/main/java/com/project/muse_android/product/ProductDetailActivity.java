@@ -558,6 +558,15 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         binding.btnBuyNow.setOnClickListener(v -> {
+            com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(this);
+            if (!sessionManager.isLoggedIn()) {
+                Toast.makeText(this, "Vui lòng đăng nhập hoặc đăng ký để tiếp tục mua hàng", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, com.project.muse_android.auth.AuthActivity.class);
+                intent.putExtra("from_checkout", true);
+                startActivity(intent);
+                return;
+            }
+
             if (currentProduct == null) return;
 
             if (!selectedColor.isEmpty() && !selectedSize.isEmpty()) {

@@ -36,6 +36,15 @@ public class Order implements Serializable {
     private String cancelledAt;
     private boolean isReviewed;
 
+    // Return/refund info
+    private String returnEmail;
+    private String returnReason;
+    private String returnMethod;
+    private String returnNote;
+    private List<String> returnMedia;
+    private String returnRequestedAt;
+    private String returnProcessedAt;
+
     public boolean isReviewed() {
         return isReviewed;
     }
@@ -386,4 +395,25 @@ public class Order implements Serializable {
         return totalPrice;
     }
     public void setSubTotal(double subTotal) { this.subTotal = subTotal; }
+
+    public String getReturnEmail() { return returnEmail; }
+    public void setReturnEmail(String returnEmail) { this.returnEmail = returnEmail; }
+
+    public String getReturnReason() { return returnReason; }
+    public void setReturnReason(String returnReason) { this.returnReason = returnReason; }
+
+    public String getReturnMethod() { return returnMethod; }
+    public void setReturnMethod(String returnMethod) { this.returnMethod = returnMethod; }
+
+    public String getReturnNote() { return returnNote; }
+    public void setReturnNote(String returnNote) { this.returnNote = returnNote; }
+
+    public List<String> getReturnMedia() { return returnMedia; }
+    public void setReturnMedia(List<String> returnMedia) { this.returnMedia = returnMedia; }
+
+    public String getReturnRequestedAt() { return returnRequestedAt; }
+    public void setReturnRequestedAt(String returnRequestedAt) { this.returnRequestedAt = returnRequestedAt; }
+
+    public String getReturnProcessedAt() { return returnProcessedAt; }
+    public void setReturnProcessedAt(String returnProcessedAt) { this.returnProcessedAt = returnProcessedAt; }
 }

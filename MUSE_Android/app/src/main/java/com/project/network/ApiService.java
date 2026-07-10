@@ -85,6 +85,12 @@ public interface ApiService {
         @Body Map<String, String> status
     );
 
+    @PUT("api/orders/{id}")
+    Call<com.project.models.Order> updateOrder(
+        @Path("id") String orderId,
+        @Body Map<String, Object> orderData
+    );
+
     // ========== PRODUCTS ==========
     @GET("api/products")
     Call<List<Product>> getProducts();
