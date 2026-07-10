@@ -71,6 +71,9 @@
         <activity
             android:name=".product.ProductReviewsActivity"
             android:exported="false" />
+        <activity
+            android:name=".product.WriteReviewActivity"
+            android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

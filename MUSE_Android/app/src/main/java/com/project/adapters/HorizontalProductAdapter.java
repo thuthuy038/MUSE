@@ -170,9 +170,15 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 binding.layoutActions.setVisibility(View.GONE);
 
                 binding.txtVariantReadOnly.setText(color + ", " + size);
-                binding.txtDiscountPriceReadOnly.setText(formatPrice(product.getDiscountPrice() != null ? product.getDiscountPrice() : 0));
-                binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
-                binding.txtOriginalPrice.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                if (product.getDiscountPrice() != null && product.getDiscountPrice() > 0) {
+                    binding.txtDiscountPriceReadOnly.setText(formatPrice(product.getDiscountPrice()));
+                    binding.txtOriginalPrice.setText(formatPrice(product.getPrice()));
+                    binding.txtOriginalPrice.setPaintFlags(binding.txtOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                    binding.layoutOriginalPrice.setVisibility(View.VISIBLE);
+                } else {
+                    binding.txtDiscountPriceReadOnly.setText(formatPrice(product.getPrice()));
+                    binding.layoutOriginalPrice.setVisibility(View.GONE);
+                }
                 binding.txtReadonlyQuantity.setText("x" + quantity);
 
                 // Disable scroll for READ_ONLY mode
@@ -181,7 +187,35 @@ public class HorizontalProductAdapter extends ProductAdapter {
 
             // Click Listeners
             binding.layoutMainContent.setOnClickListener(v -> {
-                if (actionListener != null) actionListener.onProductClick(product);
+                if (actionListener != null) {
+                    actionListener.onProductClick(product);
+                } else {
+                    if (context instanceof com.project.muse_android.order.OrderDetailActivity) {
+                        String productId = product.getId() != null ? product.getId() : product.get_id();
+                        if (productId != null) {
+                            android.content.Intent intent = new android.content.Intent(context, com.project.muse_android.product.ProductDetailActivity.class);
+                            intent.putExtra("product_id", productId);
+                            context.startActivity(intent);
+                        }
+                    } else {
+                        // Trực tiếp giả lập click lên dòng đơn hàng để mở trang chi tiết đơn hàng
+                        View parentView = (View) v.getParent();
+                        while (parentView != null) {
+                            if (parentView.getId() == com.project.muse_android.R.id.rvOrderProducts) {
+                                View itemOrderRoot = (View) parentView.getParent();
+                                if (itemOrderRoot != null && itemOrderRoot.getParent() instanceof View) {
+                                    ((View) itemOrderRoot.getParent()).performClick();
+                                }
+                                break;
+                            }
+                            if (parentView.getParent() instanceof View) {
+                                parentView = (View) parentView.getParent();
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
             });
 
             binding.layoutVariant.setOnClickListener(v -> {

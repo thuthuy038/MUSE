@@ -276,6 +276,7 @@
 
             <!-- AI Stylist Card -->
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cardAiStylist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -287,7 +288,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat"
-                    android:text="@string/profile_ai_stylist"
+                    android:text="AI HUB"
                     android:textColor="@android:color/white"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -299,7 +300,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:fontFamily="@font/montserrat"
-                    android:text="@string/profile_ai_stylist_desc"
+                    android:text="Trung tâm trợ lý ảo AI Stylist và Virtual Fitting."
                     android:textColor="#E0E0E0"
                     android:textSize="12sp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -315,8 +316,9 @@
                     app:tint="@android:color/white" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- AR Room Card -->
+            <!-- AR Room Card (Outfit Space) -->
             <LinearLayout
+                android:id="@+id/cardArRoom"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -343,7 +345,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat"
-                        android:text="@string/profile_ar_room"
+                        android:text="Outfit Space"
                         android:textColor="@color/neutral_900"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -352,7 +354,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat"
-                        android:text="@string/profile_ar_room_desc"
+                        android:text="Không gian phối đồ và thiết kế trang phục."
                         android:textColor="@color/neutral_600"
                         android:textSize="12sp" />
                 </LinearLayout>

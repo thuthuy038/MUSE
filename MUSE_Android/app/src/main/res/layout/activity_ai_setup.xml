@@ -473,23 +473,27 @@
                         android:id="@+id/btnUploadImage"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="64dp"
                         android:layout_weight="1"
                         android:fontFamily="@font/montserrat_bold"
                         android:text="TẢI ẢNH LÊN"
                         android:textColor="@color/primary_500"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         app:strokeColor="@color/primary_500" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnTakePhoto"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="64dp"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:backgroundTint="@color/primary_500"
                         android:fontFamily="@font/montserrat_bold"
-                        android:text="CHUP ẢNH"
-                        android:textColor="@color/white" />
+                        android:text="CHỤP ẢNH"
+                        android:textColor="@color/white"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp" />
                 </LinearLayout>
 
                 <androidx.cardview.widget.CardView
