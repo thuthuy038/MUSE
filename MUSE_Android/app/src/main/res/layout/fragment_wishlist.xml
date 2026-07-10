@@ -13,29 +13,34 @@
         android:background="@android:color/white"
         app:elevation="0dp">
 
-        <!-- Toolbar -->
-        <androidx.appcompat.widget.Toolbar
+        <!-- Header -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="41dp"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="5dp"
-            app:contentInsetStart="0dp">
+            android:layout_height="?attr/actionBarSize"
+            android:paddingHorizontal="16dp">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Back"
+                android:src="@drawable/ic_arrow_back"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/primary_500" />
 
-                <ImageView
-                    android:id="@+id/btnBack"
-                    android:layout_width="21dp"
-                    android:layout_height="21dp"
-                    android:src="@drawable/ic_arrow_back"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="#E63F69" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.147"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
                     android:id="@+id/tvTitle"
@@ -43,53 +48,59 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat"
                     android:text="Yêu thích"
-                    android:textColor="#1F1C1C"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textColor="@color/neutral_900"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tvWishlistCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="(0)"
+                    android:textColor="@color/neutral_600"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/btnSearch"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:padding="2dp"
-                        android:src="@drawable/ic_search"
-                        app:tint="#E63F69" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                    <ImageView
-                        android:id="@+id/btnCart"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginStart="10dp"
-                        android:padding="2dp"
-                        android:src="@drawable/ic_shopping_bag"
-                        app:tint="#E63F69" />
+                <ImageView
+                    android:id="@+id/btnSearch"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Search"
+                    android:src="@drawable/ic_search"
+                    app:tint="@color/primary_500" />
 
-                    <TextView
-                        android:id="@+id/btnEdit"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:fontFamily="@font/montserrat"
-                        android:text="Chỉnh sửa"
-                        android:textColor="#1F1C1C"
-                        android:textSize="16sp" />
-                </LinearLayout>
+                <ImageView
+                    android:id="@+id/btnCart"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Cart"
+                    android:src="@drawable/ic_shopping_bag"
+                    app:tint="@color/primary_500" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.appcompat.widget.Toolbar>
+                <TextView
+                    android:id="@+id/btnEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="Chỉnh sửa"
+                    android:textColor="@color/neutral_300"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Category Tabs -->
         <HorizontalScrollView
@@ -113,6 +124,9 @@
                     android:layout_marginEnd="8dp"
                     android:text="Tất cả"
                     android:textColor="@android:color/white"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:chipMinTouchTargetSize="0dp"
                     app:chipBackgroundColor="#FB6F92"
                     app:chipCornerRadius="2dp"
                     app:chipStrokeWidth="0dp"
@@ -127,6 +141,9 @@
                     android:layout_marginEnd="8dp"
                     android:text="Giảm giá"
                     android:textColor="#4B5563"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:chipMinTouchTargetSize="0dp"
                     app:chipBackgroundColor="#F3F4F6"
                     app:chipCornerRadius="2dp"
                     app:chipStrokeWidth="0dp"
@@ -141,6 +158,9 @@
                     android:layout_marginEnd="8dp"
                     android:text="Trạng Thái"
                     android:textColor="#4B5563"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:chipMinTouchTargetSize="0dp"
                     app:chipBackgroundColor="#F3F4F6"
                     app:chipCornerRadius="2dp"
                     app:chipIcon="@drawable/ic_arrow_down"
@@ -157,6 +177,9 @@
                     android:layout_height="32dp"
                     android:text="Danh mục"
                     android:textColor="#4B5563"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:chipMinTouchTargetSize="0dp"
                     app:chipBackgroundColor="#F3F4F6"
                     app:chipCornerRadius="2dp"
                     app:chipIcon="@drawable/ic_arrow_down"
