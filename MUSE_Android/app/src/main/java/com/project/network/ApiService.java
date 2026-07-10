@@ -160,6 +160,11 @@ public interface ApiService {
     // ======================
     // VOUCHER
     // ======================
+    @GET("api/vouchers")
+    Call<List<Voucher>> getMyVouchers(
+            @Header("Authorization") String token
+    );
+
     @GET("api/vouchers/promotion/{promotionId}")
     Call<List<Voucher>> getVouchersByPromotion(
             @Path("promotionId") String promotionId

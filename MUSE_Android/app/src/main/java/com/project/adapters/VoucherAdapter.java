@@ -49,9 +49,10 @@ public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherV
         Voucher voucher = voucherList.get(position);
         if (voucher == null) return;
 
+        holder.tvVoucherCode.setText(voucher.getCode());
         holder.tvVoucherName.setText(voucher.getName());
         holder.tvMinOrder.setText("Đơn tối thiểu " + formatAmount(voucher.getMinOrderValue()));
-        holder.tvExpiryDate.setText("HSD: " + voucher.getExpiryDate());
+        holder.tvExpiryDate.setText("HSD: " + formatDate(voucher.getExpiryDate()));
 
         if (voucher.isSelected()) {
             holder.ivSelect.setImageResource(R.drawable.ic_check_circle);
@@ -80,8 +81,28 @@ public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherV
         return String.valueOf((int) amount);
     }
 
+    private String formatDate(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) return "";
+        try {
+            java.text.SimpleDateFormat inputFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US);
+            inputFormat.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+            java.util.Date date = inputFormat.parse(dateStr);
+            java.text.SimpleDateFormat outputFormat = new java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.US);
+            return outputFormat.format(date);
+        } catch (Exception e) {
+            try {
+                java.text.SimpleDateFormat altFormat = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
+                java.util.Date date = altFormat.parse(dateStr);
+                java.text.SimpleDateFormat outputFormat = new java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.US);
+                return outputFormat.format(date);
+            } catch (Exception ex) {
+                return dateStr;
+            }
+        }
+    }
+
     public static class VoucherViewHolder extends RecyclerView.ViewHolder {
-        TextView tvVoucherName, tvMinOrder, tvExpiryDate;
+        TextView tvVoucherName, tvMinOrder, tvExpiryDate, tvVoucherCode;
         ImageView ivSelect;
 
         public VoucherViewHolder(@NonNull View itemView) {
@@ -89,6 +110,7 @@ public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherV
             tvVoucherName = itemView.findViewById(R.id.tvVoucherName);
             tvMinOrder = itemView.findViewById(R.id.tvMinOrder);
             tvExpiryDate = itemView.findViewById(R.id.tvExpiryDate);
+            tvVoucherCode = itemView.findViewById(R.id.tvVoucherCode);
             ivSelect = itemView.findViewById(R.id.ivSelect);
         }
     }
