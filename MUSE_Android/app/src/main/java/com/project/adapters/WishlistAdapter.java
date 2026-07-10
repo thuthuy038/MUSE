@@ -164,13 +164,20 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.Wishli
             this.binding = binding;
         }
 
+        private String formatPrice(double price) {
+            java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(new java.util.Locale("vi", "VN"));
+            symbols.setGroupingSeparator('.');
+            java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("#,###", symbols);
+            return decimalFormat.format(price) + " VNĐ";
+        }
+
         public void bind(Product product) {
             binding.productCard.txtProductName.setText(product.getName());
-            binding.productCard.txtPrice.setText(String.format("đ%,.0f", product.getFinalPrice()));
+            binding.productCard.txtPrice.setText(formatPrice(product.getFinalPrice()));
             
             if (product.getDiscountPrice() != null && product.getDiscountPrice() > 0 && product.getDiscountPrice() < product.getPrice()) {
                 binding.productCard.layoutOriginalPrice.setVisibility(View.VISIBLE);
-                binding.productCard.txtOriginalPrice.setText(String.format("đ%,.0f", product.getPrice()));
+                binding.productCard.txtOriginalPrice.setText(formatPrice(product.getPrice()));
                 binding.productCard.txtOriginalPrice.setPaintFlags(binding.productCard.txtOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             } else {
                 binding.productCard.layoutOriginalPrice.setVisibility(View.GONE);

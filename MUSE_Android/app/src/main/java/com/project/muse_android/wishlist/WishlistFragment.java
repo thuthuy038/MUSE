@@ -160,6 +160,7 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
                                 public void onSuccess(WishlistResponse result) {
                                     p.setFavorite(false);
                                     allFavoriteProducts.remove(p);
+                                    updateWishlistCount();
                                     applyFilters();
                                     if (allFavoriteProducts.isEmpty()) {
                                         binding.layoutEmpty.setVisibility(View.VISIBLE);
@@ -328,6 +329,8 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
                     }
                 }
                 
+                updateWishlistCount();
+                
                 if (allFavoriteProducts.isEmpty()) {
                     binding.layoutEmpty.setVisibility(View.VISIBLE);
                     binding.rvWishlist.setVisibility(View.GONE);
@@ -395,6 +398,7 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
                 public void onSuccess(WishlistResponse result) {
                     product.setFavorite(false);
                     allFavoriteProducts.remove(product);
+                    updateWishlistCount();
                     applyFilters();
                     Toast.makeText(getContext(), "Đã xóa khỏi danh sách yêu thích", Toast.LENGTH_SHORT).show();
                     if (allFavoriteProducts.isEmpty()) {
@@ -417,6 +421,7 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
                     product.setFavorite(true);
                     if (!allFavoriteProducts.contains(product)) {
                         allFavoriteProducts.add(product);
+                        updateWishlistCount();
                     }
                     applyFilters();
                     Toast.makeText(getContext(), "Đã thêm vào danh sách yêu thích", Toast.LENGTH_SHORT).show();
@@ -437,11 +442,10 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
             return;
         }
         
-        // For simplicity, add the first available variant or show a message
-        CartManager.getInstance(requireContext()).addToCart(product, 
-            (product.getColors() != null && !product.getColors().isEmpty()) ? product.getColors().get(0) : "",
-            (product.getSizes() != null && !product.getSizes().isEmpty()) ? product.getSizes().get(0).getSize() : "",
-            1, new CartManager.CartCallback<Void>() {
+        com.project.muse_android.cart.ProductVariantBottomSheetFragment bottomSheet = 
+                new com.project.muse_android.cart.ProductVariantBottomSheetFragment(product);
+        bottomSheet.setOnVariantSelectedListener((color, size, quantity) -> {
+            CartManager.getInstance(requireContext()).addToCart(product, color, size, quantity, new CartManager.CartCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
                     Toast.makeText(getContext(), "Đã thêm " + product.getName() + " vào giỏ hàng", Toast.LENGTH_SHORT).show();
@@ -452,6 +456,8 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
                     Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
                 }
             });
+        });
+        bottomSheet.show(getParentFragmentManager(), "ProductVariant");
     }
 
     @Override
@@ -467,6 +473,12 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
         int selectedCount = wishlistAdapter.getSelectedProducts().size();
         binding.btnUnfavorite.setText("Bỏ thích (" + selectedCount + ")");
         binding.cbSelectAll.setChecked(selectedCount == displayedProducts.size() && !displayedProducts.isEmpty());
+    }
+
+    private void updateWishlistCount() {
+        if (binding == null) return;
+        String countText = "(" + allFavoriteProducts.size() + ")";
+        binding.tvWishlistCount.setText(countText);
     }
 
     @Override
