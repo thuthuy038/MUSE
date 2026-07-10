@@ -234,6 +234,13 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     Toast.makeText(context, "Đã thêm lại các sản phẩm của đơn " + order.getId() + " vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
                 });
             }
+            // RETURNED, TRẢ HÀNG
+            else if (statusUpper.contains("RETURN") || statusUpper.contains("TRẢ HÀNG")) {
+                binding.btnContact.setVisibility(View.VISIBLE);
+                binding.btnContact.setOnClickListener(v -> {
+                    Toast.makeText(context, "Đang kết nối liên hệ hỗ trợ trả hàng đơn " + order.getId(), Toast.LENGTH_SHORT).show();
+                });
+            }
         }
 
         private boolean isOlderThan5Days(String dateStr) {
@@ -261,6 +268,10 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 case "COMPLETED": return "Đã giao";
                 case "RETURNED": return "Trả hàng";
                 case "CANCELLED": return "Đã hủy";
+                case "YÊU CẦU TRẢ HÀNG": return "Chờ xác nhận trả hàng";
+                case "ĐANG TRẢ HÀNG": return "Đang trả hàng";
+                case "ĐÃ TRẢ HÀNG": return "Đã trả hàng/hoàn tiền";
+                case "TỪ CHỐI TRẢ HÀNG": return "Từ chối trả hàng";
                 default: return status;
             }
         }

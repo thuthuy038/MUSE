@@ -138,6 +138,15 @@ public class CartFragment extends Fragment {
         });
 
         binding.btnCheckout.setOnClickListener(v -> {
+            com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+            if (!sessionManager.isLoggedIn()) {
+                Toast.makeText(getContext(), "Vui lòng đăng nhập hoặc đăng ký để tiếp tục mua hàng", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getContext(), com.project.muse_android.auth.AuthActivity.class);
+                intent.putExtra("from_checkout", true);
+                startActivity(intent);
+                return;
+            }
+
             ArrayList<Product> selectedProducts = new ArrayList<>();
             for (Product p : cartProducts) {
                 if (p.isSelected()) {

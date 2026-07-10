@@ -138,7 +138,7 @@ public class OrderActivity extends AppCompatActivity {
                     else if (status.equalsIgnoreCase("Đã xác nhận") && orderStatus.equalsIgnoreCase("PROCESSING")) filteredOrders.add(o);
                     else if (status.equalsIgnoreCase("Đang giao") && orderStatus.equalsIgnoreCase("SHIPPING")) filteredOrders.add(o);
                     else if (status.equalsIgnoreCase("Đã giao") && (orderStatus.equalsIgnoreCase("DELIVERED") || orderStatus.equalsIgnoreCase("COMPLETED"))) filteredOrders.add(o);
-                    else if (status.equalsIgnoreCase("Trả hàng") && orderStatus.equalsIgnoreCase("RETURNED")) filteredOrders.add(o);
+                    else if (status.equalsIgnoreCase("Trả hàng") && (orderStatus.equalsIgnoreCase("RETURNED") || orderStatus.contains("trả hàng") || orderStatus.contains("Trả hàng"))) filteredOrders.add(o);
                     else if (status.equalsIgnoreCase("Đã hủy") && orderStatus.equalsIgnoreCase("CANCELLED")) filteredOrders.add(o);
                 }
             }
