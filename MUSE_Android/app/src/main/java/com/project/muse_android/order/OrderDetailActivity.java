@@ -117,7 +117,14 @@ public class OrderDetailActivity extends AppCompatActivity {
         });
 
         binding.btnContact.setOnClickListener(v -> {
-            Toast.makeText(this, "Đang kết nối với Muse để hỗ trợ cho đơn hàng " + (order != null ? order.getId() : ""), Toast.LENGTH_SHORT).show();
+            com.project.utils.SessionManager sm = new com.project.utils.SessionManager(this);
+            if (!sm.isLoggedIn()) {
+                android.content.Intent intent = new android.content.Intent(this, com.project.muse_android.auth.AuthActivity.class);
+                startActivity(intent);
+            } else {
+                android.content.Intent intent = new android.content.Intent(this, com.project.muse_android.profile.ShopChatActivity.class);
+                startActivity(intent);
+            }
         });
 
         binding.btnContactShipping.setOnClickListener(v -> {
@@ -142,7 +149,14 @@ public class OrderDetailActivity extends AppCompatActivity {
         });
         
         binding.btnChat.setOnClickListener(v -> {
-            Toast.makeText(this, "Mở Chat với Muse", Toast.LENGTH_SHORT).show();
+            com.project.utils.SessionManager sm = new com.project.utils.SessionManager(this);
+            if (!sm.isLoggedIn()) {
+                android.content.Intent intent = new android.content.Intent(this, com.project.muse_android.auth.AuthActivity.class);
+                startActivity(intent);
+            } else {
+                android.content.Intent intent = new android.content.Intent(this, com.project.muse_android.profile.ShopChatActivity.class);
+                startActivity(intent);
+            }
         });
         
         binding.btnHelp.setOnClickListener(v -> {

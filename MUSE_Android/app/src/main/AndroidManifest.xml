@@ -88,6 +88,9 @@
             android:name=".profile.ProfileActivity"
             android:exported="false" />
         <activity
+            android:name=".profile.ShopChatActivity"
+            android:exported="false" />
+        <activity
             android:name=".notification.NotificationScreenActivity"
             android:exported="false" />
         <activity

@@ -275,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
                             
                             int maxLeft = parentWidth - v.getWidth();
                             int topBound = (int) (50 * density);
-                            int bottomBound = parentHeight - v.getHeight() - (int) (100 * density);
+                            int bottomBound = parentHeight - v.getHeight() - (int) (160 * density);
                             
                             if (moveParams.leftMargin < 0) moveParams.leftMargin = 0;
                             if (moveParams.leftMargin > maxLeft) moveParams.leftMargin = maxLeft;

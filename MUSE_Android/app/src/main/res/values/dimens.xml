@@ -6,5 +6,5 @@
     <dimen name="auth_welcome_text_size">36sp</dimen>
     <dimen name="screen_padding">16dp</dimen>
     <dimen name="card_corner_radius">12dp</dimen>
-    <dimen name="btn_ai_margin_bottom">100dp</dimen>
+    <dimen name="btn_ai_margin_bottom">160dp</dimen>
 </resources>
