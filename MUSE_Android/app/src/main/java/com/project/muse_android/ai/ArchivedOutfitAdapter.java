@@ -50,12 +50,39 @@ public class ArchivedOutfitAdapter extends RecyclerView.Adapter<ArchivedOutfitAd
         // Top Item
         holder.tvTopName.setText(outfit.getTopName());
         loadImage(holder.ivTopImage, outfit.getTopImageUrl());
-        holder.cardTop.setOnClickListener(v -> openProductDetail(outfit.getTopId()));
 
         // Bottom Item
         holder.tvBottomName.setText(outfit.getBottomName());
         loadImage(holder.ivBottomImage, outfit.getBottomImageUrl());
-        holder.cardBottom.setOnClickListener(v -> openProductDetail(outfit.getBottomId()));
+
+        boolean isTryOn = outfit.getBottomId() != null && outfit.getBottomId().startsWith("tryon_");
+        View.OnClickListener clickListener = v -> {
+            if (isTryOn) {
+                String color = "Mặc định";
+                String size = "Mặc định";
+                try {
+                    String[] parts = outfit.getBottomId().split("_");
+                    if (parts.length >= 3) {
+                        color = parts[1];
+                        size = parts[2];
+                    }
+                } catch (Exception ignored) {}
+
+                Intent intent = new Intent(context, VirtualFittingResultActivity.class);
+                intent.putExtra("image_path", outfit.getBottomImageUrl());
+                intent.putExtra("product_id", outfit.getTopId());
+                intent.putExtra("size", size);
+                intent.putExtra("color", color);
+                intent.putExtra("from_cart", true); // Hide Add to Cart when viewing from archival
+                context.startActivity(intent);
+            } else {
+                openProductDetail(outfit.getTopId());
+            }
+        };
+
+        holder.cardTop.setOnClickListener(clickListener);
+        holder.cardBottom.setOnClickListener(clickListener);
+        holder.itemView.setOnClickListener(clickListener);
 
         // Delete button
         holder.btnDeleteSavedSet.setOnClickListener(v -> {
@@ -73,7 +100,7 @@ public class ArchivedOutfitAdapter extends RecyclerView.Adapter<ArchivedOutfitAd
     private void loadImage(ImageView imageView, String url) {
         if (url == null || url.isEmpty()) return;
         String fullUrl = url;
-        if (!fullUrl.startsWith("http")) {
+        if (!fullUrl.startsWith("http") && !fullUrl.contains("data/user") && !fullUrl.contains("cache") && !fullUrl.contains("files") && !fullUrl.contains("Pictures")) {
             fullUrl = BASE_URL + (fullUrl.startsWith("/") ? "" : "/") + fullUrl;
         }
         Glide.with(imageView.getContext())

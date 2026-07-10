@@ -97,8 +97,19 @@ public class ChatBotActivity extends AppCompatActivity {
 
         setupViewPager();
 
+        // Setup btnAiAgent click listener
+        binding.btnAiAgent.setOnClickListener(v -> navigateToAiHub());
+
         // Setup Bottom Navigation
         com.project.utils.ViewUtils.setupBottomNavigation(binding.bottomNavigationView, this);
+    }
+
+    private void navigateToAiHub() {
+        Intent intent = new Intent(this, com.project.muse_android.main.MainActivity.class);
+        intent.putExtra("open_ai_hub", true);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
     }
 
     private void setupViewPager() {

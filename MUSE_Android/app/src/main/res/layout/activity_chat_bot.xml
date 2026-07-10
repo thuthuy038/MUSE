@@ -53,14 +53,15 @@
         </LinearLayout>
 
         <ImageView
+            android:id="@+id/btnAiAgent"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="16dp"
-            android:src="@drawable/ic_aiagent"
+            android:src="@drawable/ic_airobot"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/neutral_900" />
+            app:tint="@color/primary_500" />
 
         <!-- Tabs -->
         <LinearLayout
