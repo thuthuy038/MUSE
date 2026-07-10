@@ -2,9 +2,15 @@ package com.project.muse_android.search;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -16,9 +22,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.project.adapters.ProductAdapter;
 import com.project.models.Category;
@@ -32,6 +42,8 @@ import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
 import com.project.utils.SessionManager;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +68,9 @@ public class SearchResultActivity extends AppCompatActivity {
     private HomeApiService apiService;
     private SearchHistoryManager historyManager;
     private SessionManager sessionManager;
+
+    private SuggestionAdapter suggestionAdapter;
+    private List<SuggestionItem> suggestionList = new ArrayList<>();
 
     // Filter types
     private static final int FILTER_TYPE_ALL = 0;
@@ -88,6 +103,7 @@ public class SearchResultActivity extends AppCompatActivity {
 
         setupUI();
         setupRecyclerView();
+        setupSuggestionRecyclerView();
         loadCategories();
         performSearch(query);
     }
@@ -122,6 +138,7 @@ public class SearchResultActivity extends AppCompatActivity {
         });
         binding.btnClearSearch.setOnClickListener(v -> {
             binding.edtSearchQuery.setText("");
+            binding.rvSuggestions.setVisibility(View.GONE);
             performSearch(""); 
             binding.edtSearchQuery.requestFocus();
         });
@@ -129,6 +146,7 @@ public class SearchResultActivity extends AppCompatActivity {
         binding.imgSearchIcon.setOnClickListener(v -> {
             String newQuery = binding.edtSearchQuery.getText().toString().trim();
             performSearch(newQuery);
+            binding.rvSuggestions.setVisibility(View.GONE);
             hideKeyboard();
         });
 
@@ -136,10 +154,28 @@ public class SearchResultActivity extends AppCompatActivity {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 String newQuery = binding.edtSearchQuery.getText().toString().trim();
                 performSearch(newQuery);
+                binding.rvSuggestions.setVisibility(View.GONE);
                 hideKeyboard();
                 return true;
             }
             return false;
+        });
+
+        binding.edtSearchQuery.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String q = s.toString().trim();
+                if (!q.isEmpty()) {
+                    fetchSuggestions(q);
+                } else {
+                    binding.rvSuggestions.setVisibility(View.GONE);
+                    suggestionList.clear();
+                }
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
         });
 
         binding.imgCart.setOnClickListener(v -> {
@@ -155,6 +191,85 @@ public class SearchResultActivity extends AppCompatActivity {
         binding.btnFilterSize.setOnClickListener(v -> showFilterBottomSheet(FILTER_TYPE_SIZE));
         binding.btnFilterStar.setOnClickListener(v -> showFilterBottomSheet(FILTER_TYPE_STAR));
         binding.btnSort.setOnClickListener(v -> showSortOptions());
+    }
+
+    private void setupSuggestionRecyclerView() {
+        suggestionAdapter = new SuggestionAdapter(suggestionList, item -> {
+            if (item.type == SuggestionItem.TYPE_KEYWORD) {
+                binding.edtSearchQuery.setText(item.text);
+                binding.rvSuggestions.setVisibility(View.GONE);
+                performSearch(item.text);
+            } else if (item.type == SuggestionItem.TYPE_PRODUCT && item.product != null) {
+                Intent intent = new Intent(this, ProductDetailActivity.class);
+                intent.putExtra("product_id", item.product.get_id());
+                startActivity(intent);
+            }
+        });
+        binding.rvSuggestions.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvSuggestions.setAdapter(suggestionAdapter);
+    }
+
+    private void fetchSuggestions(String query) {
+        apiService.searchProducts(query).enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    buildSuggestionList(response.body());
+                }
+            }
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {}
+        });
+    }
+
+    private void buildSuggestionList(List<Product> products) {
+        suggestionList.clear();
+        String currentQuery = binding.edtSearchQuery.getText().toString().trim();
+        String normalizedQuery = removeAccents(currentQuery).toLowerCase();
+
+        // 1. "Có phải bạn muốn tìm" Section
+        List<Category> matchingCategories = new ArrayList<>();
+        for (Category cat : categoryList) {
+            String catName = cat.getName();
+            if (catName != null && removeAccents(catName).toLowerCase().contains(normalizedQuery)) {
+                matchingCategories.add(cat);
+            }
+        }
+
+        if (!matchingCategories.isEmpty()) {
+            suggestionList.add(new SuggestionItem(SuggestionItem.TYPE_HEADER, "Có phải bạn muốn tìm"));
+            for (int i = 0; i < Math.min(2, matchingCategories.size()); i++) {
+                suggestionList.add(new SuggestionItem(SuggestionItem.TYPE_KEYWORD, matchingCategories.get(i).getName()));
+            }
+            suggestionList.add(new SuggestionItem(SuggestionItem.TYPE_DIVIDER, ""));
+        }
+
+        // 2. "Sản phẩm gợi ý" Section
+        List<Product> matchingProducts = new ArrayList<>();
+        for (Product p : products) {
+            String pName = p.getName();
+            String pCat = p.getCategory();
+            boolean matches = false;
+            if (pName != null && removeAccents(pName).toLowerCase().contains(normalizedQuery)) matches = true;
+            if (!matches && pCat != null && removeAccents(pCat).toLowerCase().contains(normalizedQuery)) matches = true;
+            if (matches) matchingProducts.add(p);
+        }
+
+        if (!matchingProducts.isEmpty()) {
+            suggestionList.add(new SuggestionItem(SuggestionItem.TYPE_HEADER, "Sản phẩm gợi ý"));
+            int count = 0;
+            for (Product p : matchingProducts) {
+                suggestionList.add(new SuggestionItem(SuggestionItem.TYPE_PRODUCT, p));
+                if (++count >= 5) break;
+            }
+        }
+
+        if (suggestionList.isEmpty()) {
+            binding.rvSuggestions.setVisibility(View.GONE);
+        } else {
+            suggestionAdapter.notifyDataSetChanged();
+            binding.rvSuggestions.setVisibility(View.VISIBLE);
+        }
     }
 
     private void showSortOptions() {
@@ -555,5 +670,186 @@ public class SearchResultActivity extends AppCompatActivity {
         String nfdNormalizedString = Normalizer.normalize(s, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(nfdNormalizedString).replaceAll("").toLowerCase(Locale.getDefault()).replace("đ", "d").replace("Đ", "d");
+    }
+
+    // --- Suggestion Models ---
+    static class SuggestionItem {
+        static final int TYPE_HEADER = 0;
+        static final int TYPE_KEYWORD = 1;
+        static final int TYPE_PRODUCT = 2;
+        static final int TYPE_DIVIDER = 3;
+
+        int type;
+        String text;
+        Product product;
+
+        SuggestionItem(int type, String text) { this.type = type; this.text = text; }
+        SuggestionItem(int type, Product product) { this.type = type; this.product = product; }
+    }
+
+    // --- Suggestion Adapter ---
+    private static class SuggestionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private final List<SuggestionItem> items;
+        private final OnSuggestionClickListener listener;
+
+        interface OnSuggestionClickListener { void onClick(SuggestionItem item); }
+
+        SuggestionAdapter(List<SuggestionItem> items, OnSuggestionClickListener listener) {
+            this.items = items;
+            this.listener = listener;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return items.get(position).type;
+        }
+
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            if (viewType == SuggestionItem.TYPE_HEADER) {
+                TextView tv = new TextView(parent.getContext());
+                tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                tv.setPadding(40, 32, 40, 16);
+                tv.setTextColor(Color.parseColor("#999999"));
+                tv.setTextSize(12);
+                tv.setTypeface(null, android.graphics.Typeface.BOLD);
+                return new HeaderViewHolder(tv);
+            } else if (viewType == SuggestionItem.TYPE_KEYWORD) {
+                TextView tv = new TextView(parent.getContext());
+                tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                tv.setPadding(40, 24, 40, 24);
+                tv.setTextColor(Color.parseColor("#1A73E8"));
+                tv.setTextSize(14);
+                tv.setBackgroundResource(android.R.drawable.list_selector_background);
+                return new KeywordViewHolder(tv);
+            } else if (viewType == SuggestionItem.TYPE_DIVIDER) {
+                View v = new View(parent.getContext());
+                v.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
+                v.setBackgroundColor(Color.parseColor("#EEEEEE"));
+                return new DividerViewHolder(v);
+            } else {
+                LinearLayout layout = new LinearLayout(parent.getContext());
+                layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                layout.setOrientation(LinearLayout.HORIZONTAL);
+                layout.setPadding(40, 24, 40, 24);
+                layout.setBackgroundResource(android.R.drawable.list_selector_background);
+                layout.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+                ImageView img = new ImageView(parent.getContext());
+                img.setLayoutParams(new LinearLayout.LayoutParams(140, 140));
+                img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+                LinearLayout textLayout = new LinearLayout(parent.getContext());
+                textLayout.setOrientation(LinearLayout.VERTICAL);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+                lp.setMarginStart(32);
+                textLayout.setLayoutParams(lp);
+
+                TextView name = new TextView(parent.getContext());
+                name.setTextColor(Color.BLACK);
+                name.setTextSize(14);
+                name.setMaxLines(1);
+                name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+
+                LinearLayout priceRow = new LinearLayout(parent.getContext());
+                priceRow.setOrientation(LinearLayout.HORIZONTAL);
+                priceRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+                TextView price = new TextView(parent.getContext());
+                price.setTextColor(Color.RED);
+                price.setTextSize(13);
+                price.setTypeface(null, android.graphics.Typeface.BOLD);
+
+                TextView oldPrice = new TextView(parent.getContext());
+                oldPrice.setTextColor(Color.GRAY);
+                oldPrice.setTextSize(11);
+                oldPrice.setPaintFlags(oldPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+                TextView discount = new TextView(parent.getContext());
+                discount.setTextColor(Color.parseColor("#FF5722"));
+                discount.setTextSize(11);
+
+                LinearLayout.LayoutParams mlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                mlp.setMarginStart(12);
+                oldPrice.setLayoutParams(mlp);
+                discount.setLayoutParams(mlp);
+
+                priceRow.addView(price);
+                priceRow.addView(oldPrice);
+                priceRow.addView(discount);
+
+                textLayout.addView(name);
+                textLayout.addView(priceRow);
+
+                layout.addView(img);
+                layout.addView(textLayout);
+                return new ProductViewHolder(layout, img, name, price, oldPrice, discount);
+            }
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            SuggestionItem item = items.get(position);
+            if (holder instanceof HeaderViewHolder) {
+                ((HeaderViewHolder) holder).tv.setText(item.text);
+            } else if (holder instanceof KeywordViewHolder) {
+                ((KeywordViewHolder) holder).tv.setText(item.text);
+                holder.itemView.setOnClickListener(v -> listener.onClick(item));
+            } else if (holder instanceof ProductViewHolder) {
+                Product p = item.product;
+                ProductViewHolder vh = (ProductViewHolder) holder;
+                vh.name.setText(p.getName());
+
+                Double dPrice = p.getDiscountPrice();
+                if (dPrice != null && dPrice > 0) {
+                    vh.price.setText(formatPrice(dPrice));
+                    vh.oldPrice.setText(formatPrice(p.getPrice()));
+                    vh.oldPrice.setVisibility(View.VISIBLE);
+                    int pct = (int) ((1 - (dPrice / p.getPrice())) * 100);
+                    vh.discount.setText("-" + pct + "%");
+                    vh.discount.setVisibility(View.VISIBLE);
+                } else {
+                    vh.price.setText(formatPrice(p.getPrice()));
+                    vh.oldPrice.setVisibility(View.GONE);
+                    vh.discount.setVisibility(View.GONE);
+                }
+
+                String imgUrl = (p.getImages() != null && !p.getImages().isEmpty()) ? p.getImages().get(0).getUrl() : null;
+                if (imgUrl != null) {
+                    if (!imgUrl.startsWith("http")) imgUrl = "https://server-testing-ymn9.onrender.com" + (imgUrl.startsWith("/") ? "" : "/") + imgUrl;
+                    Glide.with(vh.img.getContext()).load(imgUrl).placeholder(android.R.drawable.ic_menu_gallery).into(vh.img);
+                }
+                holder.itemView.setOnClickListener(v -> listener.onClick(item));
+            }
+        }
+
+        private String formatPrice(double price) {
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("vi", "VN"));
+            symbols.setGroupingSeparator('.');
+            DecimalFormat decimalFormat = new DecimalFormat("#,###", symbols);
+            return decimalFormat.format(price) + "đ";
+        }
+
+        @Override
+        public int getItemCount() { return items.size(); }
+
+        static class HeaderViewHolder extends RecyclerView.ViewHolder {
+            TextView tv;
+            HeaderViewHolder(View itemView) { super(itemView); tv = (TextView) itemView; }
+        }
+        static class KeywordViewHolder extends RecyclerView.ViewHolder {
+            TextView tv;
+            KeywordViewHolder(View itemView) { super(itemView); tv = (TextView) itemView; }
+        }
+        static class DividerViewHolder extends RecyclerView.ViewHolder {
+            DividerViewHolder(View itemView) { super(itemView); }
+        }
+        static class ProductViewHolder extends RecyclerView.ViewHolder {
+            ImageView img; TextView name, price, oldPrice, discount;
+            ProductViewHolder(View v, ImageView img, TextView name, TextView price, TextView oldPrice, TextView discount) {
+                super(v); this.img = img; this.name = name; this.price = price; this.oldPrice = oldPrice; this.discount = discount;
+            }
+        }
     }
 }

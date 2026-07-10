@@ -33,10 +33,19 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     private final Context context;
     private List<Order> orders;
     private final Set<String> expandedOrderIds = new HashSet<>();
+    private OnReviewClickListener reviewClickListener;
+
+    public interface OnReviewClickListener {
+        void onReviewClick(Order order);
+    }
 
     public OrderAdapter(Context context, List<Order> orders) {
         this.context = context;
         this.orders = orders;
+    }
+
+    public void setOnReviewClickListener(OnReviewClickListener listener) {
+        this.reviewClickListener = listener;
     }
 
     public void setData(List<Order> orders) {
@@ -119,6 +128,12 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             binding.txtTotalInfo.setText(totalInfo);
 
             // 4. Action Buttons based on Status
+            android.content.SharedPreferences prefs = context.getSharedPreferences("MUSE_PREFS", Context.MODE_PRIVATE);
+            boolean isLocalReviewed = prefs.getBoolean("reviewed_" + order.get_id(), false);
+
+            // Temporary sync: update order model if local reviewed is true
+            if (isLocalReviewed) order.setReviewed(true);
+
             setupButtons(order);
 
             // 5. Navigate to Detail
@@ -168,9 +183,21 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     });
                 }
                 
-                binding.btnReview.setOnClickListener(v -> {
-                    Toast.makeText(context, "Mở form đánh giá cho đơn hàng " + order.getId(), Toast.LENGTH_SHORT).show();
-                });
+                binding.btnReview.setVisibility(View.VISIBLE);
+                if (order.isReviewed()) {
+                    binding.btnReview.setText("Đã đánh giá");
+                    binding.btnReview.setEnabled(false);
+                    binding.btnReview.setAlpha(0.6f);
+                } else {
+                    binding.btnReview.setText("Đánh giá");
+                    binding.btnReview.setEnabled(true);
+                    binding.btnReview.setAlpha(1.0f);
+                    binding.btnReview.setOnClickListener(v -> {
+                        if (reviewClickListener != null) {
+                            reviewClickListener.onReviewClick(order);
+                        }
+                    });
+                }
             }
             // PENDING, PROCESSING, ĐANG XỬ LÝ, CHỜ LẤY HÀNG
             else if (statusUpper.equals("PENDING") || statusUpper.equals("PROCESSING") 

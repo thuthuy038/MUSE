@@ -155,11 +155,19 @@ public class OrderDetailActivity extends AppCompatActivity {
         updateStatusUI(order.getStatus());
 
         // 2. Shipping Info
-        if (order.getShippingMethod() != null) {
-            binding.txtShippingCode.setText("Phương thức: " + order.getShippingMethod().getName());
-        } else {
-            binding.txtShippingCode.setText("Mã vận đơn: ORD-" + order.getId().substring(order.getId().length() - 8).toUpperCase());
+        String shippingName = "Giao hàng tiêu chuẩn";
+        if (order.getShippingMethod() != null && order.getShippingMethod().getName() != null) {
+            shippingName = order.getShippingMethod().getName();
         }
+        String shippingCodeSuffix = "";
+        if (order.getId() != null) {
+            if (order.getId().length() > 8) {
+                shippingCodeSuffix = order.getId().substring(order.getId().length() - 8).toUpperCase();
+            } else {
+                shippingCodeSuffix = order.getId().toUpperCase();
+            }
+        }
+        binding.txtShippingCode.setText("Phương thức: " + shippingName + " (Mã vận đơn: ORD-" + shippingCodeSuffix + ")");
 
         // 3. Address Section
         binding.txtCustomerName.setText(order.getCustomerName());
@@ -183,10 +191,45 @@ public class OrderDetailActivity extends AppCompatActivity {
 
         // 6. Order Info
         binding.txtOrderCode.setText(order.getId().toUpperCase());
-        binding.txtPaymentMethod.setText(order.getPaymentMethod() != null ? order.getPaymentMethod() : "Thanh toán khi nhận hàng");
+        
+        String paymentMethod = null;
+        if (order.getPaymentId() != null) {
+            paymentMethod = order.getPaymentId().getPaymentMethod();
+        }
+        if (paymentMethod == null) {
+            paymentMethod = order.getPaymentMethod();
+        }
+        
+        String paymentMethodFriendly = "Thanh toán khi nhận hàng (COD)";
+        if ("MOMO".equalsIgnoreCase(paymentMethod)) {
+            paymentMethodFriendly = "Ví điện tử MoMo";
+        } else if ("VNPAY".equalsIgnoreCase(paymentMethod)) {
+            paymentMethodFriendly = "Thẻ ATM/Ứng dụng Ngân hàng (VNPay)";
+        }
+        binding.txtPaymentMethod.setText(paymentMethodFriendly);
         
         binding.txtOrderTime.setText(formatDate(order.getCreatedAt()));
-        binding.txtPaymentTime.setText(formatDate(order.getUpdatedAt() != null ? order.getUpdatedAt() : order.getCreatedAt()));
+
+        View relativeLayoutPaymentTime = (View) binding.txtPaymentTime.getParent();
+        if ("COD".equalsIgnoreCase(paymentMethod) || paymentMethod == null) {
+            String status = order.getStatus() != null ? order.getStatus().toUpperCase() : "";
+            if (status.contains("DELIVERED") || status.contains("COMPLETED") 
+                    || status.contains("ĐÃ GIAO") || status.contains("HOÀN THÀNH")) {
+                if (relativeLayoutPaymentTime != null) {
+                    relativeLayoutPaymentTime.setVisibility(View.VISIBLE);
+                }
+                binding.txtPaymentTime.setText(formatDate(order.getUpdatedAt() != null ? order.getUpdatedAt() : order.getCreatedAt()));
+            } else {
+                if (relativeLayoutPaymentTime != null) {
+                    relativeLayoutPaymentTime.setVisibility(View.GONE);
+                }
+            }
+        } else {
+            if (relativeLayoutPaymentTime != null) {
+                relativeLayoutPaymentTime.setVisibility(View.VISIBLE);
+            }
+            binding.txtPaymentTime.setText(formatDate(order.getCreatedAt()));
+        }
 
         // Conditional fields based on status
         if ("SHIPPING".equalsIgnoreCase(order.getStatus())) {

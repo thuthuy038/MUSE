@@ -86,7 +86,7 @@ public class MembershipFragment extends Fragment {
                     User user = response.body();
                     
                     // Fetch Orders to calculate total spending and rank
-                    fetchOrdersAndCalculate(authHeader, user);
+                    fetchOrdersAndCalculate(user);
                 }
             }
 
@@ -99,19 +99,33 @@ public class MembershipFragment extends Fragment {
         });
     }
 
-    private void fetchOrdersAndCalculate(String authHeader, User user) {
-        ApiClient.INSTANCE.getInstance().getOrders(authHeader).enqueue(new Callback<java.util.List<com.project.models.Order>>() {
+    private void fetchOrdersAndCalculate(User user) {
+        String userId = user.get_id();
+        if (userId == null) {
+            updateUI(user, 0, 0);
+            return;
+        }
+        ApiClient.INSTANCE.getInstance().getMyOrders(userId).enqueue(new Callback<java.util.List<com.project.models.Order>>() {
             @Override
             public void onResponse(Call<java.util.List<com.project.models.Order>> call, Response<java.util.List<com.project.models.Order>> response) {
                 if (isAdded()) {
                     double totalSpending = 0;
+                    int ordersCount = 0;
                     if (response.isSuccessful() && response.body() != null) {
+                        ordersCount = response.body().size();
                         for (com.project.models.Order order : response.body()) {
-                            // Only count completed orders if possible, here assuming all in list are valid
-                            totalSpending += order.getTotalPrice();
+                            // Chỉ tính các đơn hàng đã hoàn thành/đã giao (không tính các đơn đang chờ xác nhận, đang giao, đã hủy)
+                            String status = order.getStatus();
+                            if ("COMPLETED".equalsIgnoreCase(status) || 
+                                "DELIVERED".equalsIgnoreCase(status) || 
+                                "Đã giao".equalsIgnoreCase(status) ||
+                                "Đã hoàn thành".equalsIgnoreCase(status) ||
+                                "Hoàn thành".equalsIgnoreCase(status)) {
+                                totalSpending += order.getFinalPrice();
+                            }
                         }
                     }
-                    updateUI(user, totalSpending);
+                    updateUI(user, totalSpending, ordersCount);
                 }
             }
 
@@ -119,19 +133,34 @@ public class MembershipFragment extends Fragment {
             public void onFailure(Call<java.util.List<com.project.models.Order>> call, Throwable t) {
                 if (isAdded()) {
                     // Fallback to profile data if orders fail
-                    updateUI(user, 0);
+                    updateUI(user, 0, 0);
                     Toast.makeText(requireContext(), "Lỗi tải dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
-    private void updateUI(User user, double totalSpending) {
+    private void updateUI(User user, double totalSpending, int ordersCount) {
         // Hạng thành viên (Dựa trên tổng chi tiêu)
         String rank;
-        int level = user.getLevel();
+        
+        // Mức độ trải nghiệm (level) tính theo số lượng đơn hàng đã đặt
+        int level;
+        if (ordersCount <= 5) {
+            level = 1;
+        } else if (ordersCount <= 10) {
+            level = 2;
+        } else if (ordersCount <= 15) {
+            level = 3;
+        } else if (ordersCount <= 20) {
+            level = 4;
+        } else {
+            level = 5;
+        }
 
-        if (totalSpending >= 5000000) {
+        if (totalSpending >= 10000000) {
+            rank = "DIAMOND";
+        } else if (totalSpending >= 5000000) {
             rank = "GOLDEN";
         } else if (totalSpending >= 1000000) {
             rank = "SILVER";
@@ -141,8 +170,9 @@ public class MembershipFragment extends Fragment {
 
         binding.tvRankName.setText(rank);
         
-        // Điểm tích lũy (1.000đ = 1 điểm)
-        int points = (int) (totalSpending / 1000);
+        // Điểm tích lũy (Sử dụng points từ User profile nếu có, hoặc tính toán từ chi tiêu)
+        // Thông thường points từ backend sẽ chính xác hơn
+        int points = user.getPoints() > 0 ? user.getPoints() : (int) (totalSpending / 1000);
         binding.tvPoints.setText(formatPoints(points));
         
         // Cấp độ

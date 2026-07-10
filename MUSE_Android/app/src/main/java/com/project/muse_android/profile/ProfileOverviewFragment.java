@@ -76,8 +76,9 @@ public class ProfileOverviewFragment extends Fragment {
                         User user = response.body();
                         // Update UI with fresh data
                         binding.tvUserName.setText(user.getName());
-                        binding.tvOrdersCount.setText(String.valueOf(user.getOrderCount()));
-                        binding.tvPointsCount.setText(formatPoints(user.getPoints()));
+
+                        // Fetch orders and calculate spending, points, order count, rank dynamically
+                        fetchOrdersAndCalculate(user);
 
                         // Cache updated name & email in session
                         sessionManager.saveUser(user.get_id(), user.getName(), user.getEmail());
@@ -111,6 +112,65 @@ public class ProfileOverviewFragment extends Fragment {
                 }
             });
         }
+    }
+
+    private void fetchOrdersAndCalculate(User user) {
+        String userId = user.get_id();
+        if (userId == null) return;
+
+        ApiClient.INSTANCE.getInstance().getMyOrders(userId).enqueue(new Callback<java.util.List<com.project.models.Order>>() {
+            @Override
+            public void onResponse(Call<java.util.List<com.project.models.Order>> call, Response<java.util.List<com.project.models.Order>> response) {
+                if (!isAdded()) return;
+
+                double totalSpending = 0;
+                int ordersCount = 0;
+
+                if (response.isSuccessful() && response.body() != null) {
+                    ordersCount = response.body().size();
+                    for (com.project.models.Order order : response.body()) {
+                        // Chỉ tính các đơn hàng đã hoàn thành/đã giao (không tính các đơn đang chờ xác nhận, đang giao, đã hủy)
+                        String status = order.getStatus();
+                        if ("COMPLETED".equalsIgnoreCase(status) || 
+                            "DELIVERED".equalsIgnoreCase(status) || 
+                            "Đã giao".equalsIgnoreCase(status) ||
+                            "Đã hoàn thành".equalsIgnoreCase(status) ||
+                            "Hoàn thành".equalsIgnoreCase(status)) {
+                            totalSpending += order.getFinalPrice();
+                        }
+                    }
+                }
+
+                // Calculate points
+                int points = user.getPoints() > 0 ? user.getPoints() : (int) (totalSpending / 1000);
+
+                // Calculate membership rank
+                String rank;
+                if (totalSpending >= 10000000) {
+                    rank = "DIAMOND";
+                } else if (totalSpending >= 5000000) {
+                    rank = "GOLDEN";
+                } else if (totalSpending >= 1000000) {
+                    rank = "SILVER";
+                } else {
+                    rank = "PINK";
+                }
+
+                // Update UI
+                binding.tvOrdersCount.setText(String.valueOf(ordersCount));
+                binding.tvPointsCount.setText(formatPoints(points));
+                binding.tvMembershipRank.setText("THÀNH VIÊN " + rank);
+            }
+
+            @Override
+            public void onFailure(Call<java.util.List<com.project.models.Order>> call, Throwable t) {
+                if (!isAdded()) return;
+                // Fallback to profile defaults
+                binding.tvOrdersCount.setText(String.valueOf(user.getOrderCount()));
+                binding.tvPointsCount.setText(formatPoints(user.getPoints()));
+                binding.tvMembershipRank.setText("THÀNH VIÊN PINK");
+            }
+        });
     }
 
     private void setAvatarImage(String avatar) {
@@ -219,6 +279,10 @@ public class ProfileOverviewFragment extends Fragment {
         });
 
         binding.menuMembership.getRoot().setOnClickListener(v -> openMembership(v));
+
+        binding.menuFavorites.getRoot().setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_wishlist);
+        });
 
         binding.llMembershipBadge.setOnClickListener(v -> openMembership(v));
 

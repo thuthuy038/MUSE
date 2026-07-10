@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Kích thước mặc định cho điện thoại -->
+    <dimen name="home_banner_height">420dp</dimen>
+    <dimen name="product_detail_image_height">400dp</dimen>
+    <dimen name="auth_welcome_text_size">36sp</dimen>
+    <dimen name="screen_padding">16dp</dimen>
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="btn_ai_margin_bottom">100dp</dimen>
+</resources>

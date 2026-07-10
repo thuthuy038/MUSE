@@ -12,6 +12,7 @@ import com.project.models.Voucher;
 import com.project.models.ApplyVoucherRequest;
 import com.project.models.ApplyVoucherResponse;
 import com.project.models.CartRequest;
+import com.project.models.WishlistResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -93,6 +94,24 @@ public interface ApiService {
         @Path("id") String productId
     );
 
+    // ========== WISHLIST ==========
+    @GET("api/users/wishlist")
+    Call<List<Product>> getWishlist(
+        @Header("Authorization") String token
+    );
+
+    @POST("api/users/wishlist/{productId}")
+    Call<WishlistResponse> addToWishlist(
+        @Header("Authorization") String token,
+        @Path("productId") String productId
+    );
+
+    @DELETE("api/users/wishlist/{productId}")
+    Call<WishlistResponse> removeFromWishlist(
+        @Header("Authorization") String token,
+        @Path("productId") String productId
+    );
+
     // ========== CART ==========
     @GET("api/cart/{userId}")
     Call<ApiResponse<List<Product>>> getCart(
@@ -141,6 +160,11 @@ public interface ApiService {
     // ======================
     // VOUCHER
     // ======================
+    @GET("api/vouchers")
+    Call<List<Voucher>> getMyVouchers(
+            @Header("Authorization") String token
+    );
+
     @GET("api/vouchers/promotion/{promotionId}")
     Call<List<Voucher>> getVouchersByPromotion(
             @Path("promotionId") String promotionId
@@ -200,6 +224,18 @@ public interface ApiService {
     @GET("api/reviews/product/{productId}")
     Call<com.project.models.ReviewResponse> getProductReviews(
             @Path("productId") String productId
+    );
+
+    @POST("api/reviews")
+    Call<com.project.network.ApiResponse<com.project.models.ProductReview>> postReview(
+            @Header("Authorization") String token,
+            @Body Map<String, Object> body
+    );
+
+    @retrofit2.http.Multipart
+    @POST("api/upload")
+    Call<Map<String, String>> uploadMedia(
+        @retrofit2.http.Part okhttp3.MultipartBody.Part image
     );
 
     @GET

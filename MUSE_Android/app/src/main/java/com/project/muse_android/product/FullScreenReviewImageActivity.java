@@ -24,6 +24,7 @@ import com.project.muse_android.cart.ProductVariantBottomSheetFragment;
 import com.project.muse_android.databinding.ActivityFullScreenReviewImageBinding;
 import com.project.network.HomeApiClient;
 import com.project.utils.CartManager;
+import com.project.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,12 @@ public class FullScreenReviewImageActivity extends AppCompatActivity {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         binding = ActivityFullScreenReviewImageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Đẩy các thành phần để không bị che bởi Status Bar và Navigation Bar
+        ViewUtils.applySystemBarsPadding(binding.btnBack, true, false);
+        ViewUtils.applySystemBarsPadding(binding.txtImageIndicator, true, false);
+        ViewUtils.applySystemBarsPadding(binding.txtDate, false, true);
+        ViewUtils.applySystemBarsPadding(binding.cardProduct, false, true);
 
         images = getIntent().getStringArrayListExtra("images");
         startPosition = getIntent().getIntExtra("position", 0);
