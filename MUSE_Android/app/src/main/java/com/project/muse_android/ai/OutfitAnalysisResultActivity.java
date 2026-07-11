@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.project.models.Product;
+import com.project.models.GeminiResponse;
+import com.project.network.GeminiClient;
 import com.project.muse_android.BuildConfig;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivityOutfitResultBinding;

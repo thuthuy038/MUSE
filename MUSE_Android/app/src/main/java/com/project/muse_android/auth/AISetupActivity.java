@@ -448,6 +448,7 @@ public class AISetupActivity extends AppCompatActivity {
         String token = sessionManager.getToken();
         String userId = sessionManager.getUserId();
         if (token == null || userId == null) {
+            sessionManager.saveNewRegisterFlag(false);
             // For guest, show success popup directly
             showSuccessPopup();
             return;
@@ -473,6 +474,7 @@ public class AISetupActivity extends AppCompatActivity {
         ApiClient.INSTANCE.getInstance().updateUser(userId, "Bearer " + token, userData).enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
+                sessionManager.saveNewRegisterFlag(false);
                 if (response.isSuccessful()) {
                     sessionManager.saveProfileCompleted(true);
                     showSuccessPopup();
@@ -485,6 +487,7 @@ public class AISetupActivity extends AppCompatActivity {
             }
             @Override
             public void onFailure(Call<User> call, Throwable t) {
+                sessionManager.saveNewRegisterFlag(false);
                 binding.btnNextStep.setEnabled(true);
                 binding.btnNextStep.setText("TIẾP THEO");
                 Toast.makeText(AISetupActivity.this, "Lỗi kết nối máy chủ, đã lưu cục bộ.", Toast.LENGTH_LONG).show();

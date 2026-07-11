@@ -1,10 +1,13 @@
-package com.project.muse_android.ai;
+package com.project.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.project.models.ChatMessage;
+import com.project.models.ArchivedChat;
+import com.project.models.SavedOutfit;
 
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;

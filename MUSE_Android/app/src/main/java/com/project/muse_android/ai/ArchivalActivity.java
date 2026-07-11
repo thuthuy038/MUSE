@@ -10,6 +10,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivityArchivalBinding;
+import com.project.models.ArchivedChat;
+import com.project.models.SavedOutfit;
+import com.project.adapters.ArchivedChatAdapter;
+import com.project.adapters.ArchivedOutfitAdapter;
+import com.project.utils.AiStorageManager;
 
 import java.util.ArrayList;
 import java.util.List;

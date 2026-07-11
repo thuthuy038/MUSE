@@ -135,6 +135,10 @@ public class RegisterFragment extends Fragment {
                 if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng ký thành công!");
+                    if (getContext() != null) {
+                        com.project.utils.SessionManager sm = new com.project.utils.SessionManager(getContext());
+                        sm.saveNewRegisterFlag(true);
+                    }
                     dialog.setOnCloseListener(() -> {
                         getParentFragmentManager().popBackStack();
                     });

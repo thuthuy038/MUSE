@@ -20,7 +20,14 @@ import com.project.muse_android.R;
 import com.project.network.ApiClient;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
+import com.project.network.GeminiClient;
 import com.project.utils.SessionManager;
+import com.project.utils.AiStorageManager;
+import com.project.models.ChatMessage;
+import com.project.models.OutfitSet;
+import com.project.models.GeminiResponse;
+import com.project.adapters.ChatAdapter;
+import com.project.adapters.OutfitSetAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +48,17 @@ public class ChatBotActivity extends AppCompatActivity {
     private final List<OutfitSet> outfitSets = new ArrayList<>();
     private String geminiApiKey = BuildConfig.GEMINI_API_KEY;
     private User currentUser = null;
+    private int originalChatPaddingBottom = 0;
+    private int originalSuggestionsPaddingBottom = 0;
+    
+    private final androidx.activity.result.ActivityResultLauncher<String> recordAudioPermissionLauncher =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    showVoiceSearchDialog();
+                } else {
+                    Toast.makeText(this, "Quyền ghi âm âm thanh bị từ chối.", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +98,16 @@ public class ChatBotActivity extends AppCompatActivity {
 
         // Send Button Click
         binding.btnSend.setOnClickListener(v -> sendMessage());
+
+        // Voice Record Button Click
+        binding.btnVoiceRecord.setOnClickListener(v -> {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
+                    == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                showVoiceSearchDialog();
+            } else {
+                recordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+            }
+        });
 
         // Suggestion Chips Clicks
         binding.btnChipColor.setOnClickListener(v -> {
@@ -135,6 +163,21 @@ public class ChatBotActivity extends AppCompatActivity {
                 .setDuration(225)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .start();
+
+        // Restore bottom padding
+        final int finalNavHeight = navHeight;
+        binding.rvChatHistory.setPadding(
+                binding.rvChatHistory.getPaddingLeft(),
+                binding.rvChatHistory.getPaddingTop(),
+                binding.rvChatHistory.getPaddingRight(),
+                finalNavHeight + originalChatPaddingBottom
+        );
+        binding.layoutSuggestionsContent.setPadding(
+                binding.layoutSuggestionsContent.getPaddingLeft(),
+                binding.layoutSuggestionsContent.getPaddingTop(),
+                binding.layoutSuggestionsContent.getPaddingRight(),
+                finalNavHeight + originalSuggestionsPaddingBottom
+        );
     }
 
     private void hideBottomNav() {
@@ -151,6 +194,20 @@ public class ChatBotActivity extends AppCompatActivity {
                 .setDuration(175)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .start();
+
+        // Remove bottom padding (since bottom nav is hidden)
+        binding.rvChatHistory.setPadding(
+                binding.rvChatHistory.getPaddingLeft(),
+                binding.rvChatHistory.getPaddingTop(),
+                binding.rvChatHistory.getPaddingRight(),
+                originalChatPaddingBottom
+        );
+        binding.layoutSuggestionsContent.setPadding(
+                binding.layoutSuggestionsContent.getPaddingLeft(),
+                binding.layoutSuggestionsContent.getPaddingTop(),
+                binding.layoutSuggestionsContent.getPaddingRight(),
+                originalSuggestionsPaddingBottom
+        );
     }
 
     private void setupFooterBehavior() {
@@ -165,21 +222,21 @@ public class ChatBotActivity extends AppCompatActivity {
             binding.layoutInputArea.setTranslationY(-navHeight);
 
             // Add bottom padding to chat history to prevent overlap
-            int originalPaddingBottom = binding.rvChatHistory.getPaddingBottom();
+            originalChatPaddingBottom = binding.rvChatHistory.getPaddingBottom();
             binding.rvChatHistory.setPadding(
                     binding.rvChatHistory.getPaddingLeft(),
                     binding.rvChatHistory.getPaddingTop(),
                     binding.rvChatHistory.getPaddingRight(),
-                    navHeight + originalPaddingBottom
+                    navHeight + originalChatPaddingBottom
             );
 
             // Add bottom padding to suggestions content
-            int originalSugPaddingBottom = binding.layoutSuggestionsContent.getPaddingBottom();
+            originalSuggestionsPaddingBottom = binding.layoutSuggestionsContent.getPaddingBottom();
             binding.layoutSuggestionsContent.setPadding(
                     binding.layoutSuggestionsContent.getPaddingLeft(),
                     binding.layoutSuggestionsContent.getPaddingTop(),
                     binding.layoutSuggestionsContent.getPaddingRight(),
-                    navHeight + originalSugPaddingBottom
+                    navHeight + originalSuggestionsPaddingBottom
             );
         });
 
@@ -460,22 +517,12 @@ public class ChatBotActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     String reply = response.body().getText();
                     if (reply == null || reply.isEmpty()) {
-                        addBotMessage("Xin lỗi bạn, kết nối có chút gián đoạn. Hãy thử hỏi lại nhé!");
+                        showAiErrorDialog();
                         return;
                     }
                     parseAndDisplayReply(reply);
                 } else {
-                    String errMessage = "Lỗi kết nối với trí tuệ nhân tạo.";
-                    try {
-                        if (response.errorBody() != null) {
-                            errMessage += "\nChi tiết: " + response.errorBody().string();
-                        } else {
-                            errMessage += " Code: " + response.code();
-                        }
-                    } catch (Exception e) {
-                        errMessage += " Code: " + response.code();
-                    }
-                    addBotMessage(errMessage);
+                    showAiErrorDialog();
                 }
             }
 
@@ -486,7 +533,7 @@ public class ChatBotActivity extends AppCompatActivity {
                     messageList.remove(typingPosition);
                     chatAdapter.notifyItemRemoved(typingPosition);
                 }
-                addBotMessage("Lỗi kết nối mạng. Chi tiết: " + t.toString());
+                showAiErrorDialog();
             }
         });
     }
@@ -674,5 +721,20 @@ public class ChatBotActivity extends AppCompatActivity {
                 "QUY TẮC RECOMMEND SẢN PHẨM:\n" +
                 "Nếu bạn khuyên khách hàng nên mua hoặc thử một hoặc nhiều sản phẩm nào ở trên, hãy đính kèm chính xác danh sách các ID của sản phẩm đó vào cuối câu trả lời của bạn bên trong dấu ngoặc kép vuông đôi theo định dạng sau: [[id1, id2]]. Ví dụ: [[65cfb..., 65cfc...]]. Nếu không khuyên mua sản phẩm nào, không cần đính kèm.\n" +
                 "Hãy trả lời bằng tiếng Việt, giọng điệu ấm áp, đáng yêu, bánh bèo, thường xuyên dùng các icon dễ thương.";
+    }
+
+    private void showVoiceSearchDialog() {
+        com.project.muse_android.search.VoiceSearchDialog dialog = new com.project.muse_android.search.VoiceSearchDialog();
+        dialog.setVoiceSearchListener(result -> {
+            if (result != null && !result.trim().isEmpty()) {
+                binding.etMessage.setText(result);
+            }
+        });
+        dialog.show(getSupportFragmentManager(), "VoiceSearchDialog");
+    }
+
+    private void showAiErrorDialog() {
+        com.project.muse_android.dialog.AiErrorDialog dialog = com.project.muse_android.dialog.AiErrorDialog.newInstance();
+        dialog.show(getSupportFragmentManager(), "AiErrorDialog");
     }
 }

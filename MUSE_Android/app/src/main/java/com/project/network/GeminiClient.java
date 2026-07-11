@@ -1,4 +1,4 @@
-package com.project.muse_android.ai;
+package com.project.network;
 
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;

@@ -1,6 +1,5 @@
-package com.project.muse_android.ai;
+package com.project.models;
 
-import com.project.models.Product;
 import java.util.List;
 
 public class ChatMessage {
