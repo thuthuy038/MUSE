@@ -72,6 +72,15 @@ public class SearchResultActivity extends AppCompatActivity {
     private SuggestionAdapter suggestionAdapter;
     private List<SuggestionItem> suggestionList = new ArrayList<>();
 
+    private final androidx.activity.result.ActivityResultLauncher<String> recordAudioPermissionLauncher =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    showVoiceSearchDialog();
+                } else {
+                    Toast.makeText(this, "Quyền ghi âm âm thanh bị từ chối.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
     // Filter types
     private static final int FILTER_TYPE_ALL = 0;
     private static final int FILTER_TYPE_CATEGORY = 1;
@@ -191,6 +200,17 @@ public class SearchResultActivity extends AppCompatActivity {
         binding.btnFilterSize.setOnClickListener(v -> showFilterBottomSheet(FILTER_TYPE_SIZE));
         binding.btnFilterStar.setOnClickListener(v -> showFilterBottomSheet(FILTER_TYPE_STAR));
         binding.btnSort.setOnClickListener(v -> showSortOptions());
+
+        binding.imgVoiceSearch.setOnClickListener(v -> {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
+                    == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                showVoiceSearchDialog();
+            } else {
+                recordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+            }
+        });
+
+        binding.imgCameraSearch.setOnClickListener(v -> showCameraSearchBottomSheet());
     }
 
     private void setupSuggestionRecyclerView() {
@@ -950,6 +970,31 @@ public class SearchResultActivity extends AppCompatActivity {
         String nfdNormalizedString = Normalizer.normalize(s, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(nfdNormalizedString).replaceAll("").toLowerCase(Locale.getDefault()).replace("đ", "d").replace("Đ", "d");
+    }
+
+    private void showVoiceSearchDialog() {
+        VoiceSearchDialog dialog = new VoiceSearchDialog();
+        dialog.setVoiceSearchListener(result -> {
+            if (result != null && !result.trim().isEmpty()) {
+                binding.edtSearchQuery.setText(result);
+                getIntent().putExtra("is_voice", true);
+                performSearch(result);
+            }
+        });
+        dialog.show(getSupportFragmentManager(), "VoiceSearchDialog");
+    }
+
+    private void showCameraSearchBottomSheet() {
+        CameraSearchBottomSheet bottomSheet = new CameraSearchBottomSheet();
+        bottomSheet.setCameraSearchListener(imagePath -> {
+            if (imagePath != null && !imagePath.isEmpty()) {
+                getIntent().putExtra("image_path", imagePath);
+                getIntent().putExtra("is_camera", true);
+                binding.edtSearchQuery.setText("");
+                performSearch("");
+            }
+        });
+        bottomSheet.show(getSupportFragmentManager(), "CameraSearchBottomSheet");
     }
 
     // --- Suggestion Models ---

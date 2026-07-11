@@ -26,31 +26,16 @@
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/neutral_900" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+        <ImageView
+            android:id="@+id/logoMuse"
+            android:layout_width="80dp"
+            android:layout_height="32dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/logo"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/layoutTabs"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="32dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/logo" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/montserrat"
-                android:text="• AI Stylist Online"
-                android:textColor="@color/primary_500"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <ImageView
             android:id="@+id/btnAiAgent"
@@ -65,6 +50,7 @@
 
         <!-- Tabs -->
         <LinearLayout
+            android:id="@+id/layoutTabs"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"
@@ -204,8 +190,7 @@
                 android:layout_height="40dp"
                 android:backgroundTint="@color/primary_500"
                 app:fabCustomSize="40dp"
-                app:srcCompat="@drawable/ic_arrow_back"
-                android:rotation="180"
+                app:srcCompat="@drawable/ic_send"
                 app:tint="@color/white"
                 app:elevation="0dp" />
 
@@ -294,7 +279,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/layoutHeader" />
 
     <!-- Bottom Navigation -->

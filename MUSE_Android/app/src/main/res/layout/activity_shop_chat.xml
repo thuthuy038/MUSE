@@ -39,14 +39,12 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/montserrat"
-                android:text="MUSE Fashion Shop"
-                android:textColor="@color/neutral_900"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="24dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/logo"
+                android:layout_marginBottom="2dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -125,8 +123,7 @@
             android:layout_marginStart="8dp"
             android:backgroundTint="@color/primary_500"
             app:fabCustomSize="40dp"
-            app:srcCompat="@drawable/ic_arrow_back"
-            android:rotation="180"
+            app:srcCompat="@drawable/ic_send"
             app:tint="@color/white"
             app:elevation="0dp"
             android:contentDescription="Send" />

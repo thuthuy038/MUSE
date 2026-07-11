@@ -45,13 +45,9 @@ public class AiStorageManager {
     public static List<ArchivedChat> loadArchivedChats(Context context) {
         String json = getPrefs(context).getString(KEY_ARCHIVED_CHATS, null);
         if (json == null) {
-            // Load some mock data for first-time use
-            List<ArchivedChat> mocks = new ArrayList<>();
-            mocks.add(new ArchivedChat("1", "Trang phục dự tiệc cưới", "12/06/2026", new ArrayList<>()));
-            mocks.add(new ArchivedChat("2", "Thanh lịch mùa hè", "12/06/2026", new ArrayList<>()));
-            mocks.add(new ArchivedChat("3", "Tủ đồ bền vững cơ bản", "08/06/2026", new ArrayList<>()));
-            saveArchivedChats(context, mocks);
-            return mocks;
+            List<ArchivedChat> emptyList = new ArrayList<>();
+            saveArchivedChats(context, emptyList);
+            return emptyList;
         }
         
         Type type = new TypeToken<ArrayList<ArchivedChat>>() {}.getType();
