@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.text.HtmlCompat;
 
 import androidx.viewpager2.widget.ViewPager2;
 import androidx.annotation.NonNull;
@@ -225,8 +226,12 @@ public class ProductDetailActivity extends AppCompatActivity {
         loadCategoryName(product.getCategory());
 
         // Description
-        binding.txtDescription.setText(product.getDescription() != null && !product.getDescription().isEmpty() ?
-                product.getDescription() : "Mô tả đang được cập nhật...");
+        if (product.getDescription() != null && !product.getDescription().isEmpty()) {
+            CharSequence parsedHtml = HtmlCompat.fromHtml(product.getDescription(), HtmlCompat.FROM_HTML_MODE_LEGACY);
+            binding.txtDescription.setText(trimTrailingWhitespace(parsedHtml));
+        } else {
+            binding.txtDescription.setText("Mô tả đang được cập nhật...");
+        }
 
         // Image
         if (product.getImages() != null && !product.getImages().isEmpty()) {
@@ -805,5 +810,14 @@ public class ProductDetailActivity extends AppCompatActivity {
                 this.imageView = itemView;
             }
         }
+    }
+
+    private CharSequence trimTrailingWhitespace(CharSequence source) {
+        if (source == null) return "";
+        int i = source.length() - 1;
+        while (i >= 0 && Character.isWhitespace(source.charAt(i))) {
+            i--;
+        }
+        return source.subSequence(0, i + 1);
     }
 }
