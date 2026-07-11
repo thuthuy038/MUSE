@@ -122,6 +122,18 @@ public class HomeFragment extends Fragment {
 
         binding.btnViewAllCategories.setVisibility(View.GONE);
 
+        View.OnClickListener toExplore = v -> {
+            if (getActivity() != null) {
+                Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
+                intent.putExtra("open_explore", true);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            }
+        };
+
+        binding.txtCategoryTitle.setOnClickListener(toExplore);
+        binding.btnViewAllCategories.setOnClickListener(toExplore);
+
         setInitialStates();
 
         loadBanners();
@@ -193,10 +205,21 @@ public class HomeFragment extends Fragment {
         // Category RV
         binding.rvCategories.setLayoutManager(new GridLayoutManager(getContext(), 3));
         categoryAdapter = new CategoryAdapter(categoryList, category -> {
-            Bundle bundle = new Bundle();
-            bundle.putString("category_id", category.getId());
-            Navigation.findNavController(binding.getRoot())
-                    .navigate(R.id.navigation_category_products, bundle);
+            if ("all".equals(category.getId())) {
+                // Chuyển sang tab Explore (Khám phá) nếu chọn "Tất cả"
+                if (getActivity() != null) {
+                    Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
+                    intent.putExtra("open_explore", true);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                }
+            } else {
+                // Chuyển sang trang danh mục cụ thể (CategoryProductsFragment)
+                Bundle bundle = new Bundle();
+                bundle.putString("category_id", category.getId());
+                Navigation.findNavController(binding.getRoot())
+                        .navigate(R.id.navigation_category_products, bundle);
+            }
         });
 
         // DISABLE selection highlight for Home screen
@@ -382,6 +405,18 @@ public class HomeFragment extends Fragment {
         binding.edtSearch.setOnClickListener(toSearch);
 
         applyRipple(binding.searchBar);
+        applyRipple(binding.btnChatHome);
+
+        binding.btnChatHome.setOnClickListener(v -> {
+            SessionManager sm = new SessionManager(requireContext());
+            if (!sm.isLoggedIn()) {
+                Intent intent = new Intent(getContext(), com.project.muse_android.auth.AuthActivity.class);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(getContext(), com.project.muse_android.profile.ShopChatActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void applyRipple(View view) {

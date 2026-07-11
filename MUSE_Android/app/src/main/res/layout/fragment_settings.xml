@@ -8,6 +8,7 @@
 
     <!-- Header with Back Button -->
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:paddingHorizontal="16dp">
@@ -23,6 +24,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -44,7 +46,7 @@
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/ic_account_circle"
+                    android:src="@drawable/ic_profile_vector"
                     app:shapeAppearanceOverlay="@style/CircleImage" />
 
                 <LinearLayout

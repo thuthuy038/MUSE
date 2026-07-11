@@ -176,7 +176,7 @@ public class AIFragment extends Fragment {
         binding.tvWelcomeTitle.setText("Xin chào, Người đẹp ✨");
         binding.tvUserName.setText("Người đẹp");
         binding.tvUserLabel.setText("AI Profile Khách");
-        binding.ivUserAvatar.setImageResource(R.drawable.ic_account_circle);
+        binding.ivUserAvatar.setImageResource(R.drawable.ic_profile_vector);
 
         setupSpinnersFromPrefs();
         updateProfileStatusUI();
@@ -202,11 +202,11 @@ public class AIFragment extends Fragment {
                     byte[] decodedString = Base64.decode(avatarUrl, Base64.DEFAULT);
                     Glide.with(this).load(decodedString).into(binding.ivUserAvatar);
                 } catch (Exception e) {
-                    binding.ivUserAvatar.setImageResource(R.drawable.ic_account_circle);
+                    binding.ivUserAvatar.setImageResource(R.drawable.ic_profile_vector);
                 }
             }
         } else {
-            binding.ivUserAvatar.setImageResource(R.drawable.ic_account_circle);
+            binding.ivUserAvatar.setImageResource(R.drawable.ic_profile_vector);
         }
 
         // Save server User data to local AI_PREFS to keep them synced
@@ -279,6 +279,14 @@ public class AIFragment extends Fragment {
 
     private boolean isAIProfileEmpty() {
         if (getContext() == null) return true;
+
+        boolean isLogged = sessionManager.isLoggedIn();
+        boolean completed = sessionManager.isProfileCompleted();
+
+        if (isLogged) {
+            return !completed;
+        }
+
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
         String userIdKey = getCurrentUserId();
         String gender = prefs.getString(userIdKey + "_gender", "");
@@ -299,6 +307,10 @@ public class AIFragment extends Fragment {
 
     private void setupSpinnersFromPrefs() {
         if (getContext() == null) return;
+        
+        boolean isLogged = sessionManager.isLoggedIn();
+        boolean completed = sessionManager.isProfileCompleted();
+        
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
         String userIdKey = getCurrentUserId();
         
@@ -419,7 +431,7 @@ public class AIFragment extends Fragment {
         binding.tvWelcomeTitle.setText("Xin chào, " + sessionManager.getUserName() + " ✨");
         binding.tvUserName.setText(sessionManager.getUserName());
         binding.tvUserLabel.setText(sessionManager.isProfileCompleted() ? "AI Profile Đã Hoàn Thành" : "AI Profile Chưa Hoàn Thành");
-        binding.ivUserAvatar.setImageResource(R.drawable.ic_account_circle);
+        binding.ivUserAvatar.setImageResource(R.drawable.ic_profile_vector);
 
         setupSpinnersFromPrefs();
         updateProfileStatusUI();

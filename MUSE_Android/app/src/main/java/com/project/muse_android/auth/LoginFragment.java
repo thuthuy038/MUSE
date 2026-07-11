@@ -67,6 +67,9 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Fix header overlapping status bar
+        com.project.utils.ViewUtils.applySystemBarsPadding(binding.getRoot(), true, false);
+
         // Khởi tạo Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("626423207611-nql9ucopgltr5r7l4sbrqt1fc6ig0eop.apps.googleusercontent.com")
@@ -137,7 +140,7 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập thành công!");
                     dialog.setOnCloseListener(() -> {
                         Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
-                        intent.putExtra("select_profile", true);
+                        intent.putExtra("open_home", true);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         if (getActivity() != null) {
@@ -190,7 +193,7 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập bằng Google thành công!");
                     dialog.setOnCloseListener(() -> {
                         Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
-                        intent.putExtra("select_profile", true);
+                        intent.putExtra("open_home", true);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         if (getActivity() != null) {
