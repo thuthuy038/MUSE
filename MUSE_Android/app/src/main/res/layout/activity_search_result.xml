@@ -69,10 +69,21 @@
             android:paddingHorizontal="16dp">
 
             <ImageView
+                android:id="@+id/imgCameraSearch"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/photo_camera"
-                app:tint="@color/primary_500" />
+                app:tint="@color/primary_500"
+                android:contentDescription="Camera" />
+
+            <ImageView
+                android:id="@+id/imgVoiceSearch"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="8dp"
+                android:src="@android:drawable/ic_btn_speak_now"
+                app:tint="@color/primary_500"
+                android:contentDescription="Voice" />
 
             <EditText
                 android:id="@+id/edtSearchQuery"

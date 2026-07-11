@@ -1,5 +1,6 @@
 package com.project.muse_android.ai;
 
+import androidx.annotation.NonNull;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -102,6 +103,8 @@ public class ChatBotActivity extends AppCompatActivity {
 
         // Setup Bottom Navigation
         com.project.utils.ViewUtils.setupBottomNavigation(binding.bottomNavigationView, this);
+
+        setupFooterBehavior();
     }
 
     private void navigateToAiHub() {
@@ -110,6 +113,135 @@ public class ChatBotActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
         finish();
+    }
+
+    private boolean isBottomNavHidden = false;
+
+    private void showBottomNav() {
+        if (!isBottomNavHidden) return;
+        isBottomNavHidden = false;
+        binding.bottomNavigationView.animate()
+                .translationY(0)
+                .setDuration(225)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
+
+        int navHeight = binding.bottomNavigationView.getHeight();
+        if (navHeight == 0) {
+            navHeight = (int) (56 * getResources().getDisplayMetrics().density);
+        }
+        binding.layoutInputArea.animate()
+                .translationY(-navHeight)
+                .setDuration(225)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
+    }
+
+    private void hideBottomNav() {
+        if (isBottomNavHidden) return;
+        isBottomNavHidden = true;
+        binding.bottomNavigationView.animate()
+                .translationY(binding.bottomNavigationView.getHeight())
+                .setDuration(175)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
+
+        binding.layoutInputArea.animate()
+                .translationY(0)
+                .setDuration(175)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
+    }
+
+    private void setupFooterBehavior() {
+        // Set initial state and dynamically set padding to prevent overlaps
+        binding.bottomNavigationView.post(() -> {
+            int navHeight = binding.bottomNavigationView.getHeight();
+            if (navHeight == 0) {
+                navHeight = (int) (56 * getResources().getDisplayMetrics().density);
+            }
+            
+            // Push input area above bottom nav initially
+            binding.layoutInputArea.setTranslationY(-navHeight);
+
+            // Add bottom padding to chat history to prevent overlap
+            int originalPaddingBottom = binding.rvChatHistory.getPaddingBottom();
+            binding.rvChatHistory.setPadding(
+                    binding.rvChatHistory.getPaddingLeft(),
+                    binding.rvChatHistory.getPaddingTop(),
+                    binding.rvChatHistory.getPaddingRight(),
+                    navHeight + originalPaddingBottom
+            );
+
+            // Add bottom padding to suggestions content
+            int originalSugPaddingBottom = binding.layoutSuggestionsContent.getPaddingBottom();
+            binding.layoutSuggestionsContent.setPadding(
+                    binding.layoutSuggestionsContent.getPaddingLeft(),
+                    binding.layoutSuggestionsContent.getPaddingTop(),
+                    binding.layoutSuggestionsContent.getPaddingRight(),
+                    navHeight + originalSugPaddingBottom
+            );
+        });
+
+        // Scroll listener for Chat (RecyclerView)
+        binding.rvChatHistory.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (binding.etMessage.hasFocus()) {
+                    return; // Keep hidden while inputting
+                }
+                if (dy > 0) {
+                    hideBottomNav();
+                } else if (dy < 0) {
+                    showBottomNav();
+                }
+            }
+        });
+
+        // Scroll listener for Suggestions (NestedScrollView)
+        binding.layoutSuggestionsContent.setOnScrollChangeListener(new androidx.core.widget.NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(@NonNull androidx.core.widget.NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                int dy = scrollY - oldScrollY;
+                if (binding.etMessage.hasFocus()) {
+                    return; // Keep hidden while inputting
+                }
+                if (dy > 0) {
+                    hideBottomNav();
+                } else if (dy < 0) {
+                    showBottomNav();
+                }
+            }
+        });
+
+        // Focus listener for message input
+        binding.etMessage.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                hideBottomNav();
+            } else {
+                showBottomNav();
+            }
+        });
+
+        // Global Layout Listener to clear focus and show bottom nav when keyboard is hidden
+        binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(new android.view.ViewTreeObserver.OnGlobalLayoutListener() {
+            private int previousHeight = 0;
+            @Override
+            public void onGlobalLayout() {
+                if (binding == null) return;
+                int height = binding.getRoot().getHeight();
+                if (previousHeight != 0) {
+                    if (height > previousHeight) {
+                        // Keyboard hidden
+                        if (binding.etMessage.hasFocus()) {
+                            binding.etMessage.clearFocus();
+                        }
+                    }
+                }
+                previousHeight = height;
+            }
+        });
     }
 
     private void setupViewPager() {
@@ -274,6 +406,16 @@ public class ChatBotActivity extends AppCompatActivity {
         // Display user message
         addUserMessage(input);
         binding.etMessage.setText("");
+
+        // Clear focus and hide keyboard
+        binding.etMessage.clearFocus();
+        View focusView = this.getCurrentFocus();
+        if (focusView != null) {
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(focusView.getWindowToken(), 0);
+            }
+        }
 
         // Show typing indicator or temp typing message
         int typingPosition = messageList.size();
