@@ -34,6 +34,7 @@
             android:layout_width="0dp"
             android:layout_height="54dp"
             android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/bg_search_bar"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -42,7 +43,7 @@
             android:clickable="true"
             android:focusable="true"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnChatHome"
             app:layout_constraintStart_toEndOf="@+id/imgLogo"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -71,6 +72,31 @@
                 android:importantForAutofill="no"
                 android:focusable="false" />
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnChatHome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_chat"
+                app:tint="@color/primary_500" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chat với shop"
+                android:textColor="#666666"
+                android:textSize="8sp"
+                android:fontFamily="@font/montserrat" />
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

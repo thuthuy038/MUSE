@@ -306,7 +306,7 @@
                     android:layout_marginHorizontal="20dp"
                     android:layout_marginTop="16dp"
                     android:fontFamily="@font/montserrat"
-                    android:text="Thêm hình ảnh và video (ít nhất 3 ảnh và 1 video)"
+                    android:text="Thêm hình ảnh và video (Tối đa 10 tệp)"
                     android:textColor="#000000"
                     android:textSize="12sp"
                     android:textStyle="bold" />

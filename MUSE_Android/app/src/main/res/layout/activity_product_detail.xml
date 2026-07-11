@@ -517,6 +517,38 @@
 
             <View
                 android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:background="#F2F2F2" />
+
+            <!-- Recommendation Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:fontFamily="@font/montserrat"
+                    android:text="CÓ THỂ BẠN CŨNG THÍCH"
+                    android:textColor="@color/neutral_900"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvSuggestedProducts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:nestedScrollingEnabled="false"
+                    android:clipToPadding="false"
+                    android:padding="2dp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
                 android:layout_height="80dp" />
 
         </LinearLayout>
