@@ -170,7 +170,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     binding.btnReview.setVisibility(View.VISIBLE);
                     
                     binding.btnReorder.setOnClickListener(v -> {
-                        Toast.makeText(context, "Đã thêm lại các sản phẩm của đơn " + order.getId() + " vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
+                        java.util.ArrayList<com.project.models.Product> reorderProducts = new java.util.ArrayList<>(order.getProducts());
+                        if (!reorderProducts.isEmpty()) {
+                            android.content.Intent intent = new android.content.Intent(context, com.project.muse_android.checkout.CheckoutActivity.class);
+                            intent.putExtra("products", reorderProducts);
+                            context.startActivity(intent);
+                        } else {
+                            Toast.makeText(context, "Không có sản phẩm nào để mua lại", Toast.LENGTH_SHORT).show();
+                        }
                     });
                 } else {
                     binding.btnReturn.setVisibility(View.VISIBLE);
@@ -228,10 +235,19 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 binding.btnReorder.setVisibility(View.VISIBLE);
 
                 binding.btnCancelDetail.setOnClickListener(v -> {
-                    Toast.makeText(context, "Đơn hàng " + order.getId() + " đã bị hủy thành công.", Toast.LENGTH_SHORT).show();
+                    android.content.Intent intent = new android.content.Intent(context, OrderDetailActivity.class);
+                    intent.putExtra("order", order);
+                    context.startActivity(intent);
                 });
                 binding.btnReorder.setOnClickListener(v -> {
-                    Toast.makeText(context, "Đã thêm lại các sản phẩm của đơn " + order.getId() + " vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
+                    java.util.ArrayList<com.project.models.Product> reorderProducts = new java.util.ArrayList<>(order.getProducts());
+                    if (!reorderProducts.isEmpty()) {
+                        android.content.Intent intent = new android.content.Intent(context, com.project.muse_android.checkout.CheckoutActivity.class);
+                        intent.putExtra("products", reorderProducts);
+                        context.startActivity(intent);
+                    } else {
+                        Toast.makeText(context, "Không có sản phẩm nào để mua lại", Toast.LENGTH_SHORT).show();
+                    }
                 });
             }
             // RETURNED, TRẢ HÀNG

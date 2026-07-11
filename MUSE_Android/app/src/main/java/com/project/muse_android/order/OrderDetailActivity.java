@@ -335,7 +335,14 @@ public class OrderDetailActivity extends AppCompatActivity {
             binding.btnViewOrderDetail.setVisibility(View.VISIBLE);
             binding.btnViewOrderDetail.setText("Mua lại");
             binding.btnViewOrderDetail.setOnClickListener(v -> {
-                Toast.makeText(this, "Đã thêm các sản phẩm vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
+                ArrayList<Product> reorderProducts = new ArrayList<>(order.getProducts());
+                if (!reorderProducts.isEmpty()) {
+                    android.content.Intent intent = new android.content.Intent(this, com.project.muse_android.checkout.CheckoutActivity.class);
+                    intent.putExtra("products", reorderProducts);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Không có sản phẩm nào để mua lại", Toast.LENGTH_SHORT).show();
+                }
             });
             
             binding.layoutCancelledSummary.setVisibility(View.VISIBLE);
