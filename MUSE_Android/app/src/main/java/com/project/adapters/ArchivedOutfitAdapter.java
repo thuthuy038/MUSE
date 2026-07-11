@@ -1,4 +1,4 @@
-package com.project.muse_android.ai;
+package com.project.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,8 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.project.models.SavedOutfit;
 import com.project.muse_android.R;
 import com.project.muse_android.product.ProductDetailActivity;
+import com.project.muse_android.ai.VirtualFittingResultActivity;
 
 import java.util.List;
 

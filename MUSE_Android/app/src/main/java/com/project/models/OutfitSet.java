@@ -1,6 +1,4 @@
-package com.project.muse_android.ai;
-
-import com.project.models.Product;
+package com.project.models;
 
 public class OutfitSet {
     private String name;

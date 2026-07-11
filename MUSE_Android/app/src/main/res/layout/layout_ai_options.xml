@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="160dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_ai_options"
+    android:orientation="vertical"
+    android:padding="6dp">
+
+    <TextView
+        android:id="@+id/btnOptionAiHub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:fontFamily="@font/montserrat_bold"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="AI HUB ✨"
+        android:textColor="@color/primary_500"
+        android:textSize="13sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#FFD2DB" />
+
+    <TextView
+        android:id="@+id/btnOptionChatShop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:fontFamily="@font/montserrat_bold"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="Chat với Shop 💬"
+        android:textColor="@color/primary_500"
+        android:textSize="13sp" />
+
+</LinearLayout>

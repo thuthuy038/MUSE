@@ -1,4 +1,4 @@
-package com.project.muse_android.ai;
+package com.project.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.project.models.ArchivedChat;
 import com.project.muse_android.R;
 
 import java.util.List;

@@ -317,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (distance < 10) {
                             v.performClick();
-                            navController.navigate(R.id.navigation_ai);
+                            showAIOptionsPopup(v);
                             startAIFloatingAnimation();
                         } else {
                             View p = (View) v.getParent();
@@ -376,5 +376,41 @@ public class MainActivity extends AppCompatActivity {
         if (aiFloatAnim != null) {
             aiFloatAnim.cancel();
         }
+    }
+
+    private void showAIOptionsPopup(View anchor) {
+        View popupView = android.view.LayoutInflater.from(this).inflate(R.layout.layout_ai_options, null);
+        final android.widget.PopupWindow popupWindow = new android.widget.PopupWindow(
+                popupView,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                true
+        );
+        popupWindow.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        popupWindow.setElevation(8f);
+
+        popupView.findViewById(R.id.btnOptionAiHub).setOnClickListener(v -> {
+            popupWindow.dismiss();
+            navController.navigate(R.id.navigation_ai);
+        });
+
+        popupView.findViewById(R.id.btnOptionChatShop).setOnClickListener(v -> {
+            popupWindow.dismiss();
+            android.content.Intent intent = new android.content.Intent(MainActivity.this, com.project.muse_android.profile.ShopChatActivity.class);
+            startActivity(intent);
+        });
+
+        // Measure popup size
+        popupView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        int popupHeight = popupView.getMeasuredHeight();
+        int popupWidth = popupView.getMeasuredWidth();
+
+        // Calculate screen coordinates
+        int[] location = new int[2];
+        anchor.getLocationOnScreen(location);
+        int x = location[0] + (anchor.getWidth() - popupWidth) / 2;
+        int y = location[1] - popupHeight - 16; // 16dp spacing above the bubble
+
+        popupWindow.showAtLocation(anchor, android.view.Gravity.NO_GRAVITY, x, y);
     }
 }

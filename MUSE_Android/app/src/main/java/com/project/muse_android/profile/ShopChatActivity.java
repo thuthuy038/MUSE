@@ -13,8 +13,8 @@ import com.project.database.AppDatabase;
 import com.project.database.ShopMessage;
 import com.project.models.ChatResponse;
 import com.project.muse_android.BuildConfig;
-import com.project.muse_android.ai.GeminiClient;
-import com.project.muse_android.ai.GeminiResponse;
+import com.project.network.GeminiClient;
+import com.project.models.GeminiResponse;
 import com.project.muse_android.databinding.ActivityShopChatBinding;
 import com.project.network.ApiClient;
 import com.project.network.ApiService;
@@ -42,6 +42,15 @@ public class ShopChatActivity extends AppCompatActivity {
     private String geminiApiKey;
 
     private static final boolean USE_SERVER_API = true;
+
+    private final androidx.activity.result.ActivityResultLauncher<String> recordAudioPermissionLauncher =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    showVoiceSearchDialog();
+                } else {
+                    Toast.makeText(this, "Quyền ghi âm âm thanh bị từ chối.", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +103,15 @@ public class ShopChatActivity extends AppCompatActivity {
         binding.btnDeleteChat.setOnClickListener(v -> showDeleteConfirmDialog());
 
         binding.btnSend.setOnClickListener(v -> sendMessage());
+
+        binding.btnVoiceRecord.setOnClickListener(v -> {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
+                    == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                showVoiceSearchDialog();
+            } else {
+                recordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+            }
+        });
 
         messageList = new ArrayList<>();
         chatAdapter = new ShopChatAdapter(this, messageList);
@@ -321,5 +339,15 @@ public class ShopChatActivity extends AppCompatActivity {
             }
         }
         return false;
+    }
+
+    private void showVoiceSearchDialog() {
+        com.project.muse_android.search.VoiceSearchDialog dialog = new com.project.muse_android.search.VoiceSearchDialog();
+        dialog.setVoiceSearchListener(result -> {
+            if (result != null && !result.trim().isEmpty()) {
+                binding.etMessage.setText(result);
+            }
+        });
+        dialog.show(getSupportFragmentManager(), "VoiceSearchDialog");
     }
 }

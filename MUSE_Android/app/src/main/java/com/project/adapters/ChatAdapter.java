@@ -1,4 +1,4 @@
-package com.project.muse_android.ai;
+package com.project.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,10 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.project.adapters.HorizontalProductAdapter;
-import com.project.adapters.ProductAdapter;
 import com.project.models.Product;
 import com.project.models.enums.HorizontalProductMode;
+import com.project.models.ChatMessage;
 import com.project.muse_android.R;
 import com.project.muse_android.product.ProductDetailActivity;
 

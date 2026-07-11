@@ -40,6 +40,8 @@ import com.project.muse_android.main.MainActivity;
 import com.project.network.ApiResponse;
 import com.project.network.HomeApiClient;
 import com.project.network.HomeApiService;
+import com.project.network.GeminiClient;
+import com.project.models.GeminiResponse;
 import com.project.utils.SessionManager;
 
 import java.text.DecimalFormat;
@@ -764,11 +766,10 @@ public class SearchResultActivity extends AppCompatActivity {
             body.put("generationConfig", generationConfig);
 
             String apiKey = com.project.muse_android.BuildConfig.GEMINI_API_KEY;
-            android.util.Log.d("MUSE_CameraSearch", "Sending request to Gemini API key: " + (apiKey != null && !apiKey.isEmpty() ? "Present" : "Empty"));
             
-            com.project.muse_android.ai.GeminiClient.getClient().generateContent(apiKey, body).enqueue(new Callback<com.project.muse_android.ai.GeminiResponse>() {
+            GeminiClient.getClient().generateContent(apiKey, body).enqueue(new Callback<GeminiResponse>() {
                 @Override
-                public void onResponse(Call<com.project.muse_android.ai.GeminiResponse> call, Response<com.project.muse_android.ai.GeminiResponse> response) {
+                public void onResponse(Call<GeminiResponse> call, Response<GeminiResponse> response) {
                     binding.loadingLayout.setVisibility(View.GONE);
                     binding.rvProducts.setVisibility(View.VISIBLE);
 
@@ -788,42 +789,33 @@ public class SearchResultActivity extends AppCompatActivity {
                             boolean hasExactMatch = (matchedId != null && !matchedId.isEmpty() && !matchedId.equalsIgnoreCase("null") && !matchedId.equalsIgnoreCase("none"));
                             android.util.Log.d("MUSE_CameraSearch", "Extracted matchedId: " + matchedId + ", hasExactMatch: " + hasExactMatch);
                             
-                            // Set similar products label visibility
-                            binding.txtSimilarProductsLabel.setVisibility(hasExactMatch ? View.GONE : View.VISIBLE);
-                            android.util.Log.d("MUSE_CameraSearch", "Setting txtSimilarProductsLabel visibility to: " + (hasExactMatch ? "GONE" : "VISIBLE"));
-
-                            List<String> matchedIds = new ArrayList<>();
+                            List<String> idList = new ArrayList<>();
                             if (hasExactMatch) {
-                                matchedIds.add(matchedId);
+                                idList.add(matchedId);
                             }
                             if (similarArray != null) {
                                 for (int i = 0; i < similarArray.length(); i++) {
-                                    matchedIds.add(similarArray.getString(i));
+                                    String id = similarArray.getString(i);
+                                    if (!id.equals(matchedId)) {
+                                        idList.add(id);
+                                    }
                                 }
                             }
-                            android.util.Log.d("MUSE_CameraSearch", "Parsed matchedIds: " + matchedIds.toString());
 
                             allSearchResults.clear();
-                            List<Product> orderedResults = new ArrayList<>();
-                            for (String id : matchedIds) {
+                            for (String id : idList) {
                                 for (Product p : allProducts) {
-                                    if (p.getStatus() != null && !p.getStatus().equalsIgnoreCase("active")) continue;
-                                    String pid = p.get_id() != null ? p.get_id() : p.getId();
-                                    if (pid != null && pid.equalsIgnoreCase(id.trim()) && !orderedResults.contains(p)) {
-                                        orderedResults.add(p);
+                                    if (p.get_id().equals(id)) {
+                                        if (p.getStatus() != null && !p.getStatus().equalsIgnoreCase("active")) continue;
+                                        allSearchResults.add(p);
                                         break;
                                     }
                                 }
                             }
-                            allSearchResults.addAll(orderedResults);
-                            android.util.Log.d("MUSE_CameraSearch", "Filtered search results count: " + allSearchResults.size());
 
-                            if (allSearchResults.isEmpty()) {
-                                android.util.Log.d("MUSE_CameraSearch", "No matching products found in database. Falling back to local search.");
-                                performLocalTextSearch("", allProducts, true);
-                            } else {
+                            runOnUiThread(() -> {
                                 applyFiltersAndSort();
-                            }
+                            });
                         } catch (Exception e) {
                             android.util.Log.e("MUSE_CameraSearch", "JSON parsing failed", e);
                             performLocalTextSearch("", allProducts, true);
@@ -838,7 +830,7 @@ public class SearchResultActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<com.project.muse_android.ai.GeminiResponse> call, Throwable t) {
+                public void onFailure(Call<GeminiResponse> call, Throwable t) {
                     binding.loadingLayout.setVisibility(View.GONE);
                     binding.rvProducts.setVisibility(View.VISIBLE);
                     android.util.Log.e("MUSE_CameraSearch", "Network failure calling Gemini", t);
@@ -901,9 +893,9 @@ public class SearchResultActivity extends AppCompatActivity {
         body.put("generationConfig", generationConfig);
 
         String apiKey = com.project.muse_android.BuildConfig.GEMINI_API_KEY;
-        com.project.muse_android.ai.GeminiClient.getClient().generateContent(apiKey, body).enqueue(new Callback<com.project.muse_android.ai.GeminiResponse>() {
+        GeminiClient.getClient().generateContent(apiKey, body).enqueue(new Callback<GeminiResponse>() {
             @Override
-            public void onResponse(Call<com.project.muse_android.ai.GeminiResponse> call, Response<com.project.muse_android.ai.GeminiResponse> response) {
+            public void onResponse(Call<GeminiResponse> call, Response<GeminiResponse> response) {
                 binding.loadingLayout.setVisibility(View.GONE);
                 binding.rvProducts.setVisibility(View.VISIBLE);
                 
@@ -944,7 +936,7 @@ public class SearchResultActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<com.project.muse_android.ai.GeminiResponse> call, Throwable t) {
+            public void onFailure(Call<GeminiResponse> call, Throwable t) {
                 binding.loadingLayout.setVisibility(View.GONE);
                 binding.rvProducts.setVisibility(View.VISIBLE);
                 performLocalTextSearch(query, allProducts, false);
