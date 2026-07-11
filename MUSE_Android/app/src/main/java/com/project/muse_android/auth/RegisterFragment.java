@@ -114,6 +114,8 @@ public class RegisterFragment extends Fragment {
                 Toast.makeText(getContext(), "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
             } else if (!password.equals(confirmPassword)) {
                 Toast.makeText(getContext(), "Mật khẩu không khớp", Toast.LENGTH_SHORT).show();
+            } else if (!password.matches("^(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$")) {
+                Toast.makeText(getContext(), "Mật khẩu phải có ký tự in hoa và ký tự đặc biệt, dài tối thiểu 8 ký tự", Toast.LENGTH_SHORT).show();
             } else {
                 registerUser(name, email, password);
             }
