@@ -100,8 +100,14 @@ public class CartFragment extends Fragment {
         // Sử dụng Helper để tự động đẩy Header xuống dưới Status Bar
         ViewUtils.applySystemBarsPadding(binding.header, true, false);
 
-        // Điều chỉnh Buy Bar theo Bottom Navigation
-        setupBottomSectionAdjustment();
+        // Listen for Window Insets to get navigation bar height
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.bottomContainer, (v, insets) -> {
+            androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+            int bottomInset = systemBars.bottom;
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottomInset);
+            setupBottomSectionAdjustment(bottomInset);
+            return insets;
+        });
 
         // Xử lý Checkbox Chọn tất cả (Buy Bar)
         binding.cbSelectAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -257,19 +263,33 @@ public class CartFragment extends Fragment {
         }
     }
 
+    private int currentBottomInset = 0;
+
+    private void setupBottomSectionAdjustment(int bottomInset) {
+        this.currentBottomInset = bottomInset;
+        setupBottomSectionAdjustment();
+    }
+
     private void setupBottomSectionAdjustment() {
         if (getActivity() == null) return;
 
         BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
-        if (bottomNav == null) return;
+        if (bottomNav == null) {
+            binding.bottomContainer.setTranslationY(0);
+            return;
+        }
 
         // Đợi view được vẽ xong để lấy chiều cao chính xác
         bottomNav.post(() -> {
             int navHeight = bottomNav.getHeight();
             if (navHeight <= 0) return;
 
+            // Calculate translation for showing bottom container above bottom navigation view
+            // accounting for the bottom navigation bar inset padding in bottomContainer.
+            int translationY = -(navHeight - currentBottomInset);
+
             // Mặc định Buy Bar nằm trên Bottom Nav
-            binding.bottomContainer.setTranslationY(-navHeight);
+            binding.bottomContainer.setTranslationY(translationY);
 
             // Lắng nghe sự kiện cuộn để đồng bộ ẩn/hiện
             binding.nestedScrollView.setOnScrollChangeListener((View.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
@@ -282,7 +302,7 @@ public class CartFragment extends Fragment {
                 } else if (scrollY < oldScrollY - 10) {
                     // Cuộn lên: Hiện Bottom Nav -> Buy Bar trượt lên trên Bottom Nav
                     binding.bottomContainer.animate()
-                            .translationY(-navHeight)
+                            .translationY(translationY)
                             .setDuration(200)
                             .start();
                 }
