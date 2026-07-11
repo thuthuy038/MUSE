@@ -416,4 +416,19 @@ public class Order implements Serializable {
 
     public String getReturnProcessedAt() { return returnProcessedAt; }
     public void setReturnProcessedAt(String returnProcessedAt) { this.returnProcessedAt = returnProcessedAt; }
+
+    private List<OrderItem> returnItems;
+
+    public List<OrderItem> getReturnItems() { return returnItems; }
+    public void setReturnItems(List<OrderItem> returnItems) { this.returnItems = returnItems; }
+
+    public List<Product> getReturnProducts() {
+        List<Product> products = new ArrayList<>();
+        if (returnItems != null) {
+            for (OrderItem item : returnItems) {
+                products.add(item.toProduct());
+            }
+        }
+        return products;
+    }
 }

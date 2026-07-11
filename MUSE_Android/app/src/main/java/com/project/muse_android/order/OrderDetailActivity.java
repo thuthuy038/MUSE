@@ -59,6 +59,15 @@ public class OrderDetailActivity extends AppCompatActivity {
                 }
             });
 
+    private final androidx.activity.result.ActivityResultLauncher<android.content.Intent> reviewLauncher =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    if (order.get_id() != null) {
+                        fetchOrderDetail(order.get_id());
+                    }
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -202,7 +211,13 @@ public class OrderDetailActivity extends AppCompatActivity {
         binding.txtCustomerAddress.setText("Địa chỉ: " + getFullAddress(order));
 
         // 4. Order Items
-        adapter.setData(order.getProducts());
+        String statusUpper = order.getStatus() != null ? order.getStatus().toUpperCase() : "";
+        if ((statusUpper.contains("TRẢ HÀNG") || statusUpper.contains("RETURN")) 
+                && order.getReturnItems() != null && !order.getReturnItems().isEmpty()) {
+            adapter.setData(order.getReturnProducts());
+        } else {
+            adapter.setData(order.getProducts());
+        }
 
         // 5. Price Summary
         double subtotal = order.getSubTotal();
@@ -323,10 +338,14 @@ public class OrderDetailActivity extends AppCompatActivity {
                 Toast.makeText(this, "Đã thêm các sản phẩm vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
             });
             
-            binding.txtCancelledTime.setText("vào " + formatDate(order.getCancelledAt() != null ? order.getCancelledAt() : order.getUpdatedAt()));
+            binding.layoutCancelledSummary.setVisibility(View.VISIBLE);
+            binding.txtCancelledByLabel.setText("Yêu cầu bởi");
             binding.txtCancelledBy.setText(order.getCancelledBy() != null ? order.getCancelledBy() : "Người mua");
+            binding.txtCancelledRequestTimeLabel.setText("Yêu cầu vào");
             binding.txtCancelledRequestTime.setText(formatDate(order.getCancelledAt() != null ? order.getCancelledAt() : order.getUpdatedAt()));
+            binding.txtCancellationReasonLabel.setText("Lý do");
             binding.txtCancellationReason.setText(order.getCancellationReason() != null ? order.getCancellationReason() : "Lý do khác");
+            binding.txtCancelledPaymentMethodLabel.setText("Phương thức thanh toán");
             binding.txtCancelledPaymentMethod.setText(order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD");
             
         } else if (statusUpper.contains("TRẢ HÀNG") || statusUpper.contains("RETURN")) {
@@ -335,27 +354,41 @@ public class OrderDetailActivity extends AppCompatActivity {
             binding.txtStatusBanner.setBackgroundColor(0xFFFB6F92); // Pinkish red for returns
             
             binding.layoutCancelledSummary.setVisibility(View.VISIBLE);
-            binding.txtCancelledBy.setText(order.getReturnMethod() != null ? order.getReturnMethod() : "Trả hàng/Hoàn tiền");
+            binding.txtCancelledByLabel.setText("Yêu cầu bởi");
+            binding.txtCancelledBy.setText(order.getReturnMethod() != null ? order.getReturnMethod() : "Người mua");
+            binding.txtCancelledRequestTimeLabel.setText("Yêu cầu vào");
             binding.txtCancelledRequestTime.setText(formatDate(order.getReturnRequestedAt() != null ? order.getReturnRequestedAt() : order.getUpdatedAt()));
+            binding.txtCancellationReasonLabel.setText("Lý do");
             binding.txtCancellationReason.setText(order.getReturnReason() != null ? (order.getReturnReason() + (order.getReturnNote() != null && !order.getReturnNote().isEmpty() ? "\nGhi chú: " + order.getReturnNote() : "")) : "Không có lý do");
             
-            String paymentMethod = order.getPaymentMethod();
-            if (paymentMethod == null && order.getPaymentId() != null) {
-                paymentMethod = order.getPaymentId().getPaymentMethod();
-            }
-            binding.txtCancelledPaymentMethod.setText(paymentMethod != null ? paymentMethod : "COD");
+            binding.txtCancelledPaymentMethodLabel.setText("Phương thức hoàn tiền");
+            binding.txtCancelledPaymentMethod.setText("Tài khoản ngân hàng");
             
             binding.layoutCancelledActions.setVisibility(View.VISIBLE);
             binding.btnCancelledLeft.setVisibility(View.VISIBLE);
             binding.btnCancelledLeft.setText("Liên hệ");
             binding.btnCancelledLeft.setOnClickListener(v -> {
-                Toast.makeText(this, "Đang kết nối tổng đài hỗ trợ trả hàng...", Toast.LENGTH_SHORT).show();
+                android.content.Intent chatIntent = new android.content.Intent(this, com.project.muse_android.profile.ShopChatActivity.class);
+                startActivity(chatIntent);
             });
             binding.spaceCancelled.setVisibility(View.VISIBLE);
             binding.btnViewOrderDetail.setVisibility(View.VISIBLE);
             binding.btnViewOrderDetail.setText("Mua lại");
             binding.btnViewOrderDetail.setOnClickListener(v -> {
-                Toast.makeText(this, "Đã thêm các sản phẩm vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
+                ArrayList<Product> reorderProducts = new ArrayList<>();
+                if (order.getReturnItems() != null && !order.getReturnItems().isEmpty()) {
+                    reorderProducts.addAll(order.getReturnProducts());
+                } else {
+                    reorderProducts.addAll(order.getProducts());
+                }
+                
+                if (!reorderProducts.isEmpty()) {
+                    android.content.Intent intent = new android.content.Intent(this, com.project.muse_android.checkout.CheckoutActivity.class);
+                    intent.putExtra("products", reorderProducts);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Không có sản phẩm nào để mua lại", Toast.LENGTH_SHORT).show();
+                }
             });
 
         } else if (statusUpper.contains("DELIVERED") || statusUpper.contains("COMPLETED") 
@@ -377,7 +410,7 @@ public class OrderDetailActivity extends AppCompatActivity {
                     Toast.makeText(this, "Đã thêm các sản phẩm vào giỏ hàng để mua lại", Toast.LENGTH_SHORT).show();
                 });
                 binding.btnRequestRefund.setOnClickListener(v -> {
-                    Toast.makeText(this, "Mở chức năng đánh giá đơn hàng", Toast.LENGTH_SHORT).show();
+                    openWriteReview();
                 });
             } else {
                 binding.btnReturnRefund.setVisibility(View.VISIBLE);
@@ -387,7 +420,7 @@ public class OrderDetailActivity extends AppCompatActivity {
                 binding.btnRequestRefund.setText("Yêu cầu Trả hàng/Hoàn tiền");
                 
                 binding.btnReview.setOnClickListener(v -> {
-                    Toast.makeText(this, "Mở chức năng đánh giá đơn hàng", Toast.LENGTH_SHORT).show();
+                    openWriteReview();
                 });
                 binding.btnRequestRefund.setOnClickListener(v -> {
                     android.content.Intent intent = new android.content.Intent(this, com.project.muse_android.order.ReturnRefundActivity.class);
@@ -565,6 +598,14 @@ public class OrderDetailActivity extends AppCompatActivity {
             case "ĐÃ TRẢ HÀNG": return "Trả hàng & Hoàn tiền thành công";
             case "TỪ CHỐI TRẢ HÀNG": return "Từ chối yêu cầu trả hàng";
             default: return status;
+        }
+    }
+
+    private void openWriteReview() {
+        if (order != null) {
+            android.content.Intent intent = new android.content.Intent(this, com.project.muse_android.product.WriteReviewActivity.class);
+            intent.putExtra("order", order);
+            reviewLauncher.launch(intent);
         }
     }
 }
