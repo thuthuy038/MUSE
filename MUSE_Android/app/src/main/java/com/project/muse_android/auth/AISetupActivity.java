@@ -77,9 +77,10 @@ public class AISetupActivity extends AppCompatActivity {
 
         // Load existing AI Profile values from AI_PREFS
         android.content.SharedPreferences prefs = getSharedPreferences("AI_PREFS", MODE_PRIVATE);
-        selectedGender = prefs.getString("gender", "female");
-        selectedHeight = prefs.getInt("height", 170);
-        selectedWeight = prefs.getInt("weight", 62);
+        String userIdKey = getCurrentUserId();
+        selectedGender = prefs.getString(userIdKey + "_gender", "female");
+        selectedHeight = prefs.getInt(userIdKey + "_height", 170);
+        selectedWeight = prefs.getInt(userIdKey + "_weight", 62);
         if (selectedHeight < 140) selectedHeight = 170;
         if (selectedWeight < 40) selectedWeight = 62;
 
@@ -98,14 +99,14 @@ public class AISetupActivity extends AppCompatActivity {
         binding.sbWeight.setProgress(selectedWeight - 40);
         binding.txtWeightDisplay.setText(selectedWeight + " KG");
 
-        String vong1 = prefs.getString("vong1", "");
-        String vong2 = prefs.getString("vong2", "");
-        String vong3 = prefs.getString("vong3", "");
+        String vong1 = prefs.getString(userIdKey + "_vong1", "");
+        String vong2 = prefs.getString(userIdKey + "_vong2", "");
+        String vong3 = prefs.getString(userIdKey + "_vong3", "");
         binding.etStep2Vong1.setText(vong1);
         binding.etStep2Vong2.setText(vong2);
         binding.etStep2Vong3.setText(vong3);
 
-        String styles = prefs.getString("styles", "");
+        String styles = prefs.getString(userIdKey + "_styles", "");
         if (!styles.isEmpty()) {
             String[] styleArray = styles.split(",");
             for (String s : styleArray) {
@@ -121,7 +122,7 @@ public class AISetupActivity extends AppCompatActivity {
             }
         }
 
-        int skin = prefs.getInt("skin", 0);
+        int skin = prefs.getInt(userIdKey + "_skin", 0);
         if (skin == 1) binding.btnSkin1.setSelected(true);
         else if (skin == 2) binding.btnSkin2.setSelected(true);
         else if (skin == 3) binding.btnSkin3.setSelected(true);
@@ -408,12 +409,13 @@ public class AISetupActivity extends AppCompatActivity {
     private void saveDataAndFinish() {
         // Save locally to AI_PREFS
         android.content.SharedPreferences.Editor editor = getSharedPreferences("AI_PREFS", MODE_PRIVATE).edit();
-        editor.putString("gender", selectedGender);
-        editor.putInt("height", selectedHeight);
-        editor.putInt("weight", selectedWeight);
-        editor.putString("vong1", binding.etStep2Vong1.getText().toString().trim());
-        editor.putString("vong2", binding.etStep2Vong2.getText().toString().trim());
-        editor.putString("vong3", binding.etStep2Vong3.getText().toString().trim());
+        String userIdKey = getCurrentUserId();
+        editor.putString(userIdKey + "_gender", selectedGender);
+        editor.putInt(userIdKey + "_height", selectedHeight);
+        editor.putInt(userIdKey + "_weight", selectedWeight);
+        editor.putString(userIdKey + "_vong1", binding.etStep2Vong1.getText().toString().trim());
+        editor.putString(userIdKey + "_vong2", binding.etStep2Vong2.getText().toString().trim());
+        editor.putString(userIdKey + "_vong3", binding.etStep2Vong3.getText().toString().trim());
 
         // Save selected styles
         StringBuilder stylesSb = new StringBuilder();
@@ -430,7 +432,7 @@ public class AISetupActivity extends AppCompatActivity {
             if (stylesSb.length() > 0) stylesSb.append(",");
             stylesSb.append("toi_gian");
         }
-        editor.putString("styles", stylesSb.toString());
+        editor.putString(userIdKey + "_styles", stylesSb.toString());
 
         // Save selected skin
         int skin = 0;
@@ -439,7 +441,7 @@ public class AISetupActivity extends AppCompatActivity {
         else if (binding.btnSkin3.isSelected()) skin = 3;
         else if (binding.btnSkin4.isSelected()) skin = 4;
         else if (binding.btnSkin5.isSelected()) skin = 5;
-        editor.putInt("skin", skin);
+        editor.putInt(userIdKey + "_skin", skin);
 
         editor.apply();
 
@@ -513,6 +515,12 @@ public class AISetupActivity extends AppCompatActivity {
         });
 
         dialog.show();
+    }
+
+    private String getCurrentUserId() {
+        if (sessionManager == null) return "guest";
+        String userId = sessionManager.getUserId();
+        return (userId != null) ? userId : "guest";
     }
 
     @Override

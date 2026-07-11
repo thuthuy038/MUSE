@@ -137,9 +137,6 @@ public class SessionManager {
                 .remove(KEY_PROFILE_COMPLETED)
                 .putBoolean(KEY_IS_LOGGED_IN, false)
                 .apply();
-        if (context != null) {
-            context.getSharedPreferences("AI_PREFS", Context.MODE_PRIVATE).edit().clear().apply();
-        }
     }
 
     public void addLocalNotification(Notification notification) {

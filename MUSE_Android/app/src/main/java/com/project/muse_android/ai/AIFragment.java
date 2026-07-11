@@ -212,14 +212,15 @@ public class AIFragment extends Fragment {
         // Save server User data to local AI_PREFS to keep them synced
         if (getContext() != null) {
             android.content.SharedPreferences.Editor editor = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE).edit();
+            String userIdKey = getCurrentUserId();
             if (user.getGender() != null && !user.getGender().isEmpty()) {
-                editor.putString("gender", user.getGender());
+                editor.putString(userIdKey + "_gender", user.getGender());
             }
             if (user.getHeight() > 0) {
-                editor.putInt("height", user.getHeight());
+                editor.putInt(userIdKey + "_height", user.getHeight());
             }
             if (user.getWeight() > 0) {
-                editor.putInt("weight", (int) user.getWeight());
+                editor.putInt(userIdKey + "_weight", (int) user.getWeight());
             }
             
             if (user.getFavoriteStyles() != null && !user.getFavoriteStyles().isEmpty()) {
@@ -228,7 +229,7 @@ public class AIFragment extends Fragment {
                     if (sb.length() > 0) sb.append(",");
                     sb.append(style);
                 }
-                editor.putString("styles", sb.toString());
+                editor.putString(userIdKey + "_styles", sb.toString());
             }
             editor.apply();
         }
@@ -239,6 +240,12 @@ public class AIFragment extends Fragment {
         if (isAIProfileEmpty()) {
             showSetupPopup();
         }
+    }
+
+    private String getCurrentUserId() {
+        if (sessionManager == null) return "guest";
+        String userId = sessionManager.getUserId();
+        return (userId != null) ? userId : "guest";
     }
 
     private void showSetupPopup() {
@@ -272,23 +279,16 @@ public class AIFragment extends Fragment {
 
     private boolean isAIProfileEmpty() {
         if (getContext() == null) return true;
-
-        boolean isLogged = sessionManager.isLoggedIn();
-        boolean completed = sessionManager.isProfileCompleted();
-
-        if (isLogged) {
-            return !completed;
-        }
-
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
-        String gender = prefs.getString("gender", "");
-        int height = prefs.getInt("height", 0);
-        int weight = prefs.getInt("weight", 0);
-        String vong1 = prefs.getString("vong1", "");
-        String vong2 = prefs.getString("vong2", "");
-        String vong3 = prefs.getString("vong3", "");
-        String styles = prefs.getString("styles", "");
-        int skin = prefs.getInt("skin", 0);
+        String userIdKey = getCurrentUserId();
+        String gender = prefs.getString(userIdKey + "_gender", "");
+        int height = prefs.getInt(userIdKey + "_height", 0);
+        int weight = prefs.getInt(userIdKey + "_weight", 0);
+        String vong1 = prefs.getString(userIdKey + "_vong1", "");
+        String vong2 = prefs.getString(userIdKey + "_vong2", "");
+        String vong3 = prefs.getString(userIdKey + "_vong3", "");
+        String styles = prefs.getString(userIdKey + "_styles", "");
+        int skin = prefs.getInt(userIdKey + "_skin", 0);
 
         if (!gender.isEmpty() || height > 0 || weight > 0 || !vong1.isEmpty() || !vong2.isEmpty() || !vong3.isEmpty() || !styles.isEmpty() || skin > 0) {
             return false;
@@ -299,23 +299,13 @@ public class AIFragment extends Fragment {
 
     private void setupSpinnersFromPrefs() {
         if (getContext() == null) return;
-        
-        boolean isLogged = sessionManager.isLoggedIn();
-        boolean completed = sessionManager.isProfileCompleted();
-        
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
+        String userIdKey = getCurrentUserId();
         
-        String savedStyle = null;
-        String savedColor = null;
-        String savedVibe = null;
-        String savedShape = null;
-
-        if (!isLogged || completed) {
-            savedStyle = prefs.getString("spinner_favorite_style", null);
-            savedColor = prefs.getString("spinner_color_palette", null);
-            savedVibe = prefs.getString("spinner_style_vibe", null);
-            savedShape = prefs.getString("spinner_body_shape", null);
-        }
+        String savedStyle = prefs.getString(userIdKey + "_spinner_favorite_style", null);
+        String savedColor = prefs.getString(userIdKey + "_spinner_color_palette", null);
+        String savedVibe = prefs.getString(userIdKey + "_spinner_style_vibe", null);
+        String savedShape = prefs.getString(userIdKey + "_spinner_body_shape", null);
 
         populateSpinnerWithSavedOption(binding.spFavoriteStyle, STYLES, savedStyle, "spinner_favorite_style");
         populateSpinnerWithSavedOption(binding.spColorPalette, COLORS, savedColor, "spinner_color_palette");
@@ -348,7 +338,7 @@ public class AIFragment extends Fragment {
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 if (getContext() != null) {
                     android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
-                    prefs.edit().putString(prefKey, options[position]).apply();
+                    prefs.edit().putString(getCurrentUserId() + "_" + prefKey, options[position]).apply();
                 }
             }
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
@@ -362,8 +352,9 @@ public class AIFragment extends Fragment {
         list.add("Chưa có");
 
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
-        int height = prefs.getInt("height", 0);
-        int weight = prefs.getInt("weight", 0);
+        String userIdKey = getCurrentUserId();
+        int height = prefs.getInt(userIdKey + "_height", 0);
+        int weight = prefs.getInt(userIdKey + "_weight", 0);
 
         if (height > 0 && weight > 0) {
             String bmiSpec = "Chiều cao: " + height + " cm | Cân nặng: " + weight + " kg";
@@ -405,7 +396,7 @@ public class AIFragment extends Fragment {
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 if (getContext() != null) {
                     android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
-                    prefs.edit().putString("spinner_body_shape", list.get(position)).apply();
+                    prefs.edit().putString(getCurrentUserId() + "_spinner_body_shape", list.get(position)).apply();
                 }
             }
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}

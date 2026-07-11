@@ -288,7 +288,7 @@
             android:backgroundTint="@color/primary_500"
             android:fontFamily="@font/montserrat_bold"
             android:text="Đi đến phòng chụp"
-            app:icon="@drawable/ic_aiar"
+            app:icon="@drawable/ic_camera"
             app:cornerRadius="12dp" />
     </LinearLayout>
 

@@ -278,7 +278,7 @@
             android:backgroundTint="@color/primary_500"
             android:fontFamily="@font/montserrat_bold"
             android:text="Đi đến phòng chụp"
-            app:icon="@drawable/ic_shopping_bag"
+            app:icon="@drawable/ic_camera"
             app:cornerRadius="12dp" />
     </LinearLayout>
 
