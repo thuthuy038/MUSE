@@ -67,6 +67,9 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Fix header overlapping status bar
+        com.project.utils.ViewUtils.applySystemBarsPadding(binding.getRoot(), true, false);
+
         // Khởi tạo Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("626423207611-nql9ucopgltr5r7l4sbrqt1fc6ig0eop.apps.googleusercontent.com")

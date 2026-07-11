@@ -112,8 +112,8 @@ public class ProductReviewAdapter extends RecyclerView.Adapter<ProductReviewAdap
 
             Glide.with(holder.itemView.getContext())
                     .load(avatarUrl)
-                    .placeholder(R.drawable.account_circle)
-                    .error(R.drawable.account_circle)
+                    .placeholder(R.drawable.ic_profile_vector)
+                    .error(R.drawable.ic_profile_vector)
                     .circleCrop()
                     .into(holder.imgUserAvatar);
 

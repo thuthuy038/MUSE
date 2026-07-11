@@ -75,10 +75,18 @@ public class NotificationListFragment extends Fragment {
 
             if ("promotion".equals(n.getType()) && n.getTargetId() != null) {
                 showPromotionDetail(n.getTargetId());
+            } else if ("order".equals(n.getType()) && n.getTargetId() != null) {
+                showOrderDetail(n.getTargetId());
             }
         });
         binding.rvNotifications.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvNotifications.setAdapter(adapter);
+    }
+
+    private void showOrderDetail(String orderId) {
+        android.content.Intent intent = new android.content.Intent(getActivity(), com.project.muse_android.order.OrderDetailActivity.class);
+        intent.putExtra("order_id", orderId);
+        startActivity(intent);
     }
 
     private void showPromotionDetail(String promoId) {

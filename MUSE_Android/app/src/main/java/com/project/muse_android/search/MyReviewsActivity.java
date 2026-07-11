@@ -92,7 +92,7 @@ public class MyReviewsActivity extends AppCompatActivity {
         if (user.getAvatar() != null && user.getAvatar().getUrl() != null) {
             String url = user.getAvatar().getUrl();
             if (!url.startsWith("http")) url = "https://server-testing-ymn9.onrender.com" + (url.startsWith("/") ? "" : "/") + url;
-            Glide.with(this).load(url).placeholder(R.drawable.ic_account_circle).circleCrop().into(binding.ivUserAvatar);
+            Glide.with(this).load(url).placeholder(R.drawable.ic_profile_vector).circleCrop().into(binding.ivUserAvatar);
         }
     }
 

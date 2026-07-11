@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import android.content.DialogInterface;
 import com.project.muse_android.databinding.DialogSuccessBinding;
 
 public class SuccessDialog extends DialogFragment {
@@ -30,6 +31,15 @@ public class SuccessDialog extends DialogFragment {
 
     public void setOnCloseListener(Runnable onCloseListener) {
         this.onCloseListener = onCloseListener;
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (onCloseListener != null) {
+            onCloseListener.run();
+            onCloseListener = null; // Ensure it only runs once
+        }
     }
 
     @Override
@@ -52,9 +62,6 @@ public class SuccessDialog extends DialogFragment {
 
         binding.tvMessage.setText(message);
         binding.btnClose.setOnClickListener(v -> {
-            if (onCloseListener != null) {
-                onCloseListener.run();
-            }
             dismiss();
         });
 

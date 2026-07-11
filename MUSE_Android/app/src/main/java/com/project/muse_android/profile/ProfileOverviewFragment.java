@@ -43,6 +43,12 @@ public class ProfileOverviewFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         sessionManager = new SessionManager(requireContext());
 
+        // Fix header overlapping status bar
+        com.project.utils.ViewUtils.applySystemBarsPadding(binding.header, true, false);
+
+        // Fix content overlapping navigation bar
+        com.project.utils.ViewUtils.applySystemBarsPadding(binding.nestedScrollView, false, true);
+
         setupClickListeners();
         setupMenuItems();
     }
@@ -175,7 +181,7 @@ public class ProfileOverviewFragment extends Fragment {
 
     private void setAvatarImage(String avatar) {
         if (avatar == null || avatar.isEmpty()) {
-            binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+            binding.ivAvatar.setImageResource(R.drawable.ic_profile_vector);
             return;
         }
 
@@ -186,8 +192,8 @@ public class ProfileOverviewFragment extends Fragment {
             }
             Glide.with(this)
                     .load(fullUrl)
-                    .placeholder(R.drawable.ic_account_circle)
-                    .error(R.drawable.ic_account_circle)
+                    .placeholder(R.drawable.ic_profile_vector)
+                    .error(R.drawable.ic_profile_vector)
                     .into(binding.ivAvatar);
         } else if (avatar.length() > 200 || !avatar.contains("/")) {
             // Likely Base64 or a weird relative path without slash
@@ -195,16 +201,16 @@ public class ProfileOverviewFragment extends Fragment {
                 byte[] decodedString = Base64.decode(avatar, Base64.DEFAULT);
                 Glide.with(this)
                         .load(decodedString)
-                        .placeholder(R.drawable.ic_account_circle)
-                        .error(R.drawable.ic_account_circle)
+                        .placeholder(R.drawable.ic_profile_vector)
+                        .error(R.drawable.ic_profile_vector)
                         .into(binding.ivAvatar);
             } catch (Exception e) {
                 // If Base64 fails, try treating it as relative path without leading slash
                 String fullUrl = "https://server-testing-ymn9.onrender.com/" + avatar;
                 Glide.with(this)
                         .load(fullUrl)
-                        .placeholder(R.drawable.ic_account_circle)
-                        .error(R.drawable.ic_account_circle)
+                        .placeholder(R.drawable.ic_profile_vector)
+                        .error(R.drawable.ic_profile_vector)
                         .into(binding.ivAvatar);
             }
         } else {
@@ -212,15 +218,15 @@ public class ProfileOverviewFragment extends Fragment {
             String fullUrl = "https://server-testing-ymn9.onrender.com/" + avatar;
             Glide.with(this)
                     .load(fullUrl)
-                    .placeholder(R.drawable.ic_account_circle)
-                    .error(R.drawable.ic_account_circle)
+                    .placeholder(R.drawable.ic_profile_vector)
+                    .error(R.drawable.ic_profile_vector)
                     .into(binding.ivAvatar);
         }
     }
 
     private void setupMenuItems() {
         // Personal Info
-        binding.menuPersonalInfo.ivIcon.setImageResource(R.drawable.ic_account_circle);
+        binding.menuPersonalInfo.ivIcon.setImageResource(R.drawable.ic_profile_vector);
         binding.menuPersonalInfo.tvTitle.setText(R.string.profile_personal_info);
 
         // Security
@@ -281,6 +287,19 @@ public class ProfileOverviewFragment extends Fragment {
 
         binding.menuSecurity.getRoot().setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.navigation_settings);
+        });
+
+        binding.menuNotifications.getRoot().setOnClickListener(v -> {
+            Intent intent = new Intent();
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                intent.setAction(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                intent.putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, requireContext().getPackageName());
+            } else {
+                intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                intent.putExtra("app_package", requireContext().getPackageName());
+                intent.putExtra("app_uid", requireContext().getApplicationInfo().uid);
+            }
+            startActivity(intent);
         });
 
         binding.menuMembership.getRoot().setOnClickListener(v -> openMembership(v));
