@@ -589,22 +589,25 @@ public class ChatBotActivity extends AppCompatActivity {
 
     private String buildSystemInstruction() {
         SharedPreferences prefs = getSharedPreferences("AI_PREFS", MODE_PRIVATE);
+        SessionManager sessionManager = new SessionManager(this);
+        String userId = sessionManager.getUserId();
+        String userIdKey = (userId != null) ? userId : "guest";
 
         // Base fallback values from SharedPreferences
-        String gender = prefs.getString("gender", "female");
-        int height = prefs.getInt("height", 160);
-        float weight = prefs.getInt("weight", 50);
-        String vong1 = prefs.getString("vong1", "Chưa nhập");
-        String vong2 = prefs.getString("vong2", "Chưa nhập");
-        String vong3 = prefs.getString("vong3", "Chưa nhập");
-        String styles = prefs.getString("styles", "Tự nhiên, thanh lịch");
+        String gender = prefs.getString(userIdKey + "_gender", "female");
+        int height = prefs.getInt(userIdKey + "_height", 160);
+        float weight = prefs.getInt(userIdKey + "_weight", 50);
+        String vong1 = prefs.getString(userIdKey + "_vong1", "Chưa nhập");
+        String vong2 = prefs.getString(userIdKey + "_vong2", "Chưa nhập");
+        String vong3 = prefs.getString(userIdKey + "_vong3", "Chưa nhập");
+        String styles = prefs.getString(userIdKey + "_styles", "Tự nhiên, thanh lịch");
 
         // Extra info from SharedPreferences
-        int skinVal = prefs.getInt("skin", 0);
+        int skinVal = prefs.getInt(userIdKey + "_skin", 0);
         String skinTone = getSkinToneText(skinVal);
-        String bodyShape = prefs.getString("spinner_body_shape", "Chưa thiết lập");
-        String favColors = prefs.getString("spinner_color_palette", "Chưa thiết lập");
-        String fashionPurpose = prefs.getString("spinner_style_vibe", "Chưa thiết lập");
+        String bodyShape = prefs.getString(userIdKey + "_spinner_body_shape", "Chưa thiết lập");
+        String favColors = prefs.getString(userIdKey + "_spinner_color_palette", "Chưa thiết lập");
+        String fashionPurpose = prefs.getString(userIdKey + "_spinner_style_vibe", "Chưa thiết lập");
 
         // If logged-in profile data is available, override with database values
         if (currentUser != null) {
