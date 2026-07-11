@@ -270,4 +270,20 @@ public interface ApiService {
     Call<com.project.models.District> getDistrictDetails(
         @retrofit2.http.Url String url
     );
+
+    // ========== CHAT WITH SHOP (SERVER DATABASE) ==========
+    @GET("api/chats/{userId}")
+    Call<com.project.models.ChatResponse> getChatMessages(
+        @Path("userId") String userId
+    );
+
+    @POST("api/chats/send")
+    Call<com.project.models.ChatResponse> sendChatMessage(
+        @Body java.util.Map<String, Object> body
+    );
+
+    @DELETE("api/chats/{userId}")
+    Call<com.project.network.ApiResponse<Void>> deleteChatHistory(
+        @Path("userId") String userId
+    );
 }

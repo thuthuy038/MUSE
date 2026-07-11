@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
@@ -70,6 +71,9 @@
         <activity
             android:name=".product.ProductReviewsActivity"
             android:exported="false" />
+        <activity
+            android:name=".product.WriteReviewActivity"
+            android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -87,6 +91,9 @@
             android:name=".profile.ProfileActivity"
             android:exported="false" />
         <activity
+            android:name=".profile.ShopChatActivity"
+            android:exported="false" />
+        <activity
             android:name=".notification.NotificationScreenActivity"
             android:exported="false" />
         <activity
@@ -94,15 +101,6 @@
             android:exported="false" />
         <activity
             android:name=".policy.TermsOfUseActivity"
-            android:exported="false" />
-        <activity
-            android:name=".product.ProductReviewsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".product.WriteReviewActivity"
-            android:exported="false" />
-        <activity
-            android:name=".product.FullScreenImageActivity"
             android:exported="false" />
         <activity
             android:name=".product.ProductDetailActivity"

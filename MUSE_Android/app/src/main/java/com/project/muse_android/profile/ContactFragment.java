@@ -75,6 +75,9 @@ public class ContactFragment extends Fragment {
 
                         // Cache name and email
                         sessionManager.saveUser(user.get_id(), user.getName(), user.getEmail());
+                        if (user.getCode() != null) {
+                            sessionManager.saveUserCode(user.getCode());
+                        }
 
                         if (user.getAvatar() != null && user.getAvatar().getUrl() != null && !user.getAvatar().getUrl().isEmpty()) {
                             String avatarUrl = user.getAvatar().getUrl();
@@ -161,9 +164,13 @@ public class ContactFragment extends Fragment {
         });
 
         binding.btnMessenger.setOnClickListener(v -> {
-            String messengerUrl = "https://m.me/muse.inc";
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(messengerUrl));
-            startActivity(intent);
+            if (!sessionManager.isLoggedIn()) {
+                Intent intent = new Intent(requireContext(), com.project.muse_android.auth.AuthActivity.class);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(requireContext(), ShopChatActivity.class);
+                startActivity(intent);
+            }
         });
     }
 

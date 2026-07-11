@@ -19,9 +19,18 @@ public class SessionManager {
     private static final String KEY_PROFILE_COMPLETED = "profile_completed";
     private static final String KEY_SHOULD_SHOW_OFFER = "should_show_offer";
     private static final String KEY_GUEST_ID = "guest_id";
+    private static final String KEY_USER_CODE = "user_code";
 
     public SessionManager(Context context) {
         this.prefs = context.getSharedPreferences("MUSE_PREFS", Context.MODE_PRIVATE);
+    }
+
+    public void saveUserCode(String code) {
+        prefs.edit().putString(KEY_USER_CODE, code).apply();
+    }
+
+    public String getUserCode() {
+        return prefs.getString(KEY_USER_CODE, null);
     }
 
     public String getGuestId() {
@@ -121,6 +130,7 @@ public class SessionManager {
                 .remove(KEY_USER_ID)
                 .remove(KEY_USER_NAME)
                 .remove(KEY_USER_EMAIL)
+                .remove(KEY_USER_CODE)
                 .remove(KEY_PROFILE_COMPLETED)
                 .putBoolean(KEY_IS_LOGGED_IN, false)
                 .apply();

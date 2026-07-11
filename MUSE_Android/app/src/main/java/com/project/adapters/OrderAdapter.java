@@ -205,7 +205,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     || statusUpper.contains("XÁC NHẬN")) {
                 binding.btnContact.setVisibility(View.VISIBLE);
                 binding.btnContact.setOnClickListener(v -> {
-                    Toast.makeText(context, "Đang kết nối liên hệ hỗ trợ đơn hàng " + order.getId(), Toast.LENGTH_SHORT).show();
+                    com.project.utils.SessionManager sm = new com.project.utils.SessionManager(context);
+                    if (!sm.isLoggedIn()) {
+                        android.content.Intent intent = new android.content.Intent(context, com.project.muse_android.auth.AuthActivity.class);
+                        context.startActivity(intent);
+                    } else {
+                        android.content.Intent intent = new android.content.Intent(context, com.project.muse_android.profile.ShopChatActivity.class);
+                        context.startActivity(intent);
+                    }
                 });
             }
             // SHIPPING, ĐANG GIAO HÀNG

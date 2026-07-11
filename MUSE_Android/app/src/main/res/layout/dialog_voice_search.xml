@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="340dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@android:color/white"
+    android:elevation="8dp"
+    android:gravity="center"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:padding="28dp">
+
+    <!-- Mic Indicator Icon with margins to allow scaling up to 1.4x without clipping -->
+    <FrameLayout
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/bg_circle_mic_inactive"
+        android:id="@+id/layoutMicContainer"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <ImageView
+            android:id="@+id/ivMicIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:src="@android:drawable/ic_btn_speak_now"
+            app:tint="@color/primary_500"
+            android:contentDescription="Microphone" />
+    </FrameLayout>
+
+    <!-- Status Text -->
+    <TextView
+        android:id="@+id/tvVoiceStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="MUSE AI Đang nghe..."
+        android:textColor="@color/primary_500"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- Subtext hint -->
+    <TextView
+        android:id="@+id/tvVoiceHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="Hãy nói món đồ hoặc phong cách bạn muốn tìm kiếm..."
+        android:textColor="#888888"
+        android:textSize="13sp" />
+
+    <!-- Action Buttons (Cancel & Done) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="28dp">
+
+        <Button
+            android:id="@+id/btnCancelVoice"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Hủy"
+            android:textColor="#999999"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnDoneVoice"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Xong"
+            android:textColor="@color/primary_500"
+            android:textStyle="bold"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+</LinearLayout>

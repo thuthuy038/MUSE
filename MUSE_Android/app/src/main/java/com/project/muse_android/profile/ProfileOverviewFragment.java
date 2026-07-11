@@ -307,6 +307,16 @@ public class ProfileOverviewFragment extends Fragment {
         binding.tvUserName.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.navigation_edit_profile);
         });
+
+        binding.cardAiStylist.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_ai);
+        });
+
+        binding.cardArRoom.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), com.project.muse_android.ai.VirtualFittingActivity.class);
+            intent.putExtra("outfit_scan", true);
+            startActivity(intent);
+        });
     }
 
     private void openMembership(View v) {
