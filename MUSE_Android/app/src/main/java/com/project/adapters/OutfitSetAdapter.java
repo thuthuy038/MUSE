@@ -1,4 +1,4 @@
-package com.project.muse_android.ai;
+package com.project.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +15,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.project.models.Product;
+import com.project.models.OutfitSet;
+import com.project.models.SavedOutfit;
+import com.project.utils.AiStorageManager;
 import com.project.muse_android.R;
 import com.project.muse_android.product.ProductDetailActivity;
 

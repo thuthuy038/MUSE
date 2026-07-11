@@ -119,6 +119,14 @@ public class SessionManager {
         return prefs.getBoolean(KEY_PROFILE_COMPLETED, false);
     }
 
+    public void saveNewRegisterFlag(boolean flag) {
+        prefs.edit().putBoolean("is_new_register", flag).apply();
+    }
+
+    public boolean isNewRegister() {
+        return prefs.getBoolean("is_new_register", false);
+    }
+
     public void setShouldShowOffer(boolean shouldShow) {
         prefs.edit().putBoolean(KEY_SHOULD_SHOW_OFFER, shouldShow).apply();
     }

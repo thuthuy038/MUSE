@@ -280,11 +280,8 @@ public class AIFragment extends Fragment {
     private boolean isAIProfileEmpty() {
         if (getContext() == null) return true;
 
-        boolean isLogged = sessionManager.isLoggedIn();
-        boolean completed = sessionManager.isProfileCompleted();
-
-        if (isLogged) {
-            return !completed;
+        if (sessionManager.isLoggedIn() && sessionManager.isNewRegister()) {
+            return true;
         }
 
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
@@ -298,11 +295,27 @@ public class AIFragment extends Fragment {
         String styles = prefs.getString(userIdKey + "_styles", "");
         int skin = prefs.getInt(userIdKey + "_skin", 0);
 
-        if (!gender.isEmpty() || height > 0 || weight > 0 || !vong1.isEmpty() || !vong2.isEmpty() || !vong3.isEmpty() || !styles.isEmpty() || skin > 0) {
-            return false;
+        boolean hasAtLeastOneField = (!gender.isEmpty() && !gender.equalsIgnoreCase("other"))
+                || height > 0 
+                || weight > 0 
+                || !vong1.isEmpty() 
+                || !vong2.isEmpty() 
+                || !vong3.isEmpty() 
+                || !styles.isEmpty() 
+                || skin > 0;
+
+        if (sessionManager.isLoggedIn()) {
+            if (hasAtLeastOneField) {
+                // Ghi nhớ cho các lần đăng nhập sau
+                sessionManager.saveProfileCompleted(true);
+                return false;
+            } else {
+                sessionManager.saveProfileCompleted(false);
+                return true;
+            }
         }
 
-        return true;
+        return !hasAtLeastOneField;
     }
 
     private void setupSpinnersFromPrefs() {

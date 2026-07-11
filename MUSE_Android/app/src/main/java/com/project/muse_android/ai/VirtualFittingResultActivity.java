@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.project.models.Product;
+import com.project.models.SavedOutfit;
+import com.project.utils.AiStorageManager;
 import com.project.muse_android.R;
 import com.project.muse_android.databinding.ActivityVirtualFittingResultBinding;
 import com.project.network.HomeApiClient;

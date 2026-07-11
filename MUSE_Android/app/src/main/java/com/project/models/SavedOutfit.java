@@ -1,4 +1,4 @@
-package com.project.muse_android.ai;
+package com.project.models;
 
 public class SavedOutfit {
     private String setName;
