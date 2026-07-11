@@ -140,7 +140,7 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập thành công!");
                     dialog.setOnCloseListener(() -> {
                         Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
-                        intent.putExtra("select_profile", true);
+                        intent.putExtra("open_home", true);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         if (getActivity() != null) {
@@ -193,7 +193,7 @@ private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForA
                     SuccessDialog dialog = SuccessDialog.newInstance("Đăng nhập bằng Google thành công!");
                     dialog.setOnCloseListener(() -> {
                         Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
-                        intent.putExtra("select_profile", true);
+                        intent.putExtra("open_home", true);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         if (getActivity() != null) {

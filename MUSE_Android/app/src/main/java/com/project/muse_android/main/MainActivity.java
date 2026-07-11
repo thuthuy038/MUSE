@@ -217,6 +217,9 @@ public class MainActivity extends AppCompatActivity {
             if (intent.getBooleanExtra("select_profile", false)) {
                 navController.navigate(R.id.navigation_profile);
                 intent.removeExtra("select_profile");
+            } else if (intent.getBooleanExtra("open_home", false)) {
+                navController.navigate(R.id.navigation_home);
+                intent.removeExtra("open_home");
             } else if (intent.getBooleanExtra("open_cart", false)) {
                 navController.navigate(R.id.navigation_cart);
                 intent.removeExtra("open_cart");
