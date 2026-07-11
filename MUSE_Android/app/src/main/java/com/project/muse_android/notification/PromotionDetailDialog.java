@@ -63,27 +63,36 @@ public class PromotionDetailDialog extends DialogFragment {
         if (promotion != null) {
             binding.tvPromoName.setText(promotion.getName());
             
-            // 1. Format Badge (Discount)
+            // Determine if it's percentage or fixed VND early for consistency
+            boolean isPercent = false;
+            Promotion.Condition cond = null;
             if (promotion.getConditions() != null && !promotion.getConditions().isEmpty()) {
-                Promotion.Condition cond = promotion.getConditions().get(0);
-                if (cond.getDiscountValue() != null) {
-                    String rawType = cond.getDiscountType();
-                    // Robust check for percent type
-                    boolean isPercent = rawType != null && (rawType.trim().equalsIgnoreCase("percent") || rawType.contains("%"));
-
-                    if (isPercent) {
-                        binding.tvDiscountValue.setText(String.format(Locale.getDefault(), "%.0f%% OFF", cond.getDiscountValue()));
-                    } else {
-                        // Display as -Xk for large VND values
-                        if (cond.getDiscountValue() >= 1000) {
-                            binding.tvDiscountValue.setText(String.format(Locale.getDefault(), "-%.0fkđ", cond.getDiscountValue() / 1000));
-                        } else {
-                            binding.tvDiscountValue.setText(String.format(Locale.getDefault(), "-%.0fđ", cond.getDiscountValue()));
-                        }
+                cond = promotion.getConditions().get(0);
+                String rawType = cond.getDiscountType();
+                isPercent = rawType != null && (rawType.trim().equalsIgnoreCase("percent") || rawType.toLowerCase().startsWith("per") || rawType.contains("%"));
+                
+                // Fallback: If name has % and value is small (<= 100), treat as percentage for consistency
+                if (!isPercent && cond.getDiscountValue() != null && cond.getDiscountValue() <= 100) {
+                    if (promotion.getName() != null && promotion.getName().contains("%")) {
+                        isPercent = true;
                     }
-                } else if (cond.getGiftProductId() != null) {
-                    binding.tvDiscountValue.setText("GIFT");
                 }
+            }
+
+            // 1. Format Badge (Discount)
+            if (cond != null && cond.getDiscountValue() != null) {
+                if (isPercent) {
+                    binding.tvDiscountValue.setText(String.format(Locale.getDefault(), "%.0f%% OFF", cond.getDiscountValue()));
+                } else {
+                    // Display as -Xk for large VND values
+                    if (cond.getDiscountValue() >= 1000) {
+                        binding.tvDiscountValue.setText(String.format(Locale.getDefault(), "-%.0fkđ", cond.getDiscountValue() / 1000));
+                    } else {
+                        binding.tvDiscountValue.setText(String.format(Locale.getDefault(), "-%.0fđ", cond.getDiscountValue()));
+                    }
+                }
+            } else if (cond != null && cond.getGiftProductId() != null) {
+                binding.tvDiscountValue.setText("GIFT");
             }
 
             // 2. Date Range
@@ -93,12 +102,8 @@ public class PromotionDetailDialog extends DialogFragment {
 
             // 3. Dynamic Description based on conditions
             StringBuilder detailBuilder = new StringBuilder();
-            if (promotion.getConditions() != null && !promotion.getConditions().isEmpty()) {
-                Promotion.Condition cond = promotion.getConditions().get(0);
-                
+            if (cond != null) {
                 String method = promotion.getPromotionMethod() != null ? promotion.getPromotionMethod().trim() : "";
-                String rawType = cond.getDiscountType();
-                boolean isPercent = rawType != null && (rawType.trim().equalsIgnoreCase("percent") || rawType.contains("%"));
 
                 if ("discountOrder".equals(method) || "quantityDiscount".equals(method)) {
                     detailBuilder.append("Ưu đãi giảm ");

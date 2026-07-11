@@ -8,12 +8,27 @@
     android:orientation="horizontal"
     android:paddingVertical="16dp">
 
-    <ImageView
-        android:id="@+id/ivIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_account_circle"
-        app:tint="@color/primary_500" />
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/ivIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_account_circle"
+            app:tint="@color/primary_500" />
+
+        <TextView
+            android:id="@+id/tvBadge"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="2dp"
+            android:background="@drawable/bg_dark_circle"
+            android:backgroundTint="#FF4D4D"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/tvTitle"

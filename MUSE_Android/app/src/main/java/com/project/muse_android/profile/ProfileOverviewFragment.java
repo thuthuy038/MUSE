@@ -242,6 +242,11 @@ public class ProfileOverviewFragment extends Fragment {
         // Favorites
         binding.menuFavorites.ivIcon.setImageResource(R.drawable.ic_favorite_filled);
         binding.menuFavorites.tvTitle.setText(R.string.profile_favorites);
+
+        // Reviews
+        binding.menuReviews.ivIcon.setImageResource(R.drawable.ic_rate_review);
+        binding.menuReviews.tvTitle.setText("Đánh giá");
+        binding.menuReviews.tvBadge.setVisibility(View.GONE);
     }
 
     private void setupClickListeners() {
@@ -282,6 +287,11 @@ public class ProfileOverviewFragment extends Fragment {
 
         binding.menuFavorites.getRoot().setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.navigation_wishlist);
+        });
+
+        binding.menuReviews.getRoot().setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), com.project.muse_android.search.MyReviewsActivity.class);
+            startActivity(intent);
         });
 
         binding.llMembershipBadge.setOnClickListener(v -> openMembership(v));

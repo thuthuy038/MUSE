@@ -232,8 +232,20 @@ public interface ApiService {
             @Path("productId") String productId
     );
 
+    @GET("api/reviews/user/{userId}")
+    Call<com.project.models.ReviewResponse> getUserReviews(
+            @Path("userId") String userId
+    );
+
     @POST("api/reviews")
     Call<com.project.network.ApiResponse<com.project.models.ProductReview>> postReview(
+            @Header("Authorization") String token,
+            @Body Map<String, Object> body
+    );
+
+    @PUT("api/reviews/{id}")
+    Call<com.project.network.ApiResponse<com.project.models.ProductReview>> updateReview(
+            @Path("id") String reviewId,
             @Header("Authorization") String token,
             @Body Map<String, Object> body
     );

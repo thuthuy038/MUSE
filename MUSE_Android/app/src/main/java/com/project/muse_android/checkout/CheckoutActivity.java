@@ -446,6 +446,21 @@ public class CheckoutActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call<Order> call, @NonNull Response<Order> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Order createdOrder = response.body();
+                    
+                    // Add local notification for order placement
+                    String orderIdStr = createdOrder.getId() != null ? createdOrder.getId() : "";
+                    String displayId = orderIdStr.length() > 8 ? orderIdStr.substring(orderIdStr.length() - 8) : orderIdStr;
+                    
+                    com.project.models.Notification localNotif = new com.project.models.Notification();
+                    localNotif.setTitle("Đặt hàng thành công");
+                    localNotif.setMessage("Đơn hàng #" + displayId + " của bạn đã được đặt thành công!");
+                    localNotif.setType("order");
+                    localNotif.setStatus("unread");
+                    localNotif.setCreatedAt(new java.util.Date());
+                    
+                    sessionManager.addLocalNotification(localNotif);
+
+                    // Apply voucher code if exists, otherwise navigate to success screen
                     if (selectedVoucherCode != null && !selectedVoucherCode.isEmpty()) {
                         applyVoucherToServer(selectedVoucherCode, createdOrder.get_id());
                     } else {

@@ -36,12 +36,18 @@ public class WriteReviewAdapter extends RecyclerView.Adapter<WriteReviewAdapter.
 
     public interface OnMediaClickListener {
         void onMediaClick(Uri uri, boolean isVideo);
+        default void onUrlClick(String url, boolean isVideo) {}
+    }
+
+    public interface OnProductClickListener {
+        void onProductClick(Order.OrderItem item);
     }
 
     private final Context context;
     private final List<Order.OrderItem> orderItems;
     private final OnUploadClickListener uploadListener;
     private OnMediaClickListener mediaClickListener;
+    private OnProductClickListener productClickListener;
     
     private final Map<Integer, ReviewState> reviewData = new HashMap<>();
 
@@ -56,6 +62,21 @@ public class WriteReviewAdapter extends RecyclerView.Adapter<WriteReviewAdapter.
 
     public void setOnMediaClickListener(OnMediaClickListener listener) {
         this.mediaClickListener = listener;
+    }
+
+    public void setOnProductClickListener(OnProductClickListener listener) {
+        this.productClickListener = listener;
+    }
+
+    public void setInitialState(int position, int rating, String comment, List<String> imageUrls, List<String> videoUrls) {
+        ReviewState state = reviewData.get(position);
+        if (state != null) {
+            state.rating = rating;
+            state.comment = comment;
+            if (imageUrls != null) state.existingImageUrls.addAll(imageUrls);
+            if (videoUrls != null) state.existingVideoUrls.addAll(videoUrls);
+            notifyItemChanged(position);
+        }
     }
 
     @NonNull
@@ -128,10 +149,7 @@ public class WriteReviewAdapter extends RecyclerView.Adapter<WriteReviewAdapter.
                 holder.ratingBar.setRating(newRating);
             }
             
-            // Set text AND update state
             state.comment = text;
-            
-            // Ensure UI updates properly by using a post or direct update with listener removal
             holder.etComment.post(() -> {
                 if (holder.textWatcher != null) holder.etComment.removeTextChangedListener(holder.textWatcher);
                 holder.etComment.setText(text);
@@ -143,18 +161,42 @@ public class WriteReviewAdapter extends RecyclerView.Adapter<WriteReviewAdapter.
 
         holder.btnUpload.setOnClickListener(v -> uploadListener.onUploadClick(adapterPos));
 
-        // Media RecyclerView
-        if (state.selectedMedia.isEmpty()) {
+        holder.productInfoLayout.setOnClickListener(v -> {
+            if (productClickListener != null) productClickListener.onProductClick(item);
+        });
+
+        // Media RecyclerView (Combined existing URLs and new Uris)
+        List<Object> allMedia = new ArrayList<>();
+        allMedia.addAll(state.existingImageUrls);
+        allMedia.addAll(state.existingVideoUrls);
+        allMedia.addAll(state.selectedMedia);
+
+        if (allMedia.isEmpty()) {
             holder.rvSelectedMedia.setVisibility(View.GONE);
         } else {
             holder.rvSelectedMedia.setVisibility(View.VISIBLE);
             holder.rvSelectedMedia.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-            holder.rvSelectedMedia.setAdapter(new MediaPreviewAdapter(state.selectedMedia, pos -> {
-                state.selectedMedia.remove(pos);
+            holder.rvSelectedMedia.setAdapter(new MediaPreviewAdapter(allMedia, pos -> {
+                // Determine which list to remove from
+                int currentPos = pos;
+                if (currentPos < state.existingImageUrls.size()) {
+                    state.existingImageUrls.remove(currentPos);
+                } else {
+                    currentPos -= state.existingImageUrls.size();
+                    if (currentPos < state.existingVideoUrls.size()) {
+                        state.existingVideoUrls.remove(currentPos);
+                    } else {
+                        currentPos -= state.existingVideoUrls.size();
+                        state.selectedMedia.remove(currentPos);
+                    }
+                }
                 notifyItemChanged(adapterPos);
-            }, (uri, isVideo) -> {
-                if (mediaClickListener != null) mediaClickListener.onMediaClick(uri, isVideo);
-            }));
+            }, (obj, isVideo) -> {
+                if (mediaClickListener != null) {
+                    if (obj instanceof Uri) mediaClickListener.onMediaClick((Uri) obj, isVideo);
+                    else mediaClickListener.onUrlClick((String) obj, isVideo);
+                }
+            }, state.existingImageUrls.size(), state.existingVideoUrls.size()));
         }
     }
 
@@ -166,7 +208,7 @@ public class WriteReviewAdapter extends RecyclerView.Adapter<WriteReviewAdapter.
     public void updateMedia(int position, Uri uri) {
         ReviewState state = reviewData.get(position);
         if (state != null) {
-            if (state.selectedMedia.size() < 10) {
+            if (state.selectedMedia.size() + state.existingImageUrls.size() + state.existingVideoUrls.size() < 10) {
                 state.selectedMedia.add(uri);
                 notifyItemChanged(position);
             }
@@ -181,6 +223,8 @@ public class WriteReviewAdapter extends RecyclerView.Adapter<WriteReviewAdapter.
         public int rating = 0;
         public String comment = "";
         public List<Uri> selectedMedia = new ArrayList<>();
+        public List<String> existingImageUrls = new ArrayList<>();
+        public List<String> existingVideoUrls = new ArrayList<>();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -188,7 +232,7 @@ public class WriteReviewAdapter extends RecyclerView.Adapter<WriteReviewAdapter.
         TextView txtProductName, txtProductVariant, txtCharCount;
         RatingBar ratingBar;
         EditText etComment;
-        View btnUpload;
+        View btnUpload, productInfoLayout;
         RecyclerView rvSelectedMedia;
         ChipGroup chipGroupFeedback;
         TextWatcher textWatcher;
@@ -202,23 +246,28 @@ public class WriteReviewAdapter extends RecyclerView.Adapter<WriteReviewAdapter.
             ratingBar = itemView.findViewById(R.id.ratingBar);
             etComment = itemView.findViewById(R.id.etComment);
             btnUpload = itemView.findViewById(R.id.btnUpload);
+            productInfoLayout = itemView.findViewById(R.id.productInfoLayout);
             rvSelectedMedia = itemView.findViewById(R.id.rvSelectedMedia);
             chipGroupFeedback = itemView.findViewById(R.id.chipGroupFeedback);
         }
     }
 
     private static class MediaPreviewAdapter extends RecyclerView.Adapter<MediaPreviewAdapter.MediaViewHolder> {
-        private final List<Uri> uris;
+        private final List<Object> items;
         private final OnDeleteListener deleteListener;
         private final OnMediaItemClickListener clickListener;
+        private final int existingImgCount;
+        private final int existingVidCount;
 
         interface OnDeleteListener { void onDelete(int pos); }
-        interface OnMediaItemClickListener { void onMediaClick(Uri uri, boolean isVideo); }
+        interface OnMediaItemClickListener { void onMediaClick(Object item, boolean isVideo); }
 
-        MediaPreviewAdapter(List<Uri> uris, OnDeleteListener deleteListener, OnMediaItemClickListener clickListener) {
-            this.uris = uris;
+        MediaPreviewAdapter(List<Object> items, OnDeleteListener deleteListener, OnMediaItemClickListener clickListener, int existingImgCount, int existingVidCount) {
+            this.items = items;
             this.deleteListener = deleteListener;
             this.clickListener = clickListener;
+            this.existingImgCount = existingImgCount;
+            this.existingVidCount = existingVidCount;
         }
 
         @NonNull
@@ -230,19 +279,38 @@ public class WriteReviewAdapter extends RecyclerView.Adapter<WriteReviewAdapter.
 
         @Override
         public void onBindViewHolder(@NonNull MediaViewHolder holder, int position) {
-            Uri uri = uris.get(position);
-            Glide.with(holder.itemView.getContext()).load(uri).into(holder.imgPreview);
+            Object item = items.get(position);
             
-            String type = holder.itemView.getContext().getContentResolver().getType(uri);
-            boolean isVideo = type != null && type.startsWith("video");
+            // Determine if it's a video
+            boolean isVideo = false;
+            if (item instanceof Uri) {
+                String type = holder.itemView.getContext().getContentResolver().getType((Uri) item);
+                isVideo = type != null && type.startsWith("video");
+            } else {
+                // If it's a URL, check position
+                if (position >= existingImgCount && position < (existingImgCount + existingVidCount)) {
+                    isVideo = true;
+                }
+            }
+
+            String url = null;
+            if (item instanceof String) {
+                url = (String) item;
+                if (!url.startsWith("http")) url = "https://server-testing-ymn9.onrender.com" + (url.startsWith("/") ? "" : "/") + url;
+            }
+
+            Glide.with(holder.itemView.getContext())
+                    .load(url != null ? url : item)
+                    .into(holder.imgPreview);
+            
             holder.ivPlay.setVisibility(isVideo ? View.VISIBLE : View.GONE);
-            
             holder.btnRemove.setOnClickListener(v -> deleteListener.onDelete(holder.getBindingAdapterPosition()));
-            holder.itemView.setOnClickListener(v -> clickListener.onMediaClick(uri, isVideo));
+            final boolean itemIsVideo = isVideo;
+            holder.itemView.setOnClickListener(v -> clickListener.onMediaClick(item, itemIsVideo));
         }
 
         @Override
-        public int getItemCount() { return uris.size(); }
+        public int getItemCount() { return items.size(); }
 
         static class MediaViewHolder extends RecyclerView.ViewHolder {
             ImageView imgPreview, btnRemove, ivPlay;

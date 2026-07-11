@@ -44,6 +44,9 @@ public class WriteReviewActivity extends AppCompatActivity {
     private int currentUploadPosition = -1;
     private SessionManager sessionManager;
 
+    private boolean isEditMode = false;
+    private ProductReview existingReview;
+
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMediaLauncher =
             registerForActivityResult(new ActivityResultContracts.PickMultipleVisualMedia(10), uris -> {
                 if (uris != null && !uris.isEmpty() && currentUploadPosition != -1) {
@@ -60,14 +63,43 @@ public class WriteReviewActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         sessionManager = new SessionManager(this);
+
+        isEditMode = getIntent().getBooleanExtra("is_edit", false);
+        String reviewJson = getIntent().getStringExtra("review_json");
+        if (reviewJson != null) {
+            existingReview = new com.google.gson.Gson().fromJson(reviewJson, ProductReview.class);
+        }
         order = (Order) getIntent().getSerializableExtra("order");
-        if (order == null || order.getItems() == null) {
+
+        if (isEditMode && existingReview != null) {
+            setupEditMode();
+        } else if (order == null || order.getItems() == null) {
             Toast.makeText(this, "Không tìm thấy dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
         setupUI();
+    }
+
+    private void setupEditMode() {
+        binding.txtTitle.setText("Sửa đánh giá");
+        binding.btnSubmit.setText("CẬP NHẬT ĐÁNH GIÁ");
+
+        // If we don't have an order object but have review data, create a minimal order/item structure
+        if (order == null) {
+            order = new Order();
+            order.set_id(existingReview.getOrderId());
+            List<Order.OrderItem> items = new ArrayList<>();
+            Order.OrderItem item = new Order.OrderItem();
+            item.setProductId(existingReview.getProductId());
+            item.setName(existingReview.getProductName());
+            item.setImage(existingReview.getProductImage());
+            item.setSize(existingReview.getSize());
+            item.setColor(existingReview.getColor());
+            items.add(item);
+            order.setItems(items);
+        }
     }
 
     private void setupUI() {
@@ -80,21 +112,47 @@ public class WriteReviewActivity extends AppCompatActivity {
                     .build());
         });
 
-        adapter.setOnMediaClickListener((uri, isVideo) -> {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(uri, isVideo ? "video/*" : "image/*");
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            try {
-                startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(this, "Không tìm thấy trình phát phù hợp", Toast.LENGTH_SHORT).show();
+        if (isEditMode && existingReview != null) {
+            adapter.setInitialState(0, existingReview.getRating(), existingReview.getContent(),
+                    existingReview.getImages(), existingReview.getVideos());
+        }
+
+        adapter.setOnMediaClickListener(new WriteReviewAdapter.OnMediaClickListener() {
+            @Override
+            public void onMediaClick(Uri uri, boolean isVideo) {
+                openMedia(uri.toString(), isVideo);
             }
+            @Override
+            public void onUrlClick(String url, boolean isVideo) {
+                openMedia(url, isVideo);
+            }
+        });
+
+        adapter.setOnProductClickListener(item -> {
+            Intent intent = new Intent(this, com.project.muse_android.product.ProductDetailActivity.class);
+            intent.putExtra("product_id", item.getProductId());
+            startActivity(intent);
         });
 
         binding.rvReviewForms.setLayoutManager(new LinearLayoutManager(this));
         binding.rvReviewForms.setAdapter(adapter);
 
         binding.btnSubmit.setOnClickListener(v -> submitAllReviews());
+    }
+
+    private void openMedia(String path, boolean isVideo) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        String fullPath = path;
+        if (!fullPath.startsWith("http") && !fullPath.startsWith("content")) {
+            fullPath = "https://server-testing-ymn9.onrender.com" + (fullPath.startsWith("/") ? "" : "/") + fullPath;
+        }
+        intent.setDataAndType(Uri.parse(fullPath), isVideo ? "video/*" : "image/*");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try {
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(this, "Không tìm thấy trình phát phù hợp", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void submitAllReviews() {
@@ -137,6 +195,23 @@ public class WriteReviewActivity extends AppCompatActivity {
         uploadMediaBatch(state.selectedMedia, new MediaUploadCallback() {
             @Override
             public void onComplete(List<Map<String, String>> images, List<Map<String, String>> videos) {
+                // Combine existing media with newly uploaded ones
+                List<Map<String, String>> finalImages = new ArrayList<>();
+                for (String url : state.existingImageUrls) {
+                    Map<String, String> m = new HashMap<>();
+                    m.put("url", url);
+                    finalImages.add(m);
+                }
+                finalImages.addAll(images);
+
+                List<Map<String, String>> finalVideos = new ArrayList<>();
+                for (String url : state.existingVideoUrls) {
+                    Map<String, String> m = new HashMap<>();
+                    m.put("url", url);
+                    finalVideos.add(m);
+                }
+                finalVideos.addAll(videos);
+
                 Map<String, Object> body = new HashMap<>();
                 body.put("userId", userId);
                 body.put("productId", item.getProductId());
@@ -145,32 +220,31 @@ public class WriteReviewActivity extends AppCompatActivity {
                 body.put("content", state.comment);
                 body.put("size", item.getSize());
                 body.put("color", item.getColor());
-                body.put("images", images);
-                body.put("videos", videos);
+                body.put("images", finalImages);
+                body.put("videos", finalVideos);
 
-                Log.d("WriteReview", "Submitting review for item " + index + " with " + images.size() + " images");
-
-                ApiClient.INSTANCE.getInstance().postReview("Bearer " + token, body).enqueue(new Callback<ApiResponse<ProductReview>>() {
+                Callback<ApiResponse<ProductReview>> callback = new Callback<ApiResponse<ProductReview>>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse<ProductReview>> call, @NonNull Response<ApiResponse<ProductReview>> response) {
-                        if (!response.isSuccessful()) {
-                            Log.e("WriteReview", "Failed to submit review for item " + index + ": " + response.code());
-                        }
                         processItemRecursively(index + 1, items, results, token, userId);
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse<ProductReview>> call, @NonNull Throwable t) {
-                        Log.e("WriteReview", "Error submitting review for item " + index, t);
                         processItemRecursively(index + 1, items, results, token, userId);
                     }
-                });
+                };
+
+                if (isEditMode && existingReview != null) {
+                    ApiClient.INSTANCE.getInstance().updateReview(existingReview.get_id(), "Bearer " + token, body).enqueue(callback);
+                } else {
+                    ApiClient.INSTANCE.getInstance().postReview("Bearer " + token, body).enqueue(callback);
+                }
             }
         });
     }
 
     private void onAllDone() {
-        // Save reviewed status locally
         getSharedPreferences("MUSE_PREFS", MODE_PRIVATE)
                 .edit().putBoolean("reviewed_" + order.get_id(), true).apply();
 
@@ -184,7 +258,7 @@ public class WriteReviewActivity extends AppCompatActivity {
 
     private void resetSubmitButton() {
         binding.btnSubmit.setEnabled(true);
-        binding.btnSubmit.setText("GỬI");
+        binding.btnSubmit.setText(isEditMode ? "CẬP NHẬT ĐÁNH GIÁ" : "GỬI");
     }
 
     private interface MediaUploadCallback {
@@ -209,7 +283,6 @@ public class WriteReviewActivity extends AppCompatActivity {
 
             File file = uriToFile(uri);
             if (file == null) {
-                Log.e("WriteReview", "Could not convert Uri to file: " + uri);
                 checkCount(count, total, uploadedImages, uploadedVideos, callback);
                 continue;
             }
@@ -230,16 +303,15 @@ public class WriteReviewActivity extends AppCompatActivity {
                             if (isVideo) uploadedVideos.add(mediaObj);
                             else uploadedImages.add(mediaObj);
                         }
-                        Log.d("WriteReview", "Uploaded media success: " + fileId);
                     } else {
-                        Log.e("WriteReview", "Upload media failed: " + response.code());
+                        runOnUiThread(() -> Toast.makeText(WriteReviewActivity.this, "Lỗi tải tệp lên server", Toast.LENGTH_SHORT).show());
                     }
                     checkCount(count, total, uploadedImages, uploadedVideos, callback);
                 }
 
                 @Override
                 public void onFailure(@NonNull Call<Map<String, String>> call, @NonNull Throwable t) {
-                    Log.e("WriteReview", "Upload media error", t);
+                    runOnUiThread(() -> Toast.makeText(WriteReviewActivity.this, "Lỗi kết nối khi tải tệp", Toast.LENGTH_SHORT).show());
                     checkCount(count, total, uploadedImages, uploadedVideos, callback);
                 }
             });
@@ -261,18 +333,24 @@ public class WriteReviewActivity extends AppCompatActivity {
         try {
             InputStream is = getContentResolver().openInputStream(uri);
             if (is == null) return null;
-            File tempFile = new File(getCacheDir(), "upload_" + System.currentTimeMillis() + "_" + (uri.getLastPathSegment() != null ? uri.getLastPathSegment().replaceAll("[^a-zA-Z0-9.]", "_") : "file"));
+
+            String fileName = "upload_" + System.currentTimeMillis();
+            String mimeType = getContentResolver().getType(uri);
+            String extension = mimeType != null && mimeType.contains("/") ? "." + mimeType.split("/")[1] : ".jpg";
+
+            File tempFile = File.createTempFile(fileName, extension, getCacheDir());
             FileOutputStream fos = new FileOutputStream(tempFile);
             byte[] buffer = new byte[8192];
             int read;
             while ((read = is.read(buffer)) != -1) {
                 fos.write(buffer, 0, read);
             }
+            fos.flush();
             fos.close();
             is.close();
             return tempFile;
         } catch (Exception e) {
-            Log.e("WriteReview", "Uri to File error", e);
+            Log.e("WriteReview", "Uri to File error: " + e.getMessage(), e);
             return null;
         }
     }

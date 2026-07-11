@@ -1,12 +1,19 @@
 package com.project.models;
 
 import com.google.gson.annotations.SerializedName;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductReview {
+public class ProductReview implements Serializable {
 
+    @SerializedName("_id")
+    private String _id;
     private String userId;
+    private String productId;
+    private String productName;
+    private String productImage;
+    private String orderId;
 
     @SerializedName(value = "customerName", alternate = {"userName", "user_name", "username", "fullName", "user.fullName", "name"})
     private com.google.gson.JsonElement rawName;
@@ -214,11 +221,51 @@ public class ProductReview {
         this.adminReplyAt = adminReplyAt;
     }
 
+    public String get_id() {
+        return _id;
+    }
+
+    public void set_id(String _id) {
+        this._id = _id;
+    }
+
     public String getUserId() {
         return userId;
     }
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getProductImage() {
+        return productImage;
+    }
+
+    public void setProductImage(String productImage) {
+        this.productImage = productImage;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 }

@@ -214,6 +214,10 @@ public class NotificationListFragment extends Fragment {
                 if (nType.equals("promotion") || nType.equals("stock")) {
                     filteredList.add(n);
                 }
+            } else if (filter.equals("system")) {
+                if (nType.equals("system") || nType.equals("review")) {
+                    filteredList.add(n);
+                }
             } else if (nType.equals(filter)) {
                 filteredList.add(n);
             }

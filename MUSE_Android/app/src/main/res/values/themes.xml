@@ -63,4 +63,14 @@
         <item name="android:layout_marginEnd">16dp</item>
     </style>
 
+    <style name="RoundedImage">
+        <item name="cornerSize">8dp</item>
+    </style>
+
+    <style name="RatingBarPink" parent="Widget.AppCompat.RatingBar.Small">
+        <item name="android:progressTint">@color/primary_500</item>
+        <item name="android:secondaryProgressTint">@color/primary_500</item>
+        <item name="android:progressBackgroundTint">#E0E0E0</item>
+    </style>
+
 </resources>

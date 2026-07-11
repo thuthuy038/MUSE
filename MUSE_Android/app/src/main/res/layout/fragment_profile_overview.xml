@@ -259,6 +259,14 @@
                 app:icon="@drawable/ic_favorite_filled"
                 app:title="@string/profile_favorites" />
 
+            <include
+                android:id="@+id/menuReviews"
+                layout="@layout/item_profile_menu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_star"
+                app:title="Đánh giá" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
