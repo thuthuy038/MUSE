@@ -109,7 +109,13 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     binding.btnAIDraggable.setVisibility(View.VISIBLE);
                 }
-                binding.bottomNavigationView.animate().translationY(0).setDuration(300).start();
+                
+                if (destination.getId() == R.id.navigation_wishlist) {
+                    binding.bottomNavigationView.setVisibility(View.GONE);
+                } else {
+                    binding.bottomNavigationView.setVisibility(View.VISIBLE);
+                    binding.bottomNavigationView.animate().translationY(0).setDuration(300).start();
+                }
             });
 
             handleIntent(getIntent());

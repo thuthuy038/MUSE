@@ -334,7 +334,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="10dp">
+                android:paddingRight="10dp">
 
                 <CheckBox
                     android:id="@+id/cbSelectAll"
@@ -425,7 +425,7 @@
             android:layout_height="wrap_content"
             android:background="@android:color/white"
             android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp"
+            android:paddingVertical="5dp"
             android:visibility="gone">
 
             <CheckBox
