@@ -96,7 +96,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:shapeAppearanceOverlay="@style/CircleImage"
-                    android:src="@drawable/ic_account_circle"
+                    android:src="@drawable/ic_profile_vector"
                     android:contentDescription="@string/profile_personal_info" />
 
                 <TextView

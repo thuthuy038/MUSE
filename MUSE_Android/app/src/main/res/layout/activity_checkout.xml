@@ -200,6 +200,7 @@
                         android:focusable="true">
 
                         <TextView
+                            android:id="@+id/txtVoucherLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/montserrat"
@@ -211,17 +212,53 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="8dp"
-                            android:fontFamily="@font/montserrat"
-                            android:text="Chọn hoặc nhập mã"
-                            android:textColor="#B4B4B4"
-                            android:textSize="13sp"
+                            android:gravity="end|center_vertical"
+                            android:orientation="horizontal"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toStartOf="@id/ivArrowVoucher"
-                            app:layout_constraintTop_toTopOf="parent" />
+                            app:layout_constraintStart_toEndOf="@id/txtVoucherLabel"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <TextView
+                                android:id="@+id/tvVoucherDiscountAmount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_tag_voucher_pink"
+                                android:fontFamily="@font/montserrat"
+                                android:paddingHorizontal="4dp"
+                                android:paddingVertical="2dp"
+                                android:text="-0đ"
+                                android:textColor="#FB6F92"
+                                android:textSize="11sp"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/tvVoucherFreeShipping"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:background="@drawable/bg_tag_voucher_teal"
+                                android:fontFamily="@font/montserrat"
+                                android:paddingHorizontal="4dp"
+                                android:paddingVertical="2dp"
+                                android:text="Miễn Phí Vận Chuyển"
+                                android:textColor="#26A69A"
+                                android:textSize="11sp"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/txtVoucherHint"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/montserrat"
+                                android:text="Chọn hoặc nhập mã"
+                                android:textColor="#B4B4B4"
+                                android:textSize="13sp" />
+                        </LinearLayout>
 
                         <ImageView
                             android:id="@+id/ivArrowVoucher"

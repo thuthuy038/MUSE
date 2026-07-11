@@ -44,7 +44,17 @@ public class MembershipFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         sessionManager = new SessionManager(requireContext());
 
+        // Fix header overlapping status bar
+        com.project.utils.ViewUtils.applySystemBarsPadding(binding.header, true, false);
+
+        // Fix content overlapping navigation bar
+        com.project.utils.ViewUtils.applySystemBarsPadding(binding.nestedScrollView, false, true);
+
         binding.ivBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
+
+        binding.ivNotification.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_notification);
+        });
 
         loadMembershipData();
         setupBenefitStaticUI();

@@ -47,10 +47,10 @@ public class CheckoutActivity extends AppCompatActivity {
     
     private double originalTotal = 0;
     private double productDiscount = 0;
-    private double voucherDiscount = 0; 
+    private double voucherDiscount = 0;
     private String selectedVoucherCode = "";
-    private double shippingFee = 0; // Always free shipping
-    private double shippingDiscount = 0; 
+    private double shippingFee = 23000; // Default Standard
+    private double shippingDiscount = 23000; // Default Free Shipping
 
     private int selectedShippingMethod = 1; // 1: Standard, 2: Fast, 3: Express
     private int selectedPaymentMethod = 1; // 1: COD, 2: Bank, 3: Momo, 4: VNPay
@@ -113,6 +113,11 @@ public class CheckoutActivity extends AppCompatActivity {
         sessionManager = new SessionManager(this);
         loadData();
         setupUI();
+        
+        // Initialize default values for standard shipping
+        shippingFee = 23000;
+        shippingDiscount = 23000;
+
         updateShippingUI();
         updatePaymentUI();
         calculatePrices();
@@ -240,7 +245,8 @@ public class CheckoutActivity extends AppCompatActivity {
             VoucherBottomSheetFragment voucherSheet = VoucherBottomSheetFragment.newInstance(tempTotal);
             voucherSheet.setOnVoucherSelectedListener((discount, shipping, code) -> {
                 this.voucherDiscount = discount;
-                this.shippingDiscount = shipping;
+                // Keep shipping free regardless of what the voucher sheet returns for shipping
+                // shippingDiscount already matches shippingFee based on the selected method
                 this.selectedVoucherCode = code;
                 calculatePrices();
             });
@@ -260,21 +266,24 @@ public class CheckoutActivity extends AppCompatActivity {
 
         binding.cardShippingStandard.setOnClickListener(v -> {
             selectedShippingMethod = 1;
-            shippingFee = 0;
+            shippingFee = 23000;
+            shippingDiscount = 23000;
             updateShippingUI();
             calculatePrices();
         });
 
         binding.cardShippingFast.setOnClickListener(v -> {
             selectedShippingMethod = 2;
-            shippingFee = 0;
+            shippingFee = 38000;
+            shippingDiscount = 38000;
             updateShippingUI();
             calculatePrices();
         });
 
         binding.cardShippingExpress.setOnClickListener(v -> {
             selectedShippingMethod = 3;
-            shippingFee = 0;
+            shippingFee = 55000;
+            shippingDiscount = 55000;
             updateShippingUI();
             calculatePrices();
         });
@@ -557,24 +566,27 @@ public class CheckoutActivity extends AppCompatActivity {
         binding.ivCheckExpress.setColorFilter(getResources().getColor(R.color.neutral_300));
 
         // Set selected
+        int activeBgColor = android.graphics.Color.parseColor("#F0FEFF");
+        int activeStrokeColor = android.graphics.Color.parseColor("#008B86");
+
         switch (selectedShippingMethod) {
             case 1:
-                binding.cardShippingStandard.setCardBackgroundColor(android.graphics.Color.parseColor("#F0FEFF"));
-                binding.cardShippingStandard.setStrokeColor(android.graphics.Color.parseColor("#008B86"));
+                binding.cardShippingStandard.setCardBackgroundColor(activeBgColor);
+                binding.cardShippingStandard.setStrokeColor(activeStrokeColor);
                 binding.ivCheckStandard.setImageResource(R.drawable.ic_check_circle);
-                binding.ivCheckStandard.setColorFilter(android.graphics.Color.parseColor("#008B86"));
+                binding.ivCheckStandard.setColorFilter(activeStrokeColor);
                 break;
             case 2:
-                binding.cardShippingFast.setCardBackgroundColor(android.graphics.Color.parseColor("#F0FEFF"));
-                binding.cardShippingFast.setStrokeColor(android.graphics.Color.parseColor("#008B86"));
+                binding.cardShippingFast.setCardBackgroundColor(activeBgColor);
+                binding.cardShippingFast.setStrokeColor(activeStrokeColor);
                 binding.ivCheckFast.setImageResource(R.drawable.ic_check_circle);
-                binding.ivCheckFast.setColorFilter(android.graphics.Color.parseColor("#008B86"));
+                binding.ivCheckFast.setColorFilter(activeStrokeColor);
                 break;
             case 3:
-                binding.cardShippingExpress.setCardBackgroundColor(android.graphics.Color.parseColor("#F0FEFF"));
-                binding.cardShippingExpress.setStrokeColor(android.graphics.Color.parseColor("#008B86"));
+                binding.cardShippingExpress.setCardBackgroundColor(activeBgColor);
+                binding.cardShippingExpress.setStrokeColor(activeStrokeColor);
                 binding.ivCheckExpress.setImageResource(R.drawable.ic_check_circle);
-                binding.ivCheckExpress.setColorFilter(android.graphics.Color.parseColor("#008B86"));
+                binding.ivCheckExpress.setColorFilter(activeStrokeColor);
                 break;
         }
     }
@@ -661,6 +673,33 @@ public class CheckoutActivity extends AppCompatActivity {
         
         binding.txtBottomTotal.setText(formatPrice(finalTotal));
         binding.txtBottomSavings.setText("Tiết kiệm: " + formatPrice(productDiscount + voucherDiscount));
+        updateVoucherUI();
+    }
+
+    private void updateVoucherUI() {
+        if (binding == null) return;
+
+        // Reset visibility
+        binding.txtVoucherHint.setVisibility(View.VISIBLE);
+        binding.tvVoucherDiscountAmount.setVisibility(View.GONE);
+        binding.tvVoucherFreeShipping.setVisibility(View.GONE);
+
+        // Always show Free Shipping badge in Checkout as requested
+        binding.tvVoucherFreeShipping.setVisibility(View.VISIBLE);
+        binding.txtVoucherHint.setVisibility(View.GONE);
+
+        if (voucherDiscount > 0) {
+            binding.tvVoucherDiscountAmount.setVisibility(View.VISIBLE);
+            binding.tvVoucherDiscountAmount.setText("-" + formatPriceTag(voucherDiscount));
+        }
+    }
+
+    private String formatPriceTag(double price) {
+        if (price >= 1000) {
+            DecimalFormat df = new DecimalFormat("#.#");
+            return df.format(price / 1000) + "kđ";
+        }
+        return formatPrice(price);
     }
 
     private String formatPrice(double price) {

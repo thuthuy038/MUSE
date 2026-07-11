@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.project.adapters.ProductAdapter;
@@ -52,6 +53,7 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
     private String currentFilterStatus = "all"; // all, in_stock, out_of_stock
     private boolean filterDiscountOnly = false;
     private String currentFilterCategoryId = "all";
+    private int currentBottomInset = 0;
 
     @Nullable
     @Override
@@ -68,8 +70,27 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
         setupClickListeners();
         setupFilters();
         
-        // Apply padding to avoid status bar overlap
+        // Apply padding to avoid status bar/navigation bar overlap
         ViewUtils.applySystemBarsPadding(binding.appBarLayout, true, false);
+
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+            currentBottomInset = systemBars.bottom;
+            
+            // Apply bottom padding to the footer content to avoid navigation bar overlap
+            binding.layoutEditFooterContent.setPadding(
+                binding.layoutEditFooterContent.getPaddingLeft(),
+                binding.layoutEditFooterContent.getPaddingTop(),
+                binding.layoutEditFooterContent.getPaddingRight(),
+                currentBottomInset
+            );
+            
+            // Apply bottom padding to the scroll view container to ensure content isn't covered
+            // We add extra padding if the footer is visible
+            adjustScrollPadding();
+
+            return insets;
+        });
         
         loadData();
     }
@@ -153,6 +174,8 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
                     .setTitle("Bỏ thích")
                     .setMessage("Bạn có chắc chắn muốn bỏ thích " + selected.size() + " sản phẩm đã chọn?")
                     .setPositiveButton("Bỏ thích", (dialog, which) -> {
+                        int[] count = {0};
+                        int total = selected.size();
                         for (Product p : selected) {
                             String productId = p.get_id() != null ? p.get_id() : p.getId();
                             WishlistManager.getInstance(getContext()).removeFromWishlist(productId, new WishlistManager.WishlistCallback<WishlistResponse>() {
@@ -160,22 +183,33 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
                                 public void onSuccess(WishlistResponse result) {
                                     p.setFavorite(false);
                                     allFavoriteProducts.remove(p);
-                                    updateWishlistCount();
-                                    applyFilters();
-                                    if (allFavoriteProducts.isEmpty()) {
-                                        binding.layoutEmpty.setVisibility(View.VISIBLE);
-                                        binding.rvWishlist.setVisibility(View.GONE);
+                                    count[0]++;
+                                    
+                                    if (count[0] == total) {
+                                        updateWishlistCount();
+                                        applyFilters();
+                                        if (allFavoriteProducts.isEmpty()) {
+                                            binding.layoutEmpty.setVisibility(View.VISIBLE);
+                                            binding.rvWishlist.setVisibility(View.GONE);
+                                        }
+                                        loadRecommendations();
+                                        Toast.makeText(getContext(), "Đã cập nhật danh sách", Toast.LENGTH_SHORT).show();
                                     }
-                                    loadRecommendations();
                                 }
 
                                 @Override
                                 public void onError(String message) {
-                                    Toast.makeText(getContext(), "Lỗi khi bỏ thích: " + message, Toast.LENGTH_SHORT).show();
+                                    count[0]++;
+                                    if (count[0] == total) {
+                                        updateWishlistCount();
+                                        applyFilters();
+                                        loadRecommendations();
+                                        Toast.makeText(getContext(), "Hoàn tất cập nhật với một số lỗi", Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             });
                         }
-                        Toast.makeText(getContext(), "Đang cập nhật danh sách...", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Đang bỏ thích " + total + " sản phẩm...", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
@@ -188,6 +222,12 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
         binding.btnEdit.setVisibility(edit ? View.GONE : View.VISIBLE);
         binding.btnSearch.setVisibility(edit ? View.GONE : View.VISIBLE);
         binding.btnCart.setVisibility(edit ? View.GONE : View.VISIBLE);
+        
+        if (edit) {
+            binding.layoutEditFooter.setTranslationY(0);
+        }
+        
+        adjustScrollPadding();
         
         if (!edit) {
             binding.cbSelectAll.setChecked(false);
@@ -479,6 +519,35 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
         if (binding == null) return;
         String countText = "(" + allFavoriteProducts.size() + ")";
         binding.tvWishlistCount.setText(countText);
+    }
+
+    private void adjustScrollPadding() {
+        if (binding == null) return;
+        
+        int bottomPadding = currentBottomInset;
+        
+        // If edit footer is visible, we need to add its height to the scroll padding
+        if (binding.layoutEditFooter.getVisibility() == View.VISIBLE) {
+            // We use a post to wait for layout if height is 0
+            binding.layoutEditFooter.post(() -> {
+                if (binding == null) return;
+                int footerHeight = binding.layoutEditFooter.getHeight();
+                binding.nestedScrollView.setPadding(
+                    binding.nestedScrollView.getPaddingLeft(),
+                    binding.nestedScrollView.getPaddingTop(),
+                    binding.nestedScrollView.getPaddingRight(),
+                    footerHeight > 0 ? footerHeight : (int)(80 * getResources().getDisplayMetrics().density)
+                );
+            });
+            return;
+        }
+        
+        binding.nestedScrollView.setPadding(
+            binding.nestedScrollView.getPaddingLeft(),
+            binding.nestedScrollView.getPaddingTop(),
+            binding.nestedScrollView.getPaddingRight(),
+            bottomPadding
+        );
     }
 
     @Override

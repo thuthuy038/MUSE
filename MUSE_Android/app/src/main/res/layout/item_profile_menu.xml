@@ -15,7 +15,7 @@
             android:id="@+id/ivIcon"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_account_circle"
+            android:src="@drawable/ic_profile_vector"
             app:tint="@color/primary_500" />
 
         <TextView

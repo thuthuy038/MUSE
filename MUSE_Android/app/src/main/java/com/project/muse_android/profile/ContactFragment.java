@@ -41,6 +41,12 @@ public class ContactFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         sessionManager = new SessionManager(requireContext());
 
+        // Fix header overlapping status bar
+        com.project.utils.ViewUtils.applySystemBarsPadding(binding.header, true, false);
+
+        // Fix content overlapping navigation bar
+        com.project.utils.ViewUtils.applySystemBarsPadding(binding.nestedScrollView, false, true);
+
         setupClickListeners();
     }
 
@@ -111,7 +117,7 @@ public class ContactFragment extends Fragment {
 
     private void setAvatarImage(String avatar) {
         if (avatar == null || avatar.isEmpty()) {
-            binding.ivAvatar.setImageResource(R.drawable.ic_account_circle);
+            binding.ivAvatar.setImageResource(R.drawable.ic_profile_vector);
             return;
         }
 
@@ -122,8 +128,8 @@ public class ContactFragment extends Fragment {
             }
             Glide.with(this)
                     .load(fullUrl)
-                    .placeholder(R.drawable.ic_account_circle)
-                    .error(R.drawable.ic_account_circle)
+                    .placeholder(R.drawable.ic_profile_vector)
+                    .error(R.drawable.ic_profile_vector)
                     .into(binding.ivAvatar);
         } else if (avatar.length() > 200 || !avatar.contains("/")) {
             // Likely Base64 or a weird relative path without slash
@@ -131,16 +137,16 @@ public class ContactFragment extends Fragment {
                 byte[] decodedString = Base64.decode(avatar, Base64.DEFAULT);
                 Glide.with(this)
                         .load(decodedString)
-                        .placeholder(R.drawable.ic_account_circle)
-                        .error(R.drawable.ic_account_circle)
+                        .placeholder(R.drawable.ic_profile_vector)
+                        .error(R.drawable.ic_profile_vector)
                         .into(binding.ivAvatar);
             } catch (Exception e) {
                 // If Base64 fails, try treating it as relative path without leading slash
                 String fullUrl = "https://server-testing-ymn9.onrender.com/" + avatar;
                 Glide.with(this)
                         .load(fullUrl)
-                        .placeholder(R.drawable.ic_account_circle)
-                        .error(R.drawable.ic_account_circle)
+                        .placeholder(R.drawable.ic_profile_vector)
+                        .error(R.drawable.ic_profile_vector)
                         .into(binding.ivAvatar);
             }
         } else {
@@ -148,8 +154,8 @@ public class ContactFragment extends Fragment {
             String fullUrl = "https://server-testing-ymn9.onrender.com/" + avatar;
             Glide.with(this)
                     .load(fullUrl)
-                    .placeholder(R.drawable.ic_account_circle)
-                    .error(R.drawable.ic_account_circle)
+                    .placeholder(R.drawable.ic_profile_vector)
+                    .error(R.drawable.ic_profile_vector)
                     .into(binding.ivAvatar);
         }
     }

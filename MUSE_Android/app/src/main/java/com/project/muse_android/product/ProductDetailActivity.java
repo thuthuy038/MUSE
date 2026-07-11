@@ -24,6 +24,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
+import com.project.adapters.VerticalProductAdapter;
 import com.project.models.Category;
 import com.project.models.Product;
 import com.project.models.ProductVariant;
@@ -66,6 +67,9 @@ public class ProductDetailActivity extends AppCompatActivity {
     private String selectedSize = "";
     private static final String BASE_URL = "https://server-testing-ymn9.onrender.com";
 
+    private VerticalProductAdapter suggestedAdapter;
+    private final List<Product> suggestedProducts = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,13 +102,60 @@ public class ProductDetailActivity extends AppCompatActivity {
         if (productId != null) {
             loadProductDetail();
             loadReviews();
+            loadSuggestedProducts();
         } else {
             Toast.makeText(this, "Không tìm thấy mã sản phẩm", Toast.LENGTH_SHORT).show();
             finish();
         }
 
+        setupSuggestedProducts();
         setupActionButtons();
         setupCollapsibleSections();
+    }
+
+    private void setupSuggestedProducts() {
+        suggestedAdapter = new VerticalProductAdapter(this, new VerticalProductAdapter.OnProductClickListener() {
+            @Override
+            public void onProductClick(Product product) {
+                Intent intent = new Intent(ProductDetailActivity.this, ProductDetailActivity.class);
+                intent.putExtra("product_id", product.get_id() != null ? product.get_id() : product.getId());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onFavoriteClick(Product product, int position) {
+                toggleFavorite(product);
+            }
+        });
+        binding.rvSuggestedProducts.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
+        binding.rvSuggestedProducts.setAdapter(suggestedAdapter);
+    }
+
+    private void loadSuggestedProducts() {
+        ApiService service = HomeApiClient.getApiService();
+        service.getProducts().enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Product>> call, @NonNull Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    suggestedProducts.clear();
+                    List<Product> products = response.body();
+                    for (Product p : products) {
+                        // Filter out current product and hidden products
+                        String pId = p.get_id() != null ? p.get_id() : p.getId();
+                        if (!pId.equals(productId) && (p.getStatus() == null || "active".equalsIgnoreCase(p.getStatus()))) {
+                            suggestedProducts.add(p);
+                        }
+                        if (suggestedProducts.size() >= 6) break; // Limit suggestions
+                    }
+                    suggestedAdapter.setData(suggestedProducts);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<Product>> call, @NonNull Throwable t) {
+                // Silently fail
+            }
+        });
     }
 
     private void loadProductDetail() {
@@ -135,8 +186,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private void displayProduct(Product product) {
         this.currentProduct = product;
-        // Breadcrumb and Basic Info
-        binding.txtProductNameBreadcrumb.setText(product.getName());
+        // Basic Info
         binding.txtProductName.setText(product.getName());
 
         // Price Logic
@@ -277,7 +327,6 @@ public class ProductDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     for (Category cat : response.body()) {
                         if (cat.getId().equals(categoryId)) {
-                            binding.txtCategoryBreadcrumb.setText(cat.getName().toUpperCase());
                             binding.txtCategoryDetail.setText(cat.getName());
                             break;
                         }
