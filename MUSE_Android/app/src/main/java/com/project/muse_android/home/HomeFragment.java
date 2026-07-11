@@ -122,6 +122,18 @@ public class HomeFragment extends Fragment {
 
         binding.btnViewAllCategories.setVisibility(View.GONE);
 
+        View.OnClickListener toExplore = v -> {
+            if (getActivity() != null) {
+                Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
+                intent.putExtra("open_explore", true);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            }
+        };
+
+        binding.txtCategoryTitle.setOnClickListener(toExplore);
+        binding.btnViewAllCategories.setOnClickListener(toExplore);
+
         setInitialStates();
 
         loadBanners();
@@ -193,10 +205,13 @@ public class HomeFragment extends Fragment {
         // Category RV
         binding.rvCategories.setLayoutManager(new GridLayoutManager(getContext(), 3));
         categoryAdapter = new CategoryAdapter(categoryList, category -> {
-            Bundle bundle = new Bundle();
-            bundle.putString("category_id", category.getId());
-            Navigation.findNavController(binding.getRoot())
-                    .navigate(R.id.navigation_category_products, bundle);
+            // Chuyển sang tab Explore (Khám phá) thông qua MainActivity
+            if (getActivity() != null) {
+                Intent intent = new Intent(getActivity(), com.project.muse_android.main.MainActivity.class);
+                intent.putExtra("open_explore", true);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            }
         });
 
         // DISABLE selection highlight for Home screen

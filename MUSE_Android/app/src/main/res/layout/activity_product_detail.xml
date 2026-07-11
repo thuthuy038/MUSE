@@ -28,45 +28,6 @@
             app:tint="@color/primary_500"
             android:contentDescription="Back" />
 
-        <LinearLayout
-            android:id="@+id/layoutBreadcrumb"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:gravity="center_vertical"
-            app:layout_constraintStart_toEndOf="@id/btnBack"
-            app:layout_constraintEnd_toStartOf="@id/btnSearch"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
-
-            <TextView
-                android:id="@+id/txtCategoryBreadcrumb"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ĐẦM"
-                android:textSize="14sp"
-                android:textColor="#999999" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=" > "
-                android:textColor="#999999" />
-
-            <TextView
-                android:id="@+id/txtProductNameBreadcrumb"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Đầm baby doll xếp ly"
-                android:textSize="14sp"
-                android:textColor="#333333"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end" />
-        </LinearLayout>
-
         <ImageView
             android:id="@+id/btnSearch"
             android:layout_width="28dp"
@@ -157,8 +118,7 @@
                         android:id="@+id/layoutPrice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="bottom">
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/txtPrice"
@@ -173,17 +133,18 @@
                             android:id="@+id/txtOriginalPrice"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
+                            android:layout_marginTop="2dp"
                             android:text=""
                             android:textColor="#999999"
-                            android:textSize="16sp" />
+                            android:textSize="14sp" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toStartOf="@id/btnFavoriteDetail"
-                        android:layout_alignBottom="@id/layoutPrice"
+                        android:layout_alignTop="@id/layoutPrice"
+                        android:layout_marginTop="8dp"
                         android:layout_marginEnd="12dp"
                         android:orientation="horizontal">
                         <TextView
@@ -200,7 +161,8 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
+                        android:layout_alignTop="@id/layoutPrice"
+                        android:layout_marginTop="6dp"
                         android:src="@drawable/ic_favorite"
                         app:tint="@color/primary_500" />
                 </RelativeLayout>
