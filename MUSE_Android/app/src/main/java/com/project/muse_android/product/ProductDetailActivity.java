@@ -135,8 +135,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private void displayProduct(Product product) {
         this.currentProduct = product;
-        // Breadcrumb and Basic Info
-        binding.txtProductNameBreadcrumb.setText(product.getName());
+        // Basic Info
         binding.txtProductName.setText(product.getName());
 
         // Price Logic
@@ -277,7 +276,6 @@ public class ProductDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     for (Category cat : response.body()) {
                         if (cat.getId().equals(categoryId)) {
-                            binding.txtCategoryBreadcrumb.setText(cat.getName().toUpperCase());
                             binding.txtCategoryDetail.setText(cat.getName());
                             break;
                         }
