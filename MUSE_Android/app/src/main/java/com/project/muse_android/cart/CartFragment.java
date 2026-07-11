@@ -56,8 +56,9 @@ public class CartFragment extends Fragment {
 
     private boolean isEditMode = false;
     private double selectedVoucherDiscount = 0;
-    private double selectedShippingDiscount = 0;
+    private double selectedShippingDiscount = 23000; // Default always 23k
     private String selectedVoucherCode = "";
+    private double defaultShippingFee = 23000; // Default Standard shipping fee
 
     @Nullable
     @Override
@@ -69,6 +70,8 @@ public class CartFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        updateVoucherUI(); // Ensure default shipping badge is shown immediately
 
         // Nút quay lại
         binding.ivBack.setOnClickListener(v -> {
@@ -125,9 +128,15 @@ public class CartFragment extends Fragment {
             VoucherBottomSheetFragment voucherSheet = VoucherBottomSheetFragment.newInstance(selectedOriginalTotal);
             voucherSheet.setOnVoucherSelectedListener((discount, shipping, code) -> {
                 this.selectedVoucherDiscount = discount;
-                this.selectedShippingDiscount = shipping;
+                // If user selected a new shipping discount, use it, otherwise keep default 23k
+                if (shipping > 0) {
+                    this.selectedShippingDiscount = shipping;
+                } else {
+                    this.selectedShippingDiscount = 23000;
+                }
                 this.selectedVoucherCode = code;
                 updateCheckoutButtonState();
+                updateVoucherUI();
             });
             voucherSheet.show(getParentFragmentManager(), "VoucherBottomSheet");
         });
@@ -498,6 +507,43 @@ public class CartFragment extends Fragment {
         });
     }
 
+    private void updateVoucherUI() {
+        if (binding == null) return;
+
+        int selectedCount = 0;
+        for (Product p : cartProducts) {
+            if (p.isSelected()) {
+                selectedCount++;
+            }
+        }
+
+        // Reset visibility
+        binding.tvVoucherHint.setVisibility(View.VISIBLE);
+        binding.tvVoucherDiscountAmount.setVisibility(View.GONE);
+        binding.tvVoucherFreeShipping.setVisibility(View.GONE);
+
+        if (selectedCount > 0 && (selectedVoucherDiscount > 0 || selectedShippingDiscount > 0)) {
+            binding.tvVoucherHint.setVisibility(View.GONE);
+
+            if (selectedVoucherDiscount > 0) {
+                binding.tvVoucherDiscountAmount.setVisibility(View.VISIBLE);
+                binding.tvVoucherDiscountAmount.setText("-" + formatPriceTag(selectedVoucherDiscount));
+            }
+
+            if (selectedShippingDiscount > 0) {
+                binding.tvVoucherFreeShipping.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private String formatPriceTag(double price) {
+        if (price >= 1000) {
+            DecimalFormat df = new DecimalFormat("#.#");
+            return df.format(price / 1000) + "kđ";
+        }
+        return formatPrice(price);
+    }
+
     private void updateCartUI() {
         if (binding == null) return;
 
@@ -537,6 +583,8 @@ public class CartFragment extends Fragment {
         }
 
         // totalSavings = voucherDiscount + productDiscount
+        // shipping is always free (discount = fee) so it doesn't affect finalTotal here if we only consider product prices
+        // unless we add shippingFee to originalTotal first.
         double totalSavings = productDiscount + selectedVoucherDiscount;
         // finalTotal = originalTotal - totalSavings
         double finalTotal = originalTotal - totalSavings;
@@ -560,6 +608,7 @@ public class CartFragment extends Fragment {
             binding.btnCheckout.setText(checkoutText);
             binding.layoutFreeShipping.setVisibility(View.VISIBLE);
         }
+        updateVoucherUI();
     }
 
     private void showPromotionDetails() {
@@ -583,13 +632,11 @@ public class CartFragment extends Fragment {
             return;
         }
 
-        double shippingFee = 50000;
-
         PromotionDetailsBottomSheetFragment sheet = new PromotionDetailsBottomSheetFragment(
                 originalTotal,
                 selectedVoucherDiscount,
                 productDiscount,
-                shippingFee,
+                defaultShippingFee,
                 selectedShippingDiscount
         );
         sheet.show(getParentFragmentManager(), "PromotionDetails");
