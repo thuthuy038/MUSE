@@ -21,7 +21,10 @@ public class SessionManager {
     private static final String KEY_GUEST_ID = "guest_id";
     private static final String KEY_USER_CODE = "user_code";
 
+    private final Context context;
+
     public SessionManager(Context context) {
+        this.context = context;
         this.prefs = context.getSharedPreferences("MUSE_PREFS", Context.MODE_PRIVATE);
     }
 
@@ -134,6 +137,9 @@ public class SessionManager {
                 .remove(KEY_PROFILE_COMPLETED)
                 .putBoolean(KEY_IS_LOGGED_IN, false)
                 .apply();
+        if (context != null) {
+            context.getSharedPreferences("AI_PREFS", Context.MODE_PRIVATE).edit().clear().apply();
+        }
     }
 
     public void addLocalNotification(Notification notification) {

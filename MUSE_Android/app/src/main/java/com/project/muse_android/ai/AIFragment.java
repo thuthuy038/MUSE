@@ -53,9 +53,9 @@ public class AIFragment extends Fragment {
     private com.project.adapters.BannerAdapter bannerAdapter;
 
     // Available options for selection in guest or user edit mode
-    private final String[] STYLES = {"Elegant", "Minimalist", "Streetwear", "Vintage", "Korean", "Japanese", "Casual", "Office", "Luxury", "Sport", "Classic"};
-    private final String[] COLORS = {"White", "Black", "Pink", "Beige", "Brown", "Blue", "Green", "Gray"};
-    private final String[] PURPOSES = {"Daily", "Work", "Party", "Travel", "Dating"};
+    private final String[] STYLES = {"Chưa có", "Elegant", "Minimalist", "Streetwear", "Vintage", "Korean", "Japanese", "Casual", "Office", "Luxury", "Sport", "Classic"};
+    private final String[] COLORS = {"Chưa có", "White", "Black", "Pink", "Beige", "Brown", "Blue", "Green", "Gray"};
+    private final String[] PURPOSES = {"Chưa có", "Daily", "Work", "Party", "Travel", "Dating"};
     private final String[] SHAPES = {"Dáng cân đối", "Dáng đồng hồ cát", "Dáng quả lê", "Dáng quả táo", "Dáng hình chữ nhật"};
 
     @Nullable
@@ -272,6 +272,14 @@ public class AIFragment extends Fragment {
 
     private boolean isAIProfileEmpty() {
         if (getContext() == null) return true;
+
+        boolean isLogged = sessionManager.isLoggedIn();
+        boolean completed = sessionManager.isProfileCompleted();
+
+        if (isLogged) {
+            return !completed;
+        }
+
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
         String gender = prefs.getString("gender", "");
         int height = prefs.getInt("height", 0);
@@ -282,14 +290,7 @@ public class AIFragment extends Fragment {
         String styles = prefs.getString("styles", "");
         int skin = prefs.getInt("skin", 0);
 
-        boolean isLogged = sessionManager.isLoggedIn();
-        boolean completed = sessionManager.isProfileCompleted();
-
         if (!gender.isEmpty() || height > 0 || weight > 0 || !vong1.isEmpty() || !vong2.isEmpty() || !vong3.isEmpty() || !styles.isEmpty() || skin > 0) {
-            return false;
-        }
-
-        if (isLogged && completed) {
             return false;
         }
 
@@ -298,12 +299,23 @@ public class AIFragment extends Fragment {
 
     private void setupSpinnersFromPrefs() {
         if (getContext() == null) return;
+        
+        boolean isLogged = sessionManager.isLoggedIn();
+        boolean completed = sessionManager.isProfileCompleted();
+        
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
         
-        String savedStyle = prefs.getString("spinner_favorite_style", null);
-        String savedColor = prefs.getString("spinner_color_palette", null);
-        String savedVibe = prefs.getString("spinner_style_vibe", null);
-        String savedShape = prefs.getString("spinner_body_shape", null);
+        String savedStyle = null;
+        String savedColor = null;
+        String savedVibe = null;
+        String savedShape = null;
+
+        if (!isLogged || completed) {
+            savedStyle = prefs.getString("spinner_favorite_style", null);
+            savedColor = prefs.getString("spinner_color_palette", null);
+            savedVibe = prefs.getString("spinner_style_vibe", null);
+            savedShape = prefs.getString("spinner_body_shape", null);
+        }
 
         populateSpinnerWithSavedOption(binding.spFavoriteStyle, STYLES, savedStyle, "spinner_favorite_style");
         populateSpinnerWithSavedOption(binding.spColorPalette, COLORS, savedColor, "spinner_color_palette");
@@ -347,6 +359,8 @@ public class AIFragment extends Fragment {
         List<String> list = new ArrayList<>();
         int selectedIndex = 0;
 
+        list.add("Chưa có");
+
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE);
         int height = prefs.getInt("height", 0);
         int weight = prefs.getInt("weight", 0);
@@ -362,8 +376,6 @@ public class AIFragment extends Fragment {
             else if (bmi >= 25f && bmi < 30f) bmiShape = "Dáng người: Đầy đặn";
             else if (bmi >= 30f) bmiShape = "Dáng người: Tròn trịa";
             list.add(bmiShape);
-        } else {
-            list.add("(Chưa thiết lập số đo)");
         }
 
         for (String shape : SHAPES) {
