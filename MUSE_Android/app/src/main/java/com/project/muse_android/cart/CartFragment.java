@@ -250,16 +250,50 @@ public class CartFragment extends Fragment {
     }
 
     private void saveSelectedToFavorites() {
-        int count = 0;
+        List<Product> selectedList = new ArrayList<>();
         for (Product p : cartProducts) {
             if (p.isSelected()) {
-                count++;
+                selectedList.add(p);
             }
         }
-        if (count > 0) {
-            Toast.makeText(getContext(), "Đã thêm " + count + " sản phẩm vào yêu thích", Toast.LENGTH_SHORT).show();
-        } else {
+        
+        if (selectedList.isEmpty()) {
             Toast.makeText(getContext(), "Vui lòng chọn sản phẩm", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int totalToSave = selectedList.size();
+        final int[] savedCount = {0};
+        final int[] errorCount = {0};
+
+        for (Product p : selectedList) {
+            String productId = p.getId();
+            com.project.utils.WishlistManager.getInstance(getContext()).addToWishlist(productId, new com.project.utils.WishlistManager.WishlistCallback<com.project.models.WishlistResponse>() {
+                @Override
+                public void onSuccess(com.project.models.WishlistResponse result) {
+                    savedCount[0]++;
+                    checkCompletion();
+                }
+
+                @Override
+                public void onError(String message) {
+                    errorCount[0]++;
+                    checkCompletion();
+                }
+
+                private void checkCompletion() {
+                    if (savedCount[0] + errorCount[0] == totalToSave) {
+                        if (isAdded()) {
+                            if (savedCount[0] > 0) {
+                                Toast.makeText(getContext(), "Đã lưu " + savedCount[0] + " sản phẩm vào Yêu thích", Toast.LENGTH_SHORT).show();
+                            }
+                            if (errorCount[0] > 0) {
+                                Toast.makeText(getContext(), "Lỗi lưu " + errorCount[0] + " sản phẩm", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 
