@@ -116,7 +116,7 @@
             android:background="@drawable/bg_white_circle_border"
             android:padding="2dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/account_circle" />
+            android:src="@drawable/ic_profile_vector" />
 
         <LinearLayout
             android:id="@+id/btnLike"

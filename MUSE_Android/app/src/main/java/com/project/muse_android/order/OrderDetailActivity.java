@@ -83,7 +83,9 @@ public class OrderDetailActivity extends AppCompatActivity {
 
         // Get Order from intent
         order = (Order) getIntent().getSerializableExtra("order");
-        if (order == null) {
+        String orderId = getIntent().getStringExtra("order_id");
+
+        if (order == null && orderId == null) {
             Toast.makeText(this, "Không tìm thấy thông tin đơn hàng", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -91,10 +93,17 @@ public class OrderDetailActivity extends AppCompatActivity {
 
         setupUI();
         setupSuggestionRecyclerView();
-        populateData();
-        if (order.get_id() != null) {
-            fetchOrderDetail(order.get_id());
+
+        if (order != null) {
+            populateData();
+            if (order.get_id() != null) {
+                fetchOrderDetail(order.get_id());
+            }
+        } else {
+            // Only orderId is provided, fetch details immediately
+            fetchOrderDetail(orderId);
         }
+
         loadSuggestions();
     }
 

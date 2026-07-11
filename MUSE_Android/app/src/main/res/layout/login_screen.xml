@@ -36,7 +36,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_account_circle"
+                android:src="@drawable/ic_profile_vector"
                 app:tint="@color/neutral_600" />
 
             <EditText
