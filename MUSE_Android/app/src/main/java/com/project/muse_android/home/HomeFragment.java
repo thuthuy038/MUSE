@@ -408,14 +408,8 @@ public class HomeFragment extends Fragment {
         applyRipple(binding.btnChatHome);
 
         binding.btnChatHome.setOnClickListener(v -> {
-            SessionManager sm = new SessionManager(requireContext());
-            if (!sm.isLoggedIn()) {
-                Intent intent = new Intent(getContext(), com.project.muse_android.auth.AuthActivity.class);
-                startActivity(intent);
-            } else {
-                Intent intent = new Intent(getContext(), com.project.muse_android.profile.ShopChatActivity.class);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(getContext(), com.project.muse_android.profile.ShopChatActivity.class);
+            startActivity(intent);
         });
     }
 

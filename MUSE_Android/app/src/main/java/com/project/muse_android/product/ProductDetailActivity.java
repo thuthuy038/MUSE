@@ -652,14 +652,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         binding.btnChat.setOnClickListener(v -> {
-            com.project.utils.SessionManager sm = new com.project.utils.SessionManager(this);
-            if (!sm.isLoggedIn()) {
-                Intent intent = new Intent(this, com.project.muse_android.auth.AuthActivity.class);
-                startActivity(intent);
-            } else {
-                Intent intent = new Intent(this, com.project.muse_android.profile.ShopChatActivity.class);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(this, com.project.muse_android.profile.ShopChatActivity.class);
+            startActivity(intent);
         });
     }
 
