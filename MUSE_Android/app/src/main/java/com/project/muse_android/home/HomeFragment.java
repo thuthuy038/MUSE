@@ -546,7 +546,7 @@ public class HomeFragment extends Fragment {
         hotProducts.clear();
         List<Product> sortedHot = new ArrayList<>(allProducts);
         Collections.sort(sortedHot, (p1, p2) -> Integer.compare(p2.getSoldCount(), p1.getSoldCount()));
-        int hotLimit = Math.min(sortedHot.size(), 10);
+        int hotLimit = Math.min(sortedHot.size(), 20);
         hotProducts.addAll(sortedHot.subList(0, hotLimit));
 
         // 2. Sắp xếp MỚI (theo ID) - Lấy tối đa 10 sản phẩm mới nhất
@@ -557,7 +557,7 @@ public class HomeFragment extends Fragment {
             String id2 = p2.get_id() != null ? p2.get_id() : "";
             return id2.compareTo(id1);
         });
-        int newLimit = Math.min(sortedNew.size(), 10);
+        int newLimit = Math.min(sortedNew.size(), 20);
         newProducts.addAll(sortedNew.subList(0, newLimit));
 
         updateProductList();
