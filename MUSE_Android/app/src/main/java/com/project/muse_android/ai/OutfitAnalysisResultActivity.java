@@ -151,13 +151,122 @@ public class OutfitAnalysisResultActivity extends AppCompatActivity {
                     }
                 });
             } else {
-                Toast.makeText(this, "Đã thêm vào tủ đồ cá nhân!", Toast.LENGTH_SHORT).show();
+                // Scanner mode: Save to outfits section
+                String style = binding.tvStyleName.getText().toString();
+                
+                // Calculate average score
+                int school = binding.pbSchool.getProgress();
+                int work = binding.pbWork.getProgress();
+                int date = binding.pbDate.getProgress();
+                int party = binding.pbParty.getProgress();
+                int travel = binding.pbTravel.getProgress();
+                double avgScore = (school + work + date + party + travel) / 5.0;
+                
+                com.project.models.SavedOutfit saved = new com.project.models.SavedOutfit(
+                        "Quét đồ: " + style,
+                        "Phong cách dự đoán: " + style,
+                        avgScore, // Pass average score in topPrice
+                        imagePath, // Use scanned image path
+                        "scanner_" + System.currentTimeMillis(),
+                        "MUSE AI Outfit Scanner",
+                        0.0,
+                        "",
+                        "",
+                        new java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new java.util.Date())
+                );
+                
+                com.project.utils.AiStorageManager.saveOutfit(this, saved);
+                Toast.makeText(this, "Đã thêm vào tủ đồ cá nhân! (Lưu vào mục Bộ phối) ✨", Toast.LENGTH_SHORT).show();
             }
         });
 
         binding.btnSaveOutfit.setOnClickListener(v -> {
-            Toast.makeText(this, "Đã lưu bộ phối đồ vào Nhật ký AI! ✨", Toast.LENGTH_SHORT).show();
+            if ("scanner".equals(mode)) {
+                captureAndSaveScreenshot();
+            } else {
+                Toast.makeText(this, "Đã lưu bộ phối đồ vào Nhật ký AI! ✨", Toast.LENGTH_SHORT).show();
+            }
         });
+    }
+
+    private void captureAndSaveScreenshot() {
+        androidx.core.widget.NestedScrollView scrollView = binding.scrollView;
+        if (scrollView == null) {
+            Toast.makeText(this, "Không tìm thấy vùng cuộn trang.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            // Get the child layout containing the full scroll content
+            android.view.View childView = scrollView.getChildAt(0);
+            if (childView == null) return;
+
+            // Get full height and width of the scroll content
+            int totalHeight = childView.getHeight();
+            int totalWidth = childView.getWidth();
+
+            if (totalHeight <= 0 || totalWidth <= 0) {
+                Toast.makeText(this, "Lỗi kích thước trang cuộn.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Create a bitmap with the total width and height
+            android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(
+                    totalWidth, totalHeight, android.graphics.Bitmap.Config.ARGB_8888
+            );
+            android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
+            
+            // Draw background color (white) first to avoid transparency
+            canvas.drawColor(android.graphics.Color.WHITE);
+            
+            // Draw the child view onto the canvas
+            childView.draw(canvas);
+
+            // Save to Gallery
+            saveBitmapToGallery(bitmap);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Không thể chụp toàn bộ trang: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void saveBitmapToGallery(android.graphics.Bitmap bitmap) {
+        String filename = "MUSE_Scan_" + System.currentTimeMillis() + ".jpg";
+        android.content.ContentValues values = new android.content.ContentValues();
+        values.put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, filename);
+        values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            values.put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/MUSE");
+            values.put(android.provider.MediaStore.Images.Media.IS_PENDING, 1);
+        }
+        
+        android.net.Uri uri = getContentResolver().insert(
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
+        );
+        
+        if (uri != null) {
+            try {
+                java.io.OutputStream out = getContentResolver().openOutputStream(uri);
+                if (out != null) {
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 100, out);
+                    out.close();
+                }
+                
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    values.clear();
+                    values.put(android.provider.MediaStore.Images.Media.IS_PENDING, 0);
+                    getContentResolver().update(uri, values, null, null);
+                }
+                
+                Toast.makeText(this, "Đã chụp và lưu kết quả quét vào Thư viện ảnh! 📸", Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Lỗi lưu ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Không thể tạo file ảnh trong Thư viện.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showTryOnScores() {

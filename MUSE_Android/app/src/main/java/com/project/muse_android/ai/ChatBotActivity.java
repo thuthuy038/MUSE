@@ -50,11 +50,22 @@ public class ChatBotActivity extends AppCompatActivity {
     private final List<ChatMessage> messageList = new ArrayList<>();
     private final List<Product> shopProducts = new ArrayList<>();
     private final List<OutfitSet> outfitSets = new ArrayList<>();
-    private String geminiApiKey = BuildConfig.GEMINI_API_KEY;
+    private final List<String> geminiApiKeys = new ArrayList<>();
+    private int currentKeyIndex = 0;
     private User currentUser = null;
     private int originalChatPaddingBottom = 0;
     private int originalSuggestionsPaddingBottom = 0;
     private int navigationBarHeight = 0;
+
+    private LocalGeminiApiClient localGeminiClient;
+
+    interface LocalGeminiApiClient {
+        @retrofit2.http.POST("v1beta/models/gemini-2.5-flash:generateContent")
+        Call<GeminiResponse> generateContent(
+            @retrofit2.http.Query("key") String apiKey,
+            @retrofit2.http.Body Map<String, Object> body
+        );
+    }
     
     private final androidx.activity.result.ActivityResultLauncher<String> recordAudioPermissionLauncher =
             registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -72,10 +83,46 @@ public class ChatBotActivity extends AppCompatActivity {
         binding = ActivityChatBotBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Listen for Window Insets to get navigation bar height
+        // Listen for Window Insets to get navigation bar and keyboard height
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
             Insets systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets ime = windowInsets.getInsets(WindowInsetsCompat.Type.ime());
+            boolean isKeyboardVisible = windowInsets.isVisible(WindowInsetsCompat.Type.ime());
+            
             navigationBarHeight = systemBars.bottom;
+            int keyboardHeight = ime.bottom;
+            
+            if (isKeyboardVisible) {
+                binding.layoutInputArea.setTranslationY(-keyboardHeight);
+                binding.rvChatHistory.setPadding(
+                        binding.rvChatHistory.getPaddingLeft(),
+                        binding.rvChatHistory.getPaddingTop(),
+                        binding.rvChatHistory.getPaddingRight(),
+                        keyboardHeight + originalChatPaddingBottom
+                );
+            } else {
+                if (isBottomNavHidden) {
+                    binding.layoutInputArea.setTranslationY(-navigationBarHeight);
+                    binding.rvChatHistory.setPadding(
+                            binding.rvChatHistory.getPaddingLeft(),
+                            binding.rvChatHistory.getPaddingTop(),
+                            binding.rvChatHistory.getPaddingRight(),
+                            navigationBarHeight + originalChatPaddingBottom
+                    );
+                } else {
+                    int navHeight = binding.bottomNavigationView.getHeight();
+                    if (navHeight == 0) {
+                        navHeight = (int) (56 * getResources().getDisplayMetrics().density);
+                    }
+                    binding.layoutInputArea.setTranslationY(-navHeight);
+                    binding.rvChatHistory.setPadding(
+                            binding.rvChatHistory.getPaddingLeft(),
+                            binding.rvChatHistory.getPaddingTop(),
+                            binding.rvChatHistory.getPaddingRight(),
+                            navHeight + originalChatPaddingBottom
+                    );
+                }
+            }
             return windowInsets;
         });
 
@@ -146,6 +193,36 @@ public class ChatBotActivity extends AppCompatActivity {
         com.project.utils.ViewUtils.setupBottomNavigation(binding.bottomNavigationView, this);
 
         setupFooterBehavior();
+
+        retrofit2.Retrofit retrofit = new retrofit2.Retrofit.Builder()
+                .baseUrl("https://generativelanguage.googleapis.com/")
+                .client(new okhttp3.OkHttpClient.Builder()
+                        .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                        .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                        .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                        .build())
+                .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
+                .build();
+        localGeminiClient = retrofit.create(LocalGeminiApiClient.class);
+
+        // Load keys from BuildConfig (split by comma if multiple keys are present)
+        String rawKeys = BuildConfig.GEMINI_API_KEY;
+        if (rawKeys != null && !rawKeys.trim().isEmpty()) {
+            if (rawKeys.contains(",")) {
+                String[] parts = rawKeys.split(",");
+                for (String part : parts) {
+                    String clean = part.trim();
+                    if (!clean.isEmpty() && !geminiApiKeys.contains(clean)) {
+                        geminiApiKeys.add(clean);
+                    }
+                }
+            } else {
+                String clean = rawKeys.trim();
+                if (!clean.isEmpty() && !geminiApiKeys.contains(clean)) {
+                    geminiApiKeys.add(clean);
+                }
+            }
+        }
     }
 
     private void navigateToAiHub() {
@@ -517,36 +594,99 @@ public class ChatBotActivity extends AppCompatActivity {
         systemInstructionMap.put("parts", systemParts);
         body.put("systemInstruction", systemInstructionMap);
 
-        // Call Gemini API
-        GeminiClient.getClient().generateContent(geminiApiKey, body).enqueue(new Callback<GeminiResponse>() {
+        // Call Gemini API with automatic key rotation and retry
+        callGeminiWithRetry(currentKeyIndex, body, 0);
+    }
+
+    private void removeTypingIndicator() {
+        for (int i = messageList.size() - 1; i >= 0; i--) {
+            if ("Muse đang suy nghĩ...".equals(messageList.get(i).getText()) && !messageList.get(i).isUser()) {
+                messageList.remove(i);
+                chatAdapter.notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
+
+    private void callGeminiWithRetry(int keyIndex, Map<String, Object> body, int retryCount) {
+        if (geminiApiKeys.isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy API Key nào trong cấu hình!", Toast.LENGTH_LONG).show();
+            removeTypingIndicator();
+            showAiErrorDialog();
+            return;
+        }
+
+        int index = keyIndex % geminiApiKeys.size();
+        String activeKey = geminiApiKeys.get(index);
+
+        android.util.Log.d("MUSE_Gemini", "Calling Gemini with API Key index: " + index + " (Retry: " + retryCount + ")");
+
+        localGeminiClient.generateContent(activeKey, body).enqueue(new Callback<GeminiResponse>() {
             @Override
             public void onResponse(Call<GeminiResponse> call, Response<GeminiResponse> response) {
-                // Remove typing indicator
-                if (typingPosition < messageList.size()) {
-                    messageList.remove(typingPosition);
-                    chatAdapter.notifyItemRemoved(typingPosition);
+                // Rate limit (429), Permission/Quota issue (403), or Bad Request/Invalid Key (400)
+                if (!response.isSuccessful() && (response.code() == 429 || response.code() == 403 || response.code() == 400)
+                        && retryCount < geminiApiKeys.size() - 1) {
+                    
+                    String errorBodyStr = "";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBodyStr = response.errorBody().string();
+                        }
+                    } catch (Exception ignored) {}
+
+                    android.util.Log.w("MUSE_Gemini", "Key index " + index + " failed with code " + response.code() + ": " + errorBodyStr + ". Retrying with next key...");
+                    
+                    Toast.makeText(ChatBotActivity.this, "Key " + (index + 1) + " lỗi (" + response.code() + "). Đang chuyển sang Key tiếp theo...", Toast.LENGTH_SHORT).show();
+
+                    // Advance to next key and retry
+                    currentKeyIndex = (index + 1) % geminiApiKeys.size();
+                    callGeminiWithRetry(currentKeyIndex, body, retryCount + 1);
+                    return;
                 }
+
+                removeTypingIndicator();
 
                 if (response.isSuccessful() && response.body() != null) {
                     String reply = response.body().getText();
                     if (reply == null || reply.isEmpty()) {
+                        Toast.makeText(ChatBotActivity.this, "API returned empty text", Toast.LENGTH_LONG).show();
                         showAiErrorDialog();
                         return;
                     }
                     parseAndDisplayReply(reply);
+
+                    // Successfully completed: rotate index round-robin for the next message
+                    currentKeyIndex = (index + 1) % geminiApiKeys.size();
                 } else {
+                    String errMsg = "API Error: " + response.code();
+                    try {
+                        if (response.errorBody() != null) {
+                            errMsg += "\nDetails: " + response.errorBody().string();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    android.util.Log.e("MUSE_Gemini", errMsg);
+                    Toast.makeText(ChatBotActivity.this, errMsg, Toast.LENGTH_LONG).show();
                     showAiErrorDialog();
                 }
             }
 
             @Override
             public void onFailure(Call<GeminiResponse> call, Throwable t) {
-                // Remove typing indicator
-                if (typingPosition < messageList.size()) {
-                    messageList.remove(typingPosition);
-                    chatAdapter.notifyItemRemoved(typingPosition);
+                if (retryCount < geminiApiKeys.size() - 1) {
+                    android.util.Log.w("MUSE_Gemini", "Network failure. Retrying with next key...", t);
+                    Toast.makeText(ChatBotActivity.this, "Lỗi kết nối. Đang chuyển sang Key tiếp theo...", Toast.LENGTH_SHORT).show();
+                    currentKeyIndex = (index + 1) % geminiApiKeys.size();
+                    callGeminiWithRetry(currentKeyIndex, body, retryCount + 1);
+                } else {
+                    removeTypingIndicator();
+                    String errMsg = "Network Failure: " + t.getMessage();
+                    android.util.Log.e("MUSE_Gemini", errMsg, t);
+                    Toast.makeText(ChatBotActivity.this, errMsg, Toast.LENGTH_LONG).show();
+                    showAiErrorDialog();
                 }
-                showAiErrorDialog();
             }
         });
     }
@@ -557,26 +697,40 @@ public class ChatBotActivity extends AppCompatActivity {
         Matcher matcher = pattern.matcher(replyText);
 
         List<Product> suggestedList = new ArrayList<>();
-        String cleanedReply = replyText;
 
-        if (matcher.find()) {
+        while (matcher.find()) {
             String idsGroup = matcher.group(1);
             if (idsGroup != null && !idsGroup.trim().isEmpty()) {
                 String[] ids = idsGroup.split(",");
                 for (String id : ids) {
                     String cleanId = id.trim().replace("\"", "").replace("'", "");
+                    if (cleanId.isEmpty()) continue;
+                    
                     // Find product matching this id from shopProducts
                     for (Product p : shopProducts) {
-                        if (p.get_id().equalsIgnoreCase(cleanId)) {
-                            suggestedList.add(p);
+                        String pid = p.get_id() != null ? p.get_id() : p.getId();
+                        if (pid != null && pid.equalsIgnoreCase(cleanId)) {
+                            // Avoid duplicate recommendations
+                            boolean alreadyAdded = false;
+                            for (Product existing : suggestedList) {
+                                String existingId = existing.get_id() != null ? existing.get_id() : existing.getId();
+                                if (pid.equalsIgnoreCase(existingId)) {
+                                    alreadyAdded = true;
+                                    break;
+                                }
+                            }
+                            if (!alreadyAdded) {
+                                suggestedList.add(p);
+                            }
                             break;
                         }
                     }
                 }
             }
-            // Remove the brackets from the displayed reply text
-            cleanedReply = matcher.replaceFirst("").trim();
         }
+
+        // Remove all brackets from the displayed reply text
+        String cleanedReply = pattern.matcher(replyText).replaceAll("").trim();
 
         // Add message to chat list
         messageList.add(new ChatMessage(cleanedReply, false, suggestedList));
