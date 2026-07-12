@@ -117,18 +117,30 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
 
             @Override
             public void onFavoriteClick(Product product, int position) {
-                // Handle favorite toggle from recommendation list
+                // Check login first
+                com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+                if (!sessionManager.isLoggedIn()) {
+                    Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Handle favorite toggle from recommendation list manually
+                product.setFavorite(!product.isFavorite());
+                recommendedAdapter.notifyItemChanged(position);
+
                 WishlistManager.getInstance(getContext()).addToWishlist(
                         product.get_id() != null ? product.get_id() : product.getId(),
                         new WishlistManager.WishlistCallback<WishlistResponse>() {
                     @Override
                     public void onSuccess(WishlistResponse result) {
                         Toast.makeText(getContext(), "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
-                        loadData(); // Refresh wishlist
+                        loadData(); // Refresh main wishlist
                     }
 
                     @Override
                     public void onError(String message) {
+                        product.setFavorite(false);
+                        recommendedAdapter.notifyItemChanged(position);
                         Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -460,6 +472,12 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
 
     @Override
     public void onFavoriteClick(Product product, int position) {
+        com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String productId = product.get_id() != null ? product.get_id() : product.getId();
         if (product.isFavorite()) {
             // Remove from wishlist

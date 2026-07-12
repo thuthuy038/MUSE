@@ -639,7 +639,45 @@ public class SearchResultActivity extends AppCompatActivity {
             intent.putExtra("product_id", product.get_id());
             startActivity(intent);
         });
-        productAdapter.setOnFavoriteClickListener(product -> Toast.makeText(this, "Đã thêm vào yêu thích: " + product.getName(), Toast.LENGTH_SHORT).show());
+        productAdapter.setOnFavoriteClickListener(product -> {
+            if (!sessionManager.isLoggedIn()) {
+                Toast.makeText(this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Manual toggle
+            product.setFavorite(!product.isFavorite());
+            productAdapter.notifyDataSetChanged();
+
+            String productId = product.get_id() != null ? product.get_id() : product.getId();
+            if (product.isFavorite()) {
+                com.project.utils.WishlistManager.getInstance(this).addToWishlist(productId, new com.project.utils.WishlistManager.WishlistCallback<com.project.models.WishlistResponse>() {
+                    @Override
+                    public void onSuccess(com.project.models.WishlistResponse result) {
+                        Toast.makeText(SearchResultActivity.this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+                    }
+                    @Override
+                    public void onError(String message) {
+                        product.setFavorite(false);
+                        productAdapter.notifyDataSetChanged();
+                        Toast.makeText(SearchResultActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                com.project.utils.WishlistManager.getInstance(this).removeFromWishlist(productId, new com.project.utils.WishlistManager.WishlistCallback<com.project.models.WishlistResponse>() {
+                    @Override
+                    public void onSuccess(com.project.models.WishlistResponse result) {
+                        Toast.makeText(SearchResultActivity.this, "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
+                    }
+                    @Override
+                    public void onError(String message) {
+                        product.setFavorite(true);
+                        productAdapter.notifyDataSetChanged();
+                        Toast.makeText(SearchResultActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
         binding.rvProducts.setLayoutManager(new GridLayoutManager(this, 2));
         binding.rvProducts.setAdapter(productAdapter);
     }

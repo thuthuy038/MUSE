@@ -149,9 +149,6 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             binding.btnFavorite.setOnClickListener(v -> {
                 int position = getBindingAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
-                    product.setFavorite(!product.isFavorite());
-                    updateFavoriteIcon(binding.btnFavorite, product.isFavorite());
-
                     if (listener != null) listener.onFavoriteClick(product, position);
                     if (favoriteListener != null) favoriteListener.onFavoriteClick(product);
                 }
@@ -214,9 +211,6 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             binding.btnFavorite.setOnClickListener(v -> {
                 int position = getBindingAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
-                    product.setFavorite(!product.isFavorite());
-                    updateFavoriteIcon(binding.btnFavorite, product.isFavorite());
-
                     if (listener != null) listener.onFavoriteClick(product, position);
                     if (favoriteListener != null) favoriteListener.onFavoriteClick(product);
                 }

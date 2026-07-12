@@ -128,7 +128,46 @@ public class CategoryProductsFragment extends Fragment {
             startActivity(intent);
         });
         productAdapter.setOnFavoriteClickListener(product -> {
-            Toast.makeText(getContext(), "Đã thêm vào yêu thích: " + product.getName(), Toast.LENGTH_SHORT).show();
+            com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+            if (!sessionManager.isLoggedIn()) {
+                Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Manually toggle
+            product.setFavorite(!product.isFavorite());
+            productAdapter.notifyDataSetChanged();
+
+            String productId = product.get_id() != null ? product.get_id() : product.getId();
+            if (product.isFavorite()) {
+                com.project.utils.WishlistManager.getInstance(getContext()).addToWishlist(productId, new com.project.utils.WishlistManager.WishlistCallback<com.project.models.WishlistResponse>() {
+                    @Override
+                    public void onSuccess(com.project.models.WishlistResponse result) {
+                        Toast.makeText(getContext(), "Đã thêm vào yêu thích: " + product.getName(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        product.setFavorite(false);
+                        productAdapter.notifyDataSetChanged();
+                        Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                com.project.utils.WishlistManager.getInstance(getContext()).removeFromWishlist(productId, new com.project.utils.WishlistManager.WishlistCallback<com.project.models.WishlistResponse>() {
+                    @Override
+                    public void onSuccess(com.project.models.WishlistResponse result) {
+                        Toast.makeText(getContext(), "Đã xóa khỏi yêu thích: " + product.getName(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        product.setFavorite(true);
+                        productAdapter.notifyDataSetChanged();
+                        Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
         binding.rvProducts.setLayoutManager(new GridLayoutManager(getContext(), 2));
         binding.rvProducts.setAdapter(productAdapter);

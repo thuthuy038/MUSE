@@ -85,7 +85,12 @@ public class CartFragment extends Fragment {
 
         // Nút liên kết tới trang Yêu thích (Wishlist)
         binding.ivFavorite.setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.navigation_wishlist);
+            com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+            if (!sessionManager.isLoggedIn()) {
+                Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            } else {
+                Navigation.findNavController(v).navigate(R.id.navigation_wishlist);
+            }
         });
 
         // Cấu hình RecyclerView cho giỏ hàng
@@ -498,7 +503,44 @@ public class CartFragment extends Fragment {
 
             @Override
             public void onFavoriteClick(Product product, int position) {
-                Toast.makeText(getContext(), "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+                com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+                if (!sessionManager.isLoggedIn()) {
+                    Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Manual toggle
+                product.setFavorite(!product.isFavorite());
+                productAdapter.notifyItemChanged(position);
+
+                String productId = product.get_id() != null ? product.get_id() : product.getId();
+                if (product.isFavorite()) {
+                    com.project.utils.WishlistManager.getInstance(getContext()).addToWishlist(productId, new com.project.utils.WishlistManager.WishlistCallback<com.project.models.WishlistResponse>() {
+                        @Override
+                        public void onSuccess(com.project.models.WishlistResponse result) {
+                            Toast.makeText(getContext(), "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+                        }
+                        @Override
+                        public void onError(String message) {
+                            product.setFavorite(false);
+                            productAdapter.notifyItemChanged(position);
+                            Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    com.project.utils.WishlistManager.getInstance(getContext()).removeFromWishlist(productId, new com.project.utils.WishlistManager.WishlistCallback<com.project.models.WishlistResponse>() {
+                        @Override
+                        public void onSuccess(com.project.models.WishlistResponse result) {
+                            Toast.makeText(getContext(), "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
+                        }
+                        @Override
+                        public void onError(String message) {
+                            product.setFavorite(true);
+                            productAdapter.notifyItemChanged(position);
+                            Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             }
         });
         binding.rvSuggestedProducts.setAdapter(productAdapter);
