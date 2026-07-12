@@ -522,13 +522,15 @@ public class OrderDetailActivity extends AppCompatActivity {
                     Toast.makeText(OrderDetailActivity.this, "Đã hủy đơn hàng thành công", Toast.LENGTH_SHORT).show();
                     
                     String orderIdStr = order.getId() != null ? order.getId() : (order.get_id() != null ? order.get_id() : "");
-                    String displayId = orderIdStr.length() > 8 ? orderIdStr.substring(orderIdStr.length() - 8) : orderIdStr;
+                    String displayId = (orderIdStr.startsWith("ORD") || orderIdStr.length() <= 8)
+                            ? orderIdStr : orderIdStr.substring(orderIdStr.length() - 8);
                     
                     com.project.models.Notification localNotif = new com.project.models.Notification();
                     localNotif.setTitle("Đơn hàng đã hủy");
                     localNotif.setMessage("Đơn hàng #" + displayId + " của bạn đã được hủy thành công.");
                     localNotif.setType("order");
                     localNotif.setStatus("unread");
+                    localNotif.setTargetId(order.get_id()); // Fixed: Add targetId for navigation
                     localNotif.setCreatedAt(new java.util.Date());
                     
                     new com.project.utils.SessionManager(OrderDetailActivity.this).addLocalNotification(localNotif);
@@ -590,18 +592,71 @@ public class OrderDetailActivity extends AppCompatActivity {
     }
 
     private void fetchOrderDetail(String orderId) {
+        fetchOrderDetail(orderId, true);
+    }
+
+    private void fetchOrderDetail(String orderId, boolean allowFallback) {
         ApiClient.INSTANCE.getInstance().getOrderDetail(orderId).enqueue(new Callback<Order>() {
             @Override
             public void onResponse(@NonNull Call<Order> call, @NonNull Response<Order> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     order = response.body();
                     populateData();
+                } else {
+                    if (allowFallback) {
+                        fetchOrderByUserFacingId(orderId);
+                    } else {
+                        Toast.makeText(OrderDetailActivity.this, "Không thể tải chi tiết đơn hàng", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<Order> call, @NonNull Throwable t) {
-                // Fallback to local passed intent order
+                if (allowFallback) {
+                    fetchOrderByUserFacingId(orderId);
+                } else {
+                    Toast.makeText(OrderDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void fetchOrderByUserFacingId(String userFacingId) {
+        if (userFacingId == null || userFacingId.isEmpty()) return;
+        com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(this);
+        String userId = sessionManager.getUserId();
+        if (userId == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập để xem chi tiết đơn hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApiClient.INSTANCE.getInstance().getMyOrders(userId).enqueue(new Callback<List<Order>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Order>> call, @NonNull Response<List<Order>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (Order o : response.body()) {
+                        String orderId = o.getId() != null ? o.getId() : "";
+                        String orderDbId = o.get_id() != null ? o.get_id() : "";
+                        if (userFacingId.equalsIgnoreCase(orderId) 
+                                || userFacingId.equalsIgnoreCase(orderDbId)
+                                || (orderId.length() >= userFacingId.length() && orderId.endsWith(userFacingId))
+                                || (orderDbId.length() >= userFacingId.length() && orderDbId.endsWith(userFacingId))) {
+                            order = o;
+                            populateData();
+                            if (order.get_id() != null) {
+                                fetchOrderDetail(order.get_id(), false);
+                            }
+                            return;
+                        }
+                    }
+                }
+                Toast.makeText(OrderDetailActivity.this, "Không tìm thấy thông tin đơn hàng: " + userFacingId, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<Order>> call, @NonNull Throwable t) {
+                Toast.makeText(OrderDetailActivity.this, "Không thể lấy thông tin đơn hàng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

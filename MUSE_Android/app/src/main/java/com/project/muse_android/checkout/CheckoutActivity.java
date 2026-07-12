@@ -458,13 +458,15 @@ public class CheckoutActivity extends AppCompatActivity {
                     
                     // Add local notification for order placement
                     String orderIdStr = createdOrder.getId() != null ? createdOrder.getId() : "";
-                    String displayId = orderIdStr.length() > 8 ? orderIdStr.substring(orderIdStr.length() - 8) : orderIdStr;
+                    String displayId = (orderIdStr.startsWith("ORD") || orderIdStr.length() <= 8) 
+                            ? orderIdStr : orderIdStr.substring(orderIdStr.length() - 8);
                     
                     com.project.models.Notification localNotif = new com.project.models.Notification();
                     localNotif.setTitle("Đặt hàng thành công");
                     localNotif.setMessage("Đơn hàng #" + displayId + " của bạn đã được đặt thành công!");
                     localNotif.setType("order");
                     localNotif.setStatus("unread");
+                    localNotif.setTargetId(createdOrder.get_id()); // Fixed: Add targetId for navigation
                     localNotif.setCreatedAt(new java.util.Date());
                     
                     sessionManager.addLocalNotification(localNotif);
