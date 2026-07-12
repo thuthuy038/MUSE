@@ -232,13 +232,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (intent.hasExtra("category_id")) {
                 String categoryId = intent.getStringExtra("category_id");
                 if (categoryId != null) {
-                    Bundle args = new Bundle();
-                    args.putString("category_id", categoryId);
-                    try {
-                        navController.navigate(R.id.navigation_category_products, args);
-                    } catch (Exception e) {
-                        android.util.Log.e("MainActivity", "Navigation failed", e);
-                    }
+                    Intent catIntent = new Intent(this, com.project.muse_android.product.CategoryProductsActivity.class);
+                    catIntent.putExtra("category_id", categoryId);
+                    startActivity(catIntent);
                     intent.removeExtra("category_id");
                 }
             }
