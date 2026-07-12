@@ -273,7 +273,7 @@ public class ProfileOverviewFragment extends Fragment {
         });
 
         binding.ivCart.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Giỏ hàng", Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(v).navigate(R.id.navigation_cart);
         });
 
         binding.menuPersonalInfo.getRoot().setOnClickListener(v -> {
