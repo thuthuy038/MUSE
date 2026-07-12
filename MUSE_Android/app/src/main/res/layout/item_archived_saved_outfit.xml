@@ -96,6 +96,7 @@
 
             <!-- Plus Connector -->
             <TextView
+                android:id="@+id/tvPlusConnector"
                 android:layout_width="32dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"

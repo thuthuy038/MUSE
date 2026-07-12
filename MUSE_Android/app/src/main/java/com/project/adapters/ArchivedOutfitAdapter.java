@@ -49,17 +49,35 @@ public class ArchivedOutfitAdapter extends RecyclerView.Adapter<ArchivedOutfitAd
         holder.tvSetName.setText(outfit.getSetName());
         holder.tvSetDescription.setText("Đã lưu vào " + outfit.getSavedDate());
 
-        // Top Item
-        holder.tvTopName.setText(outfit.getTopName());
-        loadImage(holder.ivTopImage, outfit.getTopImageUrl());
+        boolean isScanner = outfit.getTopId() != null && outfit.getTopId().startsWith("scanner_");
 
-        // Bottom Item
-        holder.tvBottomName.setText(outfit.getBottomName());
-        loadImage(holder.ivBottomImage, outfit.getBottomImageUrl());
+        if (isScanner) {
+            if (holder.tvPlusConnector != null) holder.tvPlusConnector.setVisibility(View.GONE);
+            holder.cardBottom.setVisibility(View.GONE);
+            
+            holder.tvTopName.setText(outfit.getTopName() + " (Điểm trung bình: " + Math.round(outfit.getTopPrice()) + "đ)");
+            loadImage(holder.ivTopImage, outfit.getTopImageUrl());
+        } else {
+            if (holder.tvPlusConnector != null) holder.tvPlusConnector.setVisibility(View.VISIBLE);
+            holder.cardBottom.setVisibility(View.VISIBLE);
+            
+            // Top Item
+            holder.tvTopName.setText(outfit.getTopName());
+            loadImage(holder.ivTopImage, outfit.getTopImageUrl());
+
+            // Bottom Item
+            holder.tvBottomName.setText(outfit.getBottomName());
+            loadImage(holder.ivBottomImage, outfit.getBottomImageUrl());
+        }
 
         boolean isTryOn = outfit.getBottomId() != null && outfit.getBottomId().startsWith("tryon_");
         View.OnClickListener clickListener = v -> {
-            if (isTryOn) {
+            if (isScanner) {
+                Intent intent = new Intent(context, com.project.muse_android.ai.OutfitAnalysisResultActivity.class);
+                intent.putExtra("mode", "scanner");
+                intent.putExtra("image_path", outfit.getTopImageUrl());
+                context.startActivity(intent);
+            } else if (isTryOn) {
                 String color = "Mặc định";
                 String size = "Mặc định";
                 try {
@@ -122,6 +140,7 @@ public class ArchivedOutfitAdapter extends RecyclerView.Adapter<ArchivedOutfitAd
         View cardTop;
         ImageView ivTopImage;
         TextView tvTopName;
+        TextView tvPlusConnector;
         View cardBottom;
         ImageView ivBottomImage;
         TextView tvBottomName;
@@ -134,6 +153,7 @@ public class ArchivedOutfitAdapter extends RecyclerView.Adapter<ArchivedOutfitAd
             cardTop = itemView.findViewById(R.id.cardTop);
             ivTopImage = itemView.findViewById(R.id.ivTopImage);
             tvTopName = itemView.findViewById(R.id.tvTopName);
+            tvPlusConnector = itemView.findViewById(R.id.tvPlusConnector);
             cardBottom = itemView.findViewById(R.id.cardBottom);
             ivBottomImage = itemView.findViewById(R.id.ivBottomImage);
             tvBottomName = itemView.findViewById(R.id.tvBottomName);
