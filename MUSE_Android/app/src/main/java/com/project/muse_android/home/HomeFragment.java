@@ -235,6 +235,16 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         });
         productAdapter.setOnFavoriteClickListener(product -> {
+            SessionManager sessionManager = new SessionManager(requireContext());
+            if (!sessionManager.isLoggedIn()) {
+                Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Manually toggle because we removed auto-toggle from Adapter
+            product.setFavorite(!product.isFavorite());
+            productAdapter.notifyDataSetChanged();
+
             String productId = product.get_id() != null ? product.get_id() : product.getId();
             if (product.isFavorite()) {
                 WishlistManager.getInstance(getContext()).addToWishlist(productId, new WishlistManager.WishlistCallback<WishlistResponse>() {
@@ -408,14 +418,8 @@ public class HomeFragment extends Fragment {
         applyRipple(binding.btnChatHome);
 
         binding.btnChatHome.setOnClickListener(v -> {
-            SessionManager sm = new SessionManager(requireContext());
-            if (!sm.isLoggedIn()) {
-                Intent intent = new Intent(getContext(), com.project.muse_android.auth.AuthActivity.class);
-                startActivity(intent);
-            } else {
-                Intent intent = new Intent(getContext(), com.project.muse_android.profile.ShopChatActivity.class);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(getContext(), com.project.muse_android.profile.ShopChatActivity.class);
+            startActivity(intent);
         });
     }
 

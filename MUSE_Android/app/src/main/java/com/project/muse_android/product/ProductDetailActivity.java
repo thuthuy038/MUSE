@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.text.HtmlCompat;
 
 import androidx.viewpager2.widget.ViewPager2;
 import androidx.annotation.NonNull;
@@ -124,7 +125,20 @@ public class ProductDetailActivity extends AppCompatActivity {
 
             @Override
             public void onFavoriteClick(Product product, int position) {
-                toggleFavorite(product);
+                // For adapter items, we also need to refresh the adapter state
+                com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(ProductDetailActivity.this);
+                if (!sessionManager.isLoggedIn()) {
+                    Toast.makeText(ProductDetailActivity.this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
+                // Manual toggle for adapter item
+                product.setFavorite(!product.isFavorite());
+                suggestedAdapter.notifyItemChanged(position);
+                
+                // Perform API call via existing toggleFavorite but we need to avoid duplicate checks or state resets
+                // Actually, let's call API directly or refactor toggleFavorite
+                performFavoriteApiCall(product, position);
             }
         });
         binding.rvSuggestedProducts.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
@@ -225,8 +239,12 @@ public class ProductDetailActivity extends AppCompatActivity {
         loadCategoryName(product.getCategory());
 
         // Description
-        binding.txtDescription.setText(product.getDescription() != null && !product.getDescription().isEmpty() ?
-                product.getDescription() : "Mô tả đang được cập nhật...");
+        if (product.getDescription() != null && !product.getDescription().isEmpty()) {
+            CharSequence parsedHtml = HtmlCompat.fromHtml(product.getDescription(), HtmlCompat.FROM_HTML_MODE_LEGACY);
+            binding.txtDescription.setText(trimTrailingWhitespace(parsedHtml));
+        } else {
+            binding.txtDescription.setText("Mô tả đang được cập nhật...");
+        }
 
         // Image
         if (product.getImages() != null && !product.getImages().isEmpty()) {
@@ -271,6 +289,39 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
     }
 
+    private void performFavoriteApiCall(Product product, int position) {
+        String pId = product.get_id() != null ? product.get_id() : product.getId();
+        if (product.isFavorite()) {
+            WishlistManager.getInstance(this).addToWishlist(pId, new WishlistManager.WishlistCallback<WishlistResponse>() {
+                @Override
+                public void onSuccess(WishlistResponse result) {
+                    Toast.makeText(ProductDetailActivity.this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+                }
+                @Override
+                public void onError(String message) {
+                    product.setFavorite(false);
+                    if (position != -1) suggestedAdapter.notifyItemChanged(position);
+                    else updateFavoriteUI(false);
+                    Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            WishlistManager.getInstance(this).removeFromWishlist(pId, new WishlistManager.WishlistCallback<WishlistResponse>() {
+                @Override
+                public void onSuccess(WishlistResponse result) {
+                    Toast.makeText(ProductDetailActivity.this, "Đã xóa khỏi danh sách yêu thích", Toast.LENGTH_SHORT).show();
+                }
+                @Override
+                public void onError(String message) {
+                    product.setFavorite(true);
+                    if (position != -1) suggestedAdapter.notifyItemChanged(position);
+                    else updateFavoriteUI(true);
+                    Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
     private void updateFavoriteUI(boolean isFavorite) {
         if (isFavorite) {
             binding.btnFavoriteDetail.setImageResource(R.drawable.ic_favorite_filled);
@@ -283,39 +334,18 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private void toggleFavorite(Product product) {
         if (product == null) return;
-        
-        String pId = product.get_id() != null ? product.get_id() : product.getId();
-        boolean isCurrentlyFavorite = product.isFavorite();
-        
-        if (isCurrentlyFavorite) {
-            WishlistManager.getInstance(this).removeFromWishlist(pId, new WishlistManager.WishlistCallback<WishlistResponse>() {
-                @Override
-                public void onSuccess(WishlistResponse result) {
-                    product.setFavorite(false);
-                    updateFavoriteUI(false);
-                    Toast.makeText(ProductDetailActivity.this, "Đã xóa khỏi danh sách yêu thích", Toast.LENGTH_SHORT).show();
-                }
 
-                @Override
-                public void onError(String message) {
-                    Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            WishlistManager.getInstance(this).addToWishlist(pId, new WishlistManager.WishlistCallback<WishlistResponse>() {
-                @Override
-                public void onSuccess(WishlistResponse result) {
-                    product.setFavorite(true);
-                    updateFavoriteUI(true);
-                    Toast.makeText(ProductDetailActivity.this, "Đã thêm vào danh sách yêu thích", Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onError(String message) {
-                    Toast.makeText(ProductDetailActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
-                }
-            });
+        com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(this);
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        // Manual toggle
+        product.setFavorite(!product.isFavorite());
+        updateFavoriteUI(product.isFavorite());
+        
+        performFavoriteApiCall(product, -1);
     }
 
     private void loadCategoryName(String categoryId) {
@@ -647,14 +677,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         binding.btnChat.setOnClickListener(v -> {
-            com.project.utils.SessionManager sm = new com.project.utils.SessionManager(this);
-            if (!sm.isLoggedIn()) {
-                Intent intent = new Intent(this, com.project.muse_android.auth.AuthActivity.class);
-                startActivity(intent);
-            } else {
-                Intent intent = new Intent(this, com.project.muse_android.profile.ShopChatActivity.class);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(this, com.project.muse_android.profile.ShopChatActivity.class);
+            startActivity(intent);
         });
     }
 
@@ -805,5 +829,14 @@ public class ProductDetailActivity extends AppCompatActivity {
                 this.imageView = itemView;
             }
         }
+    }
+
+    private CharSequence trimTrailingWhitespace(CharSequence source) {
+        if (source == null) return "";
+        int i = source.length() - 1;
+        while (i >= 0 && Character.isWhitespace(source.charAt(i))) {
+            i--;
+        }
+        return source.subSequence(0, i + 1);
     }
 }

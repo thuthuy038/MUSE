@@ -8,11 +8,16 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.project.muse_android.R;
 import com.project.muse_android.databinding.FragmentNotificationBinding;
+import com.project.muse_android.search.SearchActivity;
 import com.project.utils.ViewUtils;
+
+import android.content.Intent;
 
 public class NotificationFragment extends Fragment {
 
@@ -33,8 +38,20 @@ public class NotificationFragment extends Fragment {
         ViewUtils.applySystemBarsPadding(binding.header, true, false);
 
         setupTabs();
+        setupClickListeners();
         
         binding.viewPager.setUserInputEnabled(true);
+    }
+
+    private void setupClickListeners() {
+        binding.btnSearch.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), SearchActivity.class);
+            startActivity(intent);
+        });
+
+        binding.btnCart.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.navigation_cart);
+        });
     }
 
     private void setupTabs() {

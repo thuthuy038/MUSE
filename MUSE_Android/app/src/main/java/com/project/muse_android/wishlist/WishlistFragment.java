@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.core.widget.NestedScrollView;
 
 import com.project.adapters.ProductAdapter;
 import com.project.adapters.VerticalProductAdapter;
@@ -49,6 +50,10 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
     private List<Product> allFavoriteProducts = new ArrayList<>();
     private List<Product> displayedProducts = new ArrayList<>();
     private List<Category> categories = new ArrayList<>();
+    
+    private List<Product> allRecommendedProducts = new ArrayList<>();
+    private List<Product> displayedRecommendedProducts = new ArrayList<>();
+    private final int recommendedPageSize = 10;
     
     private String currentFilterStatus = "all"; // all, in_stock, out_of_stock
     private boolean filterDiscountOnly = false;
@@ -112,18 +117,30 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
 
             @Override
             public void onFavoriteClick(Product product, int position) {
-                // Handle favorite toggle from recommendation list
+                // Check login first
+                com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+                if (!sessionManager.isLoggedIn()) {
+                    Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Handle favorite toggle from recommendation list manually
+                product.setFavorite(!product.isFavorite());
+                recommendedAdapter.notifyItemChanged(position);
+
                 WishlistManager.getInstance(getContext()).addToWishlist(
                         product.get_id() != null ? product.get_id() : product.getId(),
                         new WishlistManager.WishlistCallback<WishlistResponse>() {
                     @Override
                     public void onSuccess(WishlistResponse result) {
                         Toast.makeText(getContext(), "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
-                        loadData(); // Refresh wishlist
+                        loadData(); // Refresh main wishlist
                     }
 
                     @Override
                     public void onError(String message) {
+                        product.setFavorite(false);
+                        recommendedAdapter.notifyItemChanged(position);
                         Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -131,6 +148,13 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
         });
         binding.rvRecommended.setLayoutManager(new GridLayoutManager(getContext(), 2));
         binding.rvRecommended.setAdapter(recommendedAdapter);
+
+        binding.nestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            View child = v.getChildAt(0);
+            if (child != null && scrollY >= (child.getMeasuredHeight() - v.getMeasuredHeight() - 200)) {
+                loadMoreRecommendations();
+            }
+        });
     }
 
     private void setupClickListeners() {
@@ -316,7 +340,7 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> products = response.body();
-                    List<Product> nonFavorites = new ArrayList<>();
+                    allRecommendedProducts.clear();
                     for (Product p : products) {
                         boolean inWishlist = false;
                         for (Product fav : allFavoriteProducts) {
@@ -328,16 +352,34 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
                             }
                         }
                         if (!inWishlist) {
-                            nonFavorites.add(p);
+                            allRecommendedProducts.add(p);
                         }
                     }
-                    recommendedAdapter.setData(nonFavorites.stream().limit(10).collect(Collectors.toList()));
+                    
+                    displayedRecommendedProducts.clear();
+                    int initialLimit = Math.min(recommendedPageSize, allRecommendedProducts.size());
+                    for (int i = 0; i < initialLimit; i++) {
+                        displayedRecommendedProducts.add(allRecommendedProducts.get(i));
+                    }
+                    recommendedAdapter.setData(new ArrayList<>(displayedRecommendedProducts));
                 }
             }
 
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {}
         });
+    }
+
+    private void loadMoreRecommendations() {
+        if (displayedRecommendedProducts.size() >= allRecommendedProducts.size()) {
+            return;
+        }
+        int start = displayedRecommendedProducts.size();
+        int end = Math.min(start + recommendedPageSize, allRecommendedProducts.size());
+        for (int i = start; i < end; i++) {
+            displayedRecommendedProducts.add(allRecommendedProducts.get(i));
+        }
+        recommendedAdapter.setData(new ArrayList<>(displayedRecommendedProducts));
     }
 
     private void loadData() {
@@ -430,6 +472,12 @@ public class WishlistFragment extends Fragment implements WishlistAdapter.OnProd
 
     @Override
     public void onFavoriteClick(Product product, int position) {
+        com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String productId = product.get_id() != null ? product.get_id() : product.getId();
         if (product.isFavorite()) {
             // Remove from wishlist

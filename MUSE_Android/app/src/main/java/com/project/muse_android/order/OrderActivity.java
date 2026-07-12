@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import androidx.core.widget.NestedScrollView;
 
 public class OrderActivity extends AppCompatActivity {
 
@@ -50,6 +51,8 @@ public class OrderActivity extends AppCompatActivity {
 
     private ProductAdapter suggestionAdapter;
     private List<Product> suggestionList = new ArrayList<>();
+    private List<Product> allSuggestionProducts = new ArrayList<>();
+    private final int suggestionPageSize = 10;
 
     private String currentStatus = "ALL";
     private SessionManager sessionManager;
@@ -169,6 +172,13 @@ public class OrderActivity extends AppCompatActivity {
         });
         binding.rvOrderSuggestions.setLayoutManager(new GridLayoutManager(this, 2));
         binding.rvOrderSuggestions.setAdapter(suggestionAdapter);
+
+        binding.nestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            View child = v.getChildAt(0);
+            if (child != null && scrollY >= (child.getMeasuredHeight() - v.getMeasuredHeight() - 200)) {
+                loadMoreSuggestions();
+            }
+        });
     }
 
     private void fetchOrders() {
@@ -219,15 +229,31 @@ public class OrderActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<List<Product>> call, @NonNull Response<List<Product>> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    allSuggestionProducts.clear();
+                    allSuggestionProducts.addAll(response.body());
+                    
                     suggestionList.clear();
-                    List<Product> products = response.body();
-                    if (products.size() > 6) suggestionList.addAll(products.subList(0, 6));
-                    else suggestionList.addAll(products);
+                    int initialLimit = Math.min(suggestionPageSize, allSuggestionProducts.size());
+                    for (int i = 0; i < initialLimit; i++) {
+                        suggestionList.add(allSuggestionProducts.get(i));
+                    }
                     suggestionAdapter.notifyDataSetChanged();
                 }
             }
             @Override
             public void onFailure(@NonNull Call<List<Product>> call, @NonNull Throwable t) {}
         });
+    }
+
+    private void loadMoreSuggestions() {
+        if (suggestionList.size() >= allSuggestionProducts.size()) {
+            return;
+        }
+        int start = suggestionList.size();
+        int end = Math.min(start + suggestionPageSize, allSuggestionProducts.size());
+        for (int i = start; i < end; i++) {
+            suggestionList.add(allSuggestionProducts.get(i));
+        }
+        suggestionAdapter.notifyDataSetChanged();
     }
 }
