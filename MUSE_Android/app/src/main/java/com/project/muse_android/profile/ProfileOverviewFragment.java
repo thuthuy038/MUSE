@@ -305,7 +305,11 @@ public class ProfileOverviewFragment extends Fragment {
         binding.menuMembership.getRoot().setOnClickListener(v -> openMembership(v));
 
         binding.menuFavorites.getRoot().setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.navigation_wishlist);
+            if (!sessionManager.isLoggedIn()) {
+                Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            } else {
+                Navigation.findNavController(v).navigate(R.id.navigation_wishlist);
+            }
         });
 
         binding.menuReviews.getRoot().setOnClickListener(v -> {
