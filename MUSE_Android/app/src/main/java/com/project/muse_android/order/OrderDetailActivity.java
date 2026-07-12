@@ -433,7 +433,7 @@ public class OrderDetailActivity extends AppCompatActivity {
                 binding.lineReturn.setVisibility(View.VISIBLE);
 
                 binding.btnReview.setText("Đánh giá");
-                binding.btnRequestRefund.setText("Yêu cầu Trả hàng/Hoàn tiền");
+                binding.btnRequestRefund.setText("Yêu cầu Trả hàng");
                 
                 binding.btnReview.setOnClickListener(v -> {
                     openWriteReview();

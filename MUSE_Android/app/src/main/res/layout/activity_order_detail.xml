@@ -991,7 +991,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:fontFamily="@font/montserrat"
-                android:text="Yêu cầu Trả hàng/Hoàn tiền"
+                android:text="Yêu cầu Trả hàng"
                 android:textAllCaps="false"
                 android:textColor="#6B6464"
                 android:textSize="14sp"
