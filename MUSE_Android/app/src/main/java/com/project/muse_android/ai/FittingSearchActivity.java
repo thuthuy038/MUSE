@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.activity.EdgeToEdge;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
@@ -55,6 +56,7 @@ public class FittingSearchActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         binding = ActivityFittingSearchBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

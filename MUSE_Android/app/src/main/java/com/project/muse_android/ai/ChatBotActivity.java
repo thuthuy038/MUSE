@@ -11,6 +11,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.activity.EdgeToEdge;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
 
 import com.project.models.Product;
 import com.project.models.User;
@@ -50,6 +54,7 @@ public class ChatBotActivity extends AppCompatActivity {
     private User currentUser = null;
     private int originalChatPaddingBottom = 0;
     private int originalSuggestionsPaddingBottom = 0;
+    private int navigationBarHeight = 0;
     
     private final androidx.activity.result.ActivityResultLauncher<String> recordAudioPermissionLauncher =
             registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -63,8 +68,16 @@ public class ChatBotActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         binding = ActivityChatBotBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Listen for Window Insets to get navigation bar height
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            navigationBarHeight = systemBars.bottom;
+            return windowInsets;
+        });
 
         // Fix header overlap with status bar
         com.project.utils.ViewUtils.applySystemBarsPadding(binding.layoutHeader, true, false);
@@ -190,23 +203,23 @@ public class ChatBotActivity extends AppCompatActivity {
                 .start();
 
         binding.layoutInputArea.animate()
-                .translationY(0)
+                .translationY(-navigationBarHeight)
                 .setDuration(175)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .start();
 
-        // Remove bottom padding (since bottom nav is hidden)
+        // Remove bottom padding (since bottom nav is hidden, but keep navigation bar padding)
         binding.rvChatHistory.setPadding(
                 binding.rvChatHistory.getPaddingLeft(),
                 binding.rvChatHistory.getPaddingTop(),
                 binding.rvChatHistory.getPaddingRight(),
-                originalChatPaddingBottom
+                navigationBarHeight + originalChatPaddingBottom
         );
         binding.layoutSuggestionsContent.setPadding(
                 binding.layoutSuggestionsContent.getPaddingLeft(),
                 binding.layoutSuggestionsContent.getPaddingTop(),
                 binding.layoutSuggestionsContent.getPaddingRight(),
-                originalSuggestionsPaddingBottom
+                navigationBarHeight + originalSuggestionsPaddingBottom
         );
     }
 

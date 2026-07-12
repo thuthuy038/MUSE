@@ -6,6 +6,8 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -30,8 +32,18 @@ public class BottomActionsBehavior extends CoordinatorLayout.Behavior<View> {
             navHeight = dependency.getMeasuredHeight();
         }
         
-        float translationY = dependency.getTranslationY() - navHeight;
-        child.setTranslationY(translationY);
+        int navigationBarHeight = 0;
+        WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(parent);
+        if (insets != null) {
+            navigationBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+        }
+        
+        float dy = dependency.getTranslationY(); // ranges from 0 (visible) to navHeight (hidden)
+        float progress = navHeight > 0 ? (dy / navHeight) : 0f;
+        
+        // Translate child from -navHeight (when BottomNav is visible) to -navigationBarHeight (when BottomNav is hidden)
+        float targetTranslationY = -navHeight + progress * (navHeight - navigationBarHeight);
+        child.setTranslationY(targetTranslationY);
         return true;
     }
 }
