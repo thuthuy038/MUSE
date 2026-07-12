@@ -399,7 +399,21 @@ public class Product implements Serializable, Parcelable {
     }
 
     public List<String> getColors() {
-        return colors;
+        if (colors != null && !colors.isEmpty()) {
+            return colors;
+        }
+
+        // Nếu mảng colors trống, tự động thu thập màu từ mảng variants
+        java.util.List<String> collectedColors = new java.util.ArrayList<>();
+        if (variants != null) {
+            for (ProductVariant variant : variants) {
+                String color = variant.getColor();
+                if (color != null && !color.isEmpty() && !collectedColors.contains(color)) {
+                    collectedColors.add(color);
+                }
+            }
+        }
+        return collectedColors;
     }
 
     public void setColors(List<String> colors) {
