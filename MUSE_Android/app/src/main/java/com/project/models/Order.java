@@ -5,9 +5,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Order Model
- */
 public class Order implements Serializable {
     @SerializedName("_id")
     private String _id;
@@ -53,14 +50,12 @@ public class Order implements Serializable {
         isReviewed = reviewed;
     }
 
-    // MongoDB schema support fields
     private ShippingAddress shippingAddress;
     private ShippingMethod shippingMethod;
     private Promotion promotion;
     private double subTotal;
 
-    // Nested classes matching MongoDB schema
-    public static class ShippingAddress implements Serializable {
+     public static class ShippingAddress implements Serializable {
         private String fullName;
         private String email;
         private String phone;
@@ -215,7 +210,6 @@ public class Order implements Serializable {
         public double getPrice() { return price; }
         public void setPrice(double price) { this.price = price; }
 
-        // Convert to Product for compatibility with existing adapters
         public Product toProduct() {
             Product p = new Product();
             p.setId(productId);
@@ -347,7 +341,7 @@ public class Order implements Serializable {
     }
     public void setFinalPrice(double finalPrice) {
         this.finalPrice = finalPrice;
-        this.totalPrice = finalPrice; // Sync with totalPrice for safety
+        this.totalPrice = finalPrice;
     }
 
     public String getNote() { return note; }

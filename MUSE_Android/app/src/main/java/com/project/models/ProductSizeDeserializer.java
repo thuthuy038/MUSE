@@ -13,11 +13,9 @@ public class ProductSizeDeserializer implements JsonDeserializer<Product.Product
     public Product.ProductSize deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         Product.ProductSize productSize = new Product.ProductSize();
         if (json.isJsonPrimitive()) {
-            // It's a string, e.g., "S"
             productSize.setSize(json.getAsString());
             productSize.setQuantity(0); // Default quantity
         } else if (json.isJsonObject()) {
-            // It's an object, e.g., {"size": "S", "quantity": 10}
             JsonObject jsonObject = json.getAsJsonObject();
             if (jsonObject.has("size")) {
                 productSize.setSize(jsonObject.get("size").getAsString());

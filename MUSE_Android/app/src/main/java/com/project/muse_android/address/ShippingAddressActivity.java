@@ -58,7 +58,6 @@ public class ShippingAddressActivity extends AppCompatActivity {
         adapter = new AddressAdapter(new AddressAdapter.OnAddressActionListener() {
             @Override
             public void onAddressSelected(User.Address address) {
-                // Return selected address to CheckoutActivity
                 Intent data = new Intent();
                 data.putExtra("selected_address_street", address.getStreet());
                 data.putExtra("selected_address_ward", address.getWard());

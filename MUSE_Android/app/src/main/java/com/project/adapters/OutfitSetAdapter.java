@@ -50,21 +50,18 @@ public class OutfitSetAdapter extends RecyclerView.Adapter<OutfitSetAdapter.Outf
         holder.tvSetName.setText(set.getName());
         holder.tvSetDescription.setText(set.getDescription());
 
-        // Bind Top Product
         Product top = set.getTop();
         holder.tvTopName.setText(top.getName());
         holder.tvTopPrice.setText(formatPrice(top.getPrice()));
         loadImage(holder.ivTopImage, top);
         holder.cardTop.setOnClickListener(v -> openProductDetail(top));
 
-        // Bind Bottom Product
         Product bottom = set.getBottom();
         holder.tvBottomName.setText(bottom.getName());
         holder.tvBottomPrice.setText(formatPrice(bottom.getPrice()));
         loadImage(holder.ivBottomImage, bottom);
         holder.cardBottom.setOnClickListener(v -> openProductDetail(bottom));
 
-        // Save Set button click listener
         holder.btnSaveSet.setOnClickListener(v -> {
             String topUrl = (top.getImages() != null && !top.getImages().isEmpty()) ? top.getImages().get(0).getUrl() : "";
             String bottomUrl = (bottom.getImages() != null && !bottom.getImages().isEmpty()) ? bottom.getImages().get(0).getUrl() : "";

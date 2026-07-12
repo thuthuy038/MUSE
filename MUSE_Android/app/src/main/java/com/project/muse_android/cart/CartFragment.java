@@ -56,9 +56,9 @@ public class CartFragment extends Fragment {
 
     private boolean isEditMode = false;
     private double selectedVoucherDiscount = 0;
-    private double selectedShippingDiscount = 23000; // Default always 23k
+    private double selectedShippingDiscount = 23000;
     private String selectedVoucherCode = "";
-    private double defaultShippingFee = 23000; // Default Standard shipping fee
+    private double defaultShippingFee = 23000;
 
     @Nullable
     @Override
@@ -71,19 +71,16 @@ public class CartFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        updateVoucherUI(); // Ensure default shipping badge is shown immediately
+        updateVoucherUI();
 
-        // Nút quay lại
         binding.ivBack.setOnClickListener(v -> {
             Navigation.findNavController(view).navigateUp();
         });
 
-        // Nút Mua sắm ngay (khi giỏ hàng trống)
         binding.btnShopNow.setOnClickListener(v -> {
             Navigation.findNavController(view).popBackStack();
         });
 
-        // Nút liên kết tới trang Yêu thích (Wishlist)
         binding.ivFavorite.setOnClickListener(v -> {
             com.project.utils.SessionManager sessionManager = new com.project.utils.SessionManager(requireContext());
             if (!sessionManager.isLoggedIn()) {
@@ -93,19 +90,14 @@ public class CartFragment extends Fragment {
             }
         });
 
-        // Cấu hình RecyclerView cho giỏ hàng
         setupCartRecyclerView();
 
-        // Cấu hình RecyclerView gợi ý sản phẩm
         setupSuggestedProductsRecyclerView();
 
-        // Gọi API lấy dữ liệu sản phẩm
         fetchDataFromServer();
 
-        // Sử dụng Helper để tự động đẩy Header xuống dưới Status Bar
         ViewUtils.applySystemBarsPadding(binding.header, true, false);
 
-        // Listen for Window Insets to get navigation bar height
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.bottomContainer, (v, insets) -> {
             androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
             int bottomInset = systemBars.bottom;
@@ -114,12 +106,10 @@ public class CartFragment extends Fragment {
             return insets;
         });
 
-        // Xử lý Checkbox Chọn tất cả (Buy Bar)
         binding.cbSelectAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
             selectAllItems(isChecked);
         });
 
-        // Xử lý Checkbox Chọn tất cả (Edit Bar)
         binding.cbSelectAllEdit.setOnCheckedChangeListener((buttonView, isChecked) -> {
             selectAllItems(isChecked);
         });
@@ -127,7 +117,6 @@ public class CartFragment extends Fragment {
         binding.btnDeleteSelected.setOnClickListener(v -> deleteSelectedItems());
         binding.btnSaveToFavorites.setOnClickListener(v -> saveSelectedToFavorites());
 
-        // Mở BottomSheet chọn Voucher
         binding.layoutVoucher.setOnClickListener(v -> {
             double selectedOriginalTotal = 0;
             for (Product p : cartProducts) {
@@ -139,7 +128,6 @@ public class CartFragment extends Fragment {
             VoucherBottomSheetFragment voucherSheet = VoucherBottomSheetFragment.newInstance(selectedOriginalTotal);
             voucherSheet.setOnVoucherSelectedListener((discount, shipping, code) -> {
                 this.selectedVoucherDiscount = discount;
-                // If user selected a new shipping discount, use it, otherwise keep default 23k
                 if (shipping > 0) {
                     this.selectedShippingDiscount = shipping;
                 } else {
@@ -152,7 +140,6 @@ public class CartFragment extends Fragment {
             voucherSheet.show(getParentFragmentManager(), "VoucherBottomSheet");
         });
 
-        // Mở BottomSheet chi tiết khuyến mãi
         binding.layoutPriceSummary.setOnClickListener(v -> {
             showPromotionDetails();
         });
@@ -182,8 +169,7 @@ public class CartFragment extends Fragment {
             }
         });
 
-        // Xử lý nút Sửa
-        binding.tvEdit.setOnClickListener(v -> toggleEditMode());
+         binding.tvEdit.setOnClickListener(v -> toggleEditMode());
     }
 
     private void toggleEditMode() {
@@ -318,28 +304,23 @@ public class CartFragment extends Fragment {
             return;
         }
 
-        // Đợi view được vẽ xong để lấy chiều cao chính xác
         bottomNav.post(() -> {
             int navHeight = bottomNav.getHeight();
             if (navHeight <= 0) return;
 
-            // Calculate translation for showing bottom container above bottom navigation view
-            // accounting for the bottom navigation bar inset padding in bottomContainer.
             int translationY = -(navHeight - currentBottomInset);
 
-            // Mặc định Buy Bar nằm trên Bottom Nav
             binding.bottomContainer.setTranslationY(translationY);
 
-            // Lắng nghe sự kiện cuộn để đồng bộ ẩn/hiện
             binding.nestedScrollView.setOnScrollChangeListener((View.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
                 if (scrollY > oldScrollY + 10) {
-                    // Cuộn xuống: Ẩn Bottom Nav -> Buy Bar trượt xuống đáy màn hình
+
                     binding.bottomContainer.animate()
                             .translationY(0)
                             .setDuration(200)
                             .start();
                 } else if (scrollY < oldScrollY - 10) {
-                    // Cuộn lên: Hiện Bottom Nav -> Buy Bar trượt lên trên Bottom Nav
+
                     binding.bottomContainer.animate()
                             .translationY(translationY)
                             .setDuration(200)
@@ -428,7 +409,7 @@ public class CartFragment extends Fragment {
 
                     @Override
                     public void onVariantClick(Product product, int position) {
-                        // Fetch full product details to show all colors/sizes
+
                         ApiService service = ApiClient.INSTANCE.getInstance();
                         service.getProductDetail(product.getId()).enqueue(new Callback<Product>() {
                             @Override
@@ -436,8 +417,7 @@ public class CartFragment extends Fragment {
                                 if (!isAdded() || binding == null) return;
                                 if (response.isSuccessful() && response.body() != null) {
                                     Product fullProduct = response.body();
-                                    
-                                    // Current selected from existing product
+
                                     String curColor = "";
                                     String curSize = "";
                                     if (product.getVariants() != null && !product.getVariants().isEmpty()) {
@@ -449,7 +429,7 @@ public class CartFragment extends Fragment {
                                             fullProduct, curColor, curSize, product.getQuantity());
                                     
                                     variantSheet.setOnVariantSelectedListener((color, size, quantity) -> {
-                                        // Update local list
+
                                         if (product.getVariants() != null && !product.getVariants().isEmpty()) {
                                             product.getVariants().get(0).setColor(color);
                                             product.getVariants().get(0).setSize(size);
@@ -460,7 +440,6 @@ public class CartFragment extends Fragment {
                                         double price = product.getDiscountPrice() != null && product.getDiscountPrice() > 0 
                                                 ? product.getDiscountPrice() : product.getPrice();
 
-                                        // Update in Manager (Room/API)
                                         CartManager.getInstance(requireContext()).updateQuantity(product.getId(), quantity, price, color, size, new CartManager.CartCallback<Void>() {
                                             @Override
                                             public void onSuccess(Void result) {
@@ -509,7 +488,6 @@ public class CartFragment extends Fragment {
                     return;
                 }
 
-                // Manual toggle
                 product.setFavorite(!product.isFavorite());
                 productAdapter.notifyItemChanged(position);
 
@@ -550,7 +528,6 @@ public class CartFragment extends Fragment {
         if (!isAdded()) return;
         Toast.makeText(getContext(), "Đang tải dữ liệu...", Toast.LENGTH_SHORT).show();
 
-        // Get Cart Items
         CartManager.getInstance(requireContext()).getCartItems(new CartManager.CartCallback<List<Product>>() {
             @Override
             public void onSuccess(List<Product> result) {
@@ -579,7 +556,6 @@ public class CartFragment extends Fragment {
             }
         });
 
-        // Get Suggestions
         ApiClient.INSTANCE.getInstance().getProducts().enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(@NonNull Call<List<Product>> call, @NonNull Response<List<Product>> response) {
@@ -613,7 +589,6 @@ public class CartFragment extends Fragment {
             }
         }
 
-        // Reset visibility
         binding.tvVoucherHint.setVisibility(View.VISIBLE);
         binding.tvVoucherDiscountAmount.setVisibility(View.GONE);
         binding.tvVoucherFreeShipping.setVisibility(View.GONE);
@@ -645,18 +620,14 @@ public class CartFragment extends Fragment {
 
         boolean isEmpty = cartProducts.isEmpty();
 
-        // Chuyển đổi trạng thái Trống / Có đồ
         binding.layoutEmptyCart.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         binding.rvCartProducts.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
-        // Cập nhật số lượng trên Header
         String countText = "(" + cartProducts.size() + ")";
         binding.tvCartCount.setText(countText);
 
-        // Hiện/ẩn summary giá
         binding.layoutPriceSummary.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
-        // Cập nhật nút Thanh toán (và ẩn/hiện banner Free Shipping)
         updateCheckoutButtonState();
     }
 
@@ -678,14 +649,9 @@ public class CartFragment extends Fragment {
             }
         }
 
-        // totalSavings = voucherDiscount + productDiscount
-        // shipping is always free (discount = fee) so it doesn't affect finalTotal here if we only consider product prices
-        // unless we add shippingFee to originalTotal first.
         double totalSavings = productDiscount + selectedVoucherDiscount;
-        // finalTotal = originalTotal - totalSavings
         double finalTotal = originalTotal - totalSavings;
 
-        // Update Summary UI
         binding.tvTotalPrice.setText(formatPrice(finalTotal));
         binding.tvSavings.setText("Tiết kiệm: " + formatPrice(totalSavings));
 

@@ -62,21 +62,21 @@ public class AddShippingAddressActivity extends AppCompatActivity {
 
         setupUI();
         setupSwitchColors();
-        fetchProvinces(false); // Silent fetch on start
+        fetchProvinces(false);
     }
 
     private void setupSwitchColors() {
         int[][] states = new int[][] {
-            new int[] {-android.R.attr.state_checked}, // unchecked
-            new int[] {android.R.attr.state_checked}  // checked
+            new int[] {-android.R.attr.state_checked},
+            new int[] {android.R.attr.state_checked}
         };
         int[] thumbColors = new int[] {
-            android.graphics.Color.parseColor("#B0BEC5"), // grey
-            android.graphics.Color.parseColor("#E63F69")  // pink
+            android.graphics.Color.parseColor("#B0BEC5"),
+            android.graphics.Color.parseColor("#E63F69")
         };
         int[] trackColors = new int[] {
-            android.graphics.Color.parseColor("#ECEFF1"), // light grey
-            android.graphics.Color.parseColor("#FFE5EC")  // pink track
+            android.graphics.Color.parseColor("#ECEFF1"),
+            android.graphics.Color.parseColor("#FFE5EC")
         };
         binding.swDefault.setThumbTintList(new android.content.res.ColorStateList(states, thumbColors));
         binding.swDefault.setTrackTintList(new android.content.res.ColorStateList(states, trackColors));

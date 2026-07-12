@@ -64,7 +64,6 @@ public class Product implements Serializable, Parcelable {
     private String sku;
     private boolean isFavorite;
 
-    // Local UI State
     private boolean isSelected;
     private int quantity; // For Cart
 
@@ -93,10 +92,6 @@ public class Product implements Serializable, Parcelable {
     public void setVariants(List<ProductVariant> variants) {
         this.variants = variants;
     }
-
-    // ==========================
-    // Parcelable Implementation
-    // ==========================
 
     protected Product(Parcel in) {
         _id = in.readString();
@@ -181,9 +176,6 @@ public class Product implements Serializable, Parcelable {
         dest.writeTypedList(variants);
     }
 
-    // ==========================
-    // Inner Classes
-    // ==========================
 
     public static class ProductImage implements Serializable, Parcelable {
         private String url;
@@ -278,9 +270,7 @@ public class Product implements Serializable, Parcelable {
         }
     }
 
-    // ==========================
     // Constructors
-    // ==========================
 
     public Product() {
     }
@@ -306,9 +296,7 @@ public class Product implements Serializable, Parcelable {
         this.reviewCount = reviewCount;
     }
 
-    // ==========================
     // Getter & Setter
-    // ==========================
 
     public String get_id() {
         return _id;
@@ -516,9 +504,7 @@ public class Product implements Serializable, Parcelable {
         isFavorite = favorite;
     }
 
-    // ==========================
     // Helper Methods
-    // ==========================
 
     public double getOriginalPrice() {
         if (discountPrice != null && discountPrice > 0 && discountPrice < price) {
@@ -583,9 +569,6 @@ public class Product implements Serializable, Parcelable {
         return allSizes.get(0) + " - " + allSizes.get(allSizes.size() - 1);
     }
 
-    // ==========================
-    // equals, hashCode, toString
-    // ==========================
 
     @Override
     public boolean equals(Object o) {

@@ -13,7 +13,6 @@ public class PaymentDeserializer implements JsonDeserializer<Order.Payment> {
     public Order.Payment deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         Order.Payment payment = new Order.Payment();
         if (json.isJsonPrimitive()) {
-            // It's a string reference (e.g. ObjectId string)
             payment.set_id(json.getAsString());
         } else if (json.isJsonObject()) {
             JsonObject jsonObject = json.getAsJsonObject();

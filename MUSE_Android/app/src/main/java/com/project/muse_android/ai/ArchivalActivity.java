@@ -34,7 +34,6 @@ public class ArchivalActivity extends AppCompatActivity {
         binding = ActivityArchivalBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Fix header overlap
         com.project.utils.ViewUtils.applySystemBarsPadding(binding.layoutHeader, true, false);
 
         binding.btnBack.setOnClickListener(v -> finish());
@@ -54,7 +53,6 @@ public class ArchivalActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerViews() {
-        // Create RecyclerViews programmatically to place inside ViewPager2
         float density = getResources().getDisplayMetrics().density;
         int padding = (int) (16 * density);
 
@@ -68,7 +66,6 @@ public class ArchivalActivity extends AppCompatActivity {
         rvOutfits.setClipToPadding(false);
         rvOutfits.setLayoutManager(new LinearLayoutManager(this));
 
-        // Conversations List Adapter
         chatAdapter = new ArchivedChatAdapter(this, archivedChats, new ArchivedChatAdapter.OnChatClickListener() {
             @Override
             public void onChatClick(ArchivedChat chat) {
@@ -91,7 +88,6 @@ public class ArchivalActivity extends AppCompatActivity {
         });
         rvChats.setAdapter(chatAdapter);
 
-        // Saved Outfits List Adapter
         outfitAdapter = new ArchivedOutfitAdapter(this, savedOutfits, new ArchivedOutfitAdapter.OnOutfitDeleteListener() {
             @Override
             public void onDeleteClick(SavedOutfit outfit, int position) {
@@ -104,8 +100,6 @@ public class ArchivalActivity extends AppCompatActivity {
             }
         });
         rvOutfits.setAdapter(outfitAdapter);
-
-        // Setup ViewPager
         List<View> views = new ArrayList<>();
         views.add(rvChats);
         views.add(rvOutfits);
@@ -143,12 +137,10 @@ public class ArchivalActivity extends AppCompatActivity {
     }
 
     private void loadHistoryData() {
-        // Load chats
         archivedChats.clear();
         archivedChats.addAll(AiStorageManager.loadArchivedChats(this));
         chatAdapter.notifyDataSetChanged();
 
-        // Load outfits
         savedOutfits.clear();
         savedOutfits.addAll(AiStorageManager.loadSavedOutfits(this));
         outfitAdapter.notifyDataSetChanged();
@@ -157,7 +149,6 @@ public class ArchivalActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh data when returning to this page (e.g. if today's chat updated or a new set was saved)
         loadHistoryData();
     }
 }

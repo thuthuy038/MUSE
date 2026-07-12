@@ -100,15 +100,12 @@ public class HorizontalProductAdapter extends ProductAdapter {
         }
 
         public void bindCustom(Product product) {
-            // Setup Swipe width
             setupSwipeWidth();
 
-            // Reset scroll position
             binding.horizontalScrollView.scrollTo(0, 0);
 
             binding.txtProductName.setText(product.getName());
 
-            // Load Image
             if (product.getImages() != null && !product.getImages().isEmpty()) {
                 String imageUrl = product.getImages().get(0).getUrl();
                 if (imageUrl != null && !imageUrl.startsWith("http")) {
@@ -146,7 +143,6 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 binding.txtPrice.setText(formatPrice(price));
                 binding.txtQuantity.setText(String.valueOf(quantity));
 
-                // Snap behavior for CART mode
                 binding.horizontalScrollView.setOnTouchListener((v, event) -> {
                     if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                         int scrollX = binding.horizontalScrollView.getScrollX();
@@ -181,11 +177,9 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 }
                 binding.txtReadonlyQuantity.setText("x" + quantity);
 
-                // Disable scroll for READ_ONLY mode
                 binding.horizontalScrollView.setOnTouchListener((v, event) -> true);
             }
 
-            // Click Listeners
             binding.layoutMainContent.setOnClickListener(v -> {
                 if (actionListener != null) {
                     actionListener.onProductClick(product);
@@ -198,7 +192,6 @@ public class HorizontalProductAdapter extends ProductAdapter {
                             context.startActivity(intent);
                         }
                     } else {
-                        // Trực tiếp giả lập click lên dòng đơn hàng để mở trang chi tiết đơn hàng
                         View parentView = (View) v.getParent();
                         while (parentView != null) {
                             if (parentView.getId() == com.project.muse_android.R.id.rvOrderProducts) {
@@ -238,7 +231,6 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 if (actionListener != null) actionListener.onCheckedChanged(product, getBindingAdapterPosition(), isChecked);
             });
 
-            // Quantity
             binding.btnAdd.setOnClickListener(v -> {
                 int q = product.getQuantity() + 1;
                 product.setQuantity(q);
@@ -260,7 +252,6 @@ public class HorizontalProductAdapter extends ProductAdapter {
         }
 
         private void setupSwipeWidth() {
-            // Get screen metrics
             WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             DisplayMetrics displayMetrics = new DisplayMetrics();
             wm.getDefaultDisplay().getMetrics(displayMetrics);
@@ -268,13 +259,11 @@ public class HorizontalProductAdapter extends ProductAdapter {
             float density = context.getResources().getDisplayMetrics().density;
 
             if (mode == HorizontalProductMode.READ_ONLY) {
-                // Completely disable any programmatic width/height for READ_ONLY
-                // This lets the ConstraintLayout use wrap_content from XML
+
                 binding.horizontalScrollView.setOnTouchListener(null);
                 
                 ViewGroup.LayoutParams params = binding.layoutMainContent.getLayoutParams();
                 params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                //params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
                 params.height = (int) (110 * context.getResources().getDisplayMetrics().density);
                 binding.layoutMainContent.setLayoutParams(params);
 
@@ -286,7 +275,6 @@ public class HorizontalProductAdapter extends ProductAdapter {
                 return;
             }
 
-            // For CART mode, strictly set width to screen - margin
             int totalMarginPx = (int) (24 * density); 
             int contentWidth = screenWidth - totalMarginPx;
 

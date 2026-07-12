@@ -13,10 +13,8 @@ public class ProductImageDeserializer implements JsonDeserializer<Product.Produc
     public Product.ProductImage deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         Product.ProductImage productImage = new Product.ProductImage();
         if (json.isJsonPrimitive()) {
-            // It's a string, e.g., "url/to/image.jpg"
             productImage.setUrl(json.getAsString());
         } else if (json.isJsonObject()) {
-            // It's an object, e.g., {"url": "url/to/image.jpg"}
             JsonObject jsonObject = json.getAsJsonObject();
             if (jsonObject.has("url")) {
                 productImage.setUrl(jsonObject.get("url").getAsString());

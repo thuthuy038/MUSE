@@ -52,7 +52,6 @@ public class AIFragment extends Fragment {
     private Runnable bannerRunnable;
     private com.project.adapters.BannerAdapter bannerAdapter;
 
-    // Available options for selection in guest or user edit mode
     private final String[] STYLES = {"Chưa có", "Elegant", "Minimalist", "Streetwear", "Vintage", "Korean", "Japanese", "Casual", "Office", "Luxury", "Sport", "Classic"};
     private final String[] COLORS = {"Chưa có", "White", "Black", "Pink", "Beige", "Brown", "Blue", "Green", "Gray"};
     private final String[] PURPOSES = {"Chưa có", "Daily", "Work", "Party", "Travel", "Dating"};
@@ -71,7 +70,6 @@ public class AIFragment extends Fragment {
         sessionManager = new SessionManager(requireContext());
         homeApiService = HomeApiClient.getHomeApiService();
 
-        // Sử dụng Helper để tự động đẩy Header xuống dưới Status Bar
         com.project.utils.ViewUtils.applySystemBarsPadding(binding.header, true, false);
 
         binding.ivBack.setOnClickListener(v -> {
@@ -87,32 +85,27 @@ public class AIFragment extends Fragment {
             }
         });
 
-        // Link AI Agent to ChatBotActivity
         binding.cardAiAgent.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), ChatBotActivity.class);
             startActivity(intent);
         });
 
-        // Link Your Archival to ArchivalActivity
         binding.cardArchival.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), ArchivalActivity.class);
             startActivity(intent);
         });
 
-        // Link Virtual Fitting to VirtualFittingActivity
         binding.cardVirtualFitting.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), VirtualFittingActivity.class);
             startActivity(intent);
         });
 
-        // Link Outfit Space to VirtualFittingActivity in Scan Mode
         binding.cardOutfitSpace.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), VirtualFittingActivity.class);
             intent.putExtra("outfit_scan", true);
             startActivity(intent);
         });
 
-        // Initialize ViewPager2 for AI seasonal banners
         bannerAdapter = new com.project.adapters.BannerAdapter(bannerList);
         binding.vpBannersAI.setAdapter(bannerAdapter);
         binding.vpBannersAI.setPageTransformer((page, position) -> {
@@ -143,12 +136,11 @@ public class AIFragment extends Fragment {
     private void loadUserProfile() {
         String token = sessionManager.getToken();
         if (token == null) {
-            // Guest mode: load guest UI without redirecting to login
+
             setupGuestUI();
             return;
         }
 
-        // Fetch user profile from REST API database
         ApiClient.INSTANCE.getInstance().getProfile("Bearer " + token).enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
@@ -191,7 +183,6 @@ public class AIFragment extends Fragment {
         binding.tvUserName.setText(user.getName());
         binding.tvUserLabel.setText(user.isProfileCompleted() ? "AI Profile Đã Hoàn Thành" : "AI Profile Chưa Hoàn Thành");
 
-        // Load Avatar
         if (user.getAvatar() != null && user.getAvatar().getUrl() != null && !user.getAvatar().getUrl().isEmpty()) {
             String avatarUrl = user.getAvatar().getUrl();
             if (avatarUrl.startsWith("http") || avatarUrl.startsWith("/")) {
@@ -209,7 +200,6 @@ public class AIFragment extends Fragment {
             binding.ivUserAvatar.setImageResource(R.drawable.ic_profile_vector);
         }
 
-        // Save server User data to local AI_PREFS to keep them synced
         if (getContext() != null) {
             android.content.SharedPreferences.Editor editor = requireContext().getSharedPreferences("AI_PREFS", android.content.Context.MODE_PRIVATE).edit();
             String userIdKey = getCurrentUserId();
@@ -306,7 +296,6 @@ public class AIFragment extends Fragment {
 
         if (sessionManager.isLoggedIn()) {
             if (hasAtLeastOneField) {
-                // Ghi nhớ cho các lần đăng nhập sau
                 sessionManager.saveProfileCompleted(true);
                 return false;
             } else {

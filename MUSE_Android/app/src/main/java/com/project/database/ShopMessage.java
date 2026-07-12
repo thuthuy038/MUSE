@@ -7,11 +7,11 @@ import androidx.room.PrimaryKey;
 public class ShopMessage {
     @PrimaryKey(autoGenerate = true)
     private int id;
-    private String sender; // "customer", "admin", "guest"
+    private String sender;
     private String content; 
-    private String image; // Base64 string for image support
-    private String timestamp; // Changed from long to String to support ISO date strings from server
-    private String userId; // maps to customerId
+    private String image;
+    private String timestamp;
+    private String userId;
 
     public ShopMessage(String sender, String content, String image, String timestamp, String userId) {
         this.sender = sender;

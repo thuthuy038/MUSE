@@ -49,11 +49,11 @@ public class CheckoutActivity extends AppCompatActivity {
     private double productDiscount = 0;
     private double voucherDiscount = 0;
     private String selectedVoucherCode = "";
-    private double shippingFee = 23000; // Default Standard
-    private double shippingDiscount = 23000; // Default Free Shipping
+    private double shippingFee = 23000;
+    private double shippingDiscount = 23000;
 
-    private int selectedShippingMethod = 1; // 1: Standard, 2: Fast, 3: Express
-    private int selectedPaymentMethod = 1; // 1: COD, 2: Bank, 3: Momo, 4: VNPay
+    private int selectedShippingMethod = 1;
+    private int selectedPaymentMethod = 1;
     private boolean isOnlinePaymentAuthorized = false;
 
     private User currentUser;
@@ -113,8 +113,7 @@ public class CheckoutActivity extends AppCompatActivity {
         sessionManager = new SessionManager(this);
         loadData();
         setupUI();
-        
-        // Initialize default values for standard shipping
+
         shippingFee = 23000;
         shippingDiscount = 23000;
 
@@ -139,7 +138,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
-                // Ignore failure for now
+
             }
         });
     }
@@ -161,7 +160,6 @@ public class CheckoutActivity extends AppCompatActivity {
                 selectedDistrict = def.getDistrict();
                 selectedProvince = def.getProvince();
 
-                // Use address contact info if available, otherwise fallback to account info
                 selectedName = (def.getFullName() != null && !def.getFullName().isEmpty()) ? def.getFullName() : currentUser.getName();
                 selectedPhone = (def.getPhone() != null && !def.getPhone().isEmpty()) ? def.getPhone() : 
                                 (currentUser.getPhone() != null ? currentUser.getPhone() : "Chưa có số điện thoại");
@@ -196,13 +194,12 @@ public class CheckoutActivity extends AppCompatActivity {
     }
 
     private void loadData() {
-        // Retrieve products passed from CartFragment
+
         List<Product> list = getIntent().getParcelableArrayListExtra("products");
         if (list != null) {
             checkoutProducts.addAll(list);
         }
-        
-        // Retrieve voucher discount passed from CartFragment
+
         voucherDiscount = getIntent().getDoubleExtra("voucher_discount", 0);
         selectedVoucherCode = getIntent().getStringExtra("voucher_code");
         if (selectedVoucherCode == null) selectedVoucherCode = "";
@@ -216,7 +213,6 @@ public class CheckoutActivity extends AppCompatActivity {
             addressLauncher.launch(intent);
         });
 
-        // Setup RecyclerView with Adapter in READ_ONLY mode
         adapter = new HorizontalProductAdapter(this, HorizontalProductMode.READ_ONLY, new HorizontalProductAdapter.OnProductActionListener() {
             @Override
             public void onDelete(Product product, int position) {}
@@ -245,8 +241,7 @@ public class CheckoutActivity extends AppCompatActivity {
             VoucherBottomSheetFragment voucherSheet = VoucherBottomSheetFragment.newInstance(tempTotal);
             voucherSheet.setOnVoucherSelectedListener((discount, shipping, code) -> {
                 this.voucherDiscount = discount;
-                // Keep shipping free regardless of what the voucher sheet returns for shipping
-                // shippingDiscount already matches shippingFee based on the selected method
+
                 this.selectedVoucherCode = code;
                 calculatePrices();
             });
@@ -427,7 +422,7 @@ public class CheckoutActivity extends AppCompatActivity {
         // Map payment method
         String pMethod = "COD";
         switch (selectedPaymentMethod) {
-            case 2: pMethod = "VNPAY"; break; // Map BANK to VNPAY to match backend enum ['COD', 'MOMO', 'VNPAY']
+            case 2: pMethod = "VNPAY"; break;
             case 3: pMethod = "MOMO"; break;
             case 4: pMethod = "VNPAY"; break;
         }

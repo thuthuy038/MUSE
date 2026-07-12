@@ -77,19 +77,17 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         public OrderViewHolder(ItemOrderBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-            
-            // Initialize nested adapter once
+
             this.productAdapter = new HorizontalProductAdapter(context, HorizontalProductMode.READ_ONLY, null);
             binding.rvOrderProducts.setLayoutManager(new LinearLayoutManager(context));
             binding.rvOrderProducts.setAdapter(productAdapter);
         }
 
         public void bind(Order order) {
-            // 1. Status Header
+
             String statusText = order.getStatus();
             binding.txtStatus.setText(mapStatusToText(statusText));
 
-            // 2. Update nested adapter data
             List<Product> products = order.getProducts();
             boolean isExpanded = expandedOrderIds.contains(order.getId());
 
@@ -117,7 +115,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 productAdapter.setData(products);
             }
 
-            // 3. Total Price Footer
             int totalQty = 0;
             if (products != null) {
                 for (Product p : products) {
@@ -127,16 +124,13 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             String totalInfo = String.format(Locale.getDefault(), "Tổng số tiền(%d sản phẩm): %s", totalQty, formatPrice(order.getTotalPrice()));
             binding.txtTotalInfo.setText(totalInfo);
 
-            // 4. Action Buttons based on Status
             android.content.SharedPreferences prefs = context.getSharedPreferences("MUSE_PREFS", Context.MODE_PRIVATE);
             boolean isLocalReviewed = prefs.getBoolean("reviewed_" + order.get_id(), false);
 
-            // Temporary sync: update order model if local reviewed is true
             if (isLocalReviewed) order.setReviewed(true);
 
             setupButtons(order);
 
-            // 5. Navigate to Detail
             binding.getRoot().setOnClickListener(v -> {
                 android.content.Intent intent = new android.content.Intent(context, OrderDetailActivity.class);
                 intent.putExtra("order", order);
@@ -145,7 +139,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         }
 
         private void setupButtons(Order order) {
-            // Hide all buttons first
             binding.btnContact.setVisibility(View.GONE);
             binding.btnTrack.setVisibility(View.GONE);
             binding.btnReturn.setVisibility(View.GONE);
@@ -158,8 +151,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
             String statusUpper = status.toUpperCase();
 
-            // DELIVERED, COMPLETED, ĐÃ GIAO, HOÀN THÀNH
-            if (statusUpper.equals("DELIVERED") || statusUpper.equals("COMPLETED") 
+            if (statusUpper.equals("DELIVERED") || statusUpper.equals("COMPLETED")
                     || statusUpper.contains("ĐÃ GIAO") || statusUpper.contains("HOÀN THÀNH")) {
                 
                 // Logic 5 days: Trả hàng/Hoàn tiền vs Mua lại
@@ -206,8 +198,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     });
                 }
             }
-            // PENDING, PROCESSING, ĐANG XỬ LÝ, CHỜ LẤY HÀNG
-            else if (statusUpper.equals("PENDING") || statusUpper.equals("PROCESSING") 
+            else if (statusUpper.equals("PENDING") || statusUpper.equals("PROCESSING")
                     || statusUpper.contains("XỬ LÝ") || statusUpper.contains("LẤY HÀNG")
                     || statusUpper.contains("XÁC NHẬN")) {
                 binding.btnContact.setVisibility(View.VISIBLE);
@@ -222,14 +213,12 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     }
                 });
             }
-            // SHIPPING, ĐANG GIAO HÀNG
             else if (statusUpper.equals("SHIPPING") || statusUpper.contains("GIAO")) {
                 binding.btnTrack.setVisibility(View.VISIBLE);
                 binding.btnTrack.setOnClickListener(v -> {
                     Toast.makeText(context, "Đang định vị theo dõi hành trình đơn hàng " + order.getId(), Toast.LENGTH_SHORT).show();
                 });
             }
-            // CANCELLED, ĐÃ HỦY
             else if (statusUpper.equals("CANCELLED") || statusUpper.contains("HỦY")) {
                 binding.btnCancelDetail.setVisibility(View.VISIBLE);
                 binding.btnReorder.setVisibility(View.VISIBLE);
@@ -250,7 +239,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     }
                 });
             }
-            // RETURNED, TRẢ HÀNG
             else if (statusUpper.contains("RETURN") || statusUpper.contains("TRẢ HÀNG")) {
                 binding.btnContact.setVisibility(View.VISIBLE);
                 binding.btnContact.setOnClickListener(v -> {

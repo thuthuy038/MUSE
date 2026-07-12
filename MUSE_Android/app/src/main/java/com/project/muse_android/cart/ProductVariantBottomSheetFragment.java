@@ -116,7 +116,6 @@ public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment
     private void setupVariantOptions() {
         if (product == null) return;
 
-        // Colors
         List<String> colors = product.getColors();
         if (colors != null) {
             for (String color : colors) {
@@ -134,10 +133,8 @@ public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment
             }
         }
 
-        // Sizes - Thu thập size từ cả sizes list và variants để đồng bộ với trang chi tiết
         java.util.List<String> sizeNames = new java.util.ArrayList<>();
-        
-        // Từ sizes list
+
         if (product.getSizes() != null) {
             for (Product.ProductSize s : product.getSizes()) {
                 if (s.getSize() != null && !sizeNames.contains(s.getSize())) {
@@ -145,8 +142,7 @@ public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment
                 }
             }
         }
-        
-        // Từ variants list
+
         if (product.getVariants() != null) {
             for (com.project.models.ProductVariant v : product.getVariants()) {
                 if (v.getSize() != null && !sizeNames.contains(v.getSize())) {
@@ -155,7 +151,6 @@ public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment
             }
         }
 
-        // Sắp xếp kích cỡ
         try {
             sizeNames.sort((s1, s2) -> {
                 try {
@@ -184,7 +179,6 @@ public class ProductVariantBottomSheetFragment extends BottomSheetDialogFragment
                 if (isChecked) selectedSize = size;
             });
 
-            // Kiểm tra tồn kho để vô hiệu hóa (giống trang chi tiết)
             boolean hasStock = false;
             if (product.getVariants() != null) {
                 for (com.project.models.ProductVariant v : product.getVariants()) {

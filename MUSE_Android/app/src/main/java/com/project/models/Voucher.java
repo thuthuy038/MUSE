@@ -12,7 +12,6 @@ public class Voucher {
     private String orderId;
     private String usedDate;
 
-    // Display info (mapped from Promotion)
     private String name;
     private String description;
     private double minOrderValue;
@@ -20,7 +19,6 @@ public class Voucher {
     private String type;
     private double discountValue;
 
-    // Local UI state
     private boolean isSelected;
 
     public Voucher() {}

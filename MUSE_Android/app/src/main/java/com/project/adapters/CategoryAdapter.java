@@ -70,28 +70,24 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         boolean isSelected = isSelectionEnabled && (position == selectedPosition);
 
         if (isSelected) {
-            // Selected style: Larger size, PINK text, Pink shadow
             holder.itemView.setScaleX(1.15f);
             holder.itemView.setScaleY(1.15f);
 
             holder.binding.txtCategoryName.setTypeface(null, Typeface.BOLD);
             holder.binding.txtCategoryName.setTextColor(Color.parseColor("#FB6F92")); // Pink color
 
-            // Pink Shadow effect for the card
             holder.binding.cardCategory.setCardElevation(12f);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 holder.binding.cardCategory.setOutlineSpotShadowColor(Color.parseColor("#FB6F92"));
                 holder.binding.cardCategory.setOutlineAmbientShadowColor(Color.parseColor("#FB6F92"));
             }
         } else {
-            // Normal style
             holder.itemView.setScaleX(1.0f);
             holder.itemView.setScaleY(1.0f);
             holder.binding.layoutContainer.setBackground(null);
             holder.binding.txtCategoryName.setTypeface(null, Typeface.NORMAL);
             holder.binding.txtCategoryName.setTextColor(Color.parseColor("#666666"));
 
-            // Remove shadow
             holder.binding.cardCategory.setCardElevation(2f);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 holder.binding.cardCategory.setOutlineSpotShadowColor(Color.BLACK);
@@ -101,7 +97,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
 
         String imageUrl = category.getImageUrl();
         if (imageUrl != null) {
-            // Reset to default scale type for normal categories
+
             holder.binding.imgCategory.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
             holder.binding.imgCategory.setPadding(0, 0, 0, 0);
 
@@ -114,11 +110,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
                     .error(android.R.drawable.ic_menu_report_image)
                     .into(holder.binding.imgCategory);
         } else {
-            // Handle "All" category which might not have an image - Use brand logo
             if ("all".equals(category.getId())) {
-                holder.binding.imgCategory.setImageResource(R.drawable.logo); // Logo thương hiệu
+                holder.binding.imgCategory.setImageResource(R.drawable.logo);
 
-                // Adjust scale type and padding to prevent cropping for logo
                 holder.binding.imgCategory.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
                 int padding = (int) (12 * holder.itemView.getResources().getDisplayMetrics().density);
                 holder.binding.imgCategory.setPadding(padding, padding, padding, padding);

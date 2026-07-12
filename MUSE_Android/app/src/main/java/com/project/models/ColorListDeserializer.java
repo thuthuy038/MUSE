@@ -15,10 +15,8 @@ public class ColorListDeserializer implements JsonDeserializer<List<String>> {
     public List<String> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         List<String> colors = new ArrayList<>();
         if (json.isJsonPrimitive()) {
-            // It's a single string, e.g., "Trắng"
             colors.add(json.getAsString());
         } else if (json.isJsonArray()) {
-            // It's an array, e.g., ["Trắng", "Đen"]
             JsonArray array = json.getAsJsonArray();
             for (JsonElement element : array) {
                 if (element.isJsonPrimitive()) {

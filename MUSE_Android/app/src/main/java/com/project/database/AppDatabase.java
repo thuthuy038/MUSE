@@ -18,7 +18,7 @@ public abstract class AppDatabase extends RoomDatabase {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                             AppDatabase.class, "muse_database")
                     .fallbackToDestructiveMigration()
-                    .allowMainThreadQueries() // For simplicity in this example, use caution in production
+                    .allowMainThreadQueries()
                     .build();
         }
         return instance;
