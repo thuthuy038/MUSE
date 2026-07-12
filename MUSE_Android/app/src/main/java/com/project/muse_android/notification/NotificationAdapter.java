@@ -68,12 +68,17 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             super(binding.getRoot());
             this.binding = binding;
             
-            itemView.setOnClickListener(v -> {
+            View.OnClickListener internalListener = v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && clickListener != null) {
                     clickListener.onNotificationClick(notificationList.get(position), position);
                 }
-            });
+            };
+
+            itemView.setOnClickListener(internalListener);
+            binding.layoutOrder.setOnClickListener(internalListener);
+            binding.layoutPromotion.setOnClickListener(internalListener);
+            binding.layoutSystem.setOnClickListener(internalListener);
         }
 
         public void bind(Notification n) {

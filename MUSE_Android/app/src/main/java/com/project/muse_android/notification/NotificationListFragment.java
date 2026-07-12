@@ -73,14 +73,40 @@ public class NotificationListFragment extends Fragment {
                 markNotificationAsRead(n, position);
             }
 
-            if ("promotion".equals(n.getType()) && n.getTargetId() != null) {
-                showPromotionDetail(n.getTargetId());
-            } else if ("order".equals(n.getType()) && n.getTargetId() != null) {
-                showOrderDetail(n.getTargetId());
+            String type = n.getType() != null ? n.getType().toLowerCase().trim() : "";
+            String targetId = n.getTargetId();
+            if (targetId == null || targetId.isEmpty()) {
+                targetId = extractOrderIdFromNotification(n);
+            }
+
+            if (("promotion".equals(type) || "stock".equals(type)) && targetId != null) {
+                showPromotionDetail(targetId);
+            } else if ("order".equals(type) && targetId != null) {
+                showOrderDetail(targetId);
             }
         });
         binding.rvNotifications.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvNotifications.setAdapter(adapter);
+    }
+
+    private String extractOrderIdFromNotification(Notification n) {
+        String text = (n.getTitle() != null ? n.getTitle() : "") + " " + (n.getMessage() != null ? n.getMessage() : "");
+        int hashIdx = text.indexOf('#');
+        if (hashIdx != -1) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = hashIdx + 1; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (Character.isLetterOrDigit(c) || c == '-') {
+                    sb.append(c);
+                } else {
+                    break;
+                }
+            }
+            if (sb.length() > 0) {
+                return sb.toString().trim();
+            }
+        }
+        return null;
     }
 
     private void showOrderDetail(String orderId) {

@@ -148,8 +148,13 @@ public class EditProfileFragment extends Fragment {
             String newEmail = binding.etEmail.getText().toString().trim();
             String newPhone = binding.etPhone.getText().toString().trim();
 
-            if (newName.isEmpty() || newEmail.isEmpty()) {
-                Toast.makeText(getContext(), "Họ tên và Email không được để trống", Toast.LENGTH_SHORT).show();
+            if (newName.isEmpty()) {
+                Toast.makeText(getContext(), "Họ tên không được để trống", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (newEmail.isEmpty() && newPhone.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng nhập Email hoặc Số điện thoại", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -250,8 +255,12 @@ public class EditProfileFragment extends Fragment {
     private void saveUserProfile(String userId, String token, String name, String email, String phone) {
         Map<String, Object> userData = new HashMap<>();
         userData.put("name", name);
-        userData.put("email", email);
-        userData.put("phone", phone);
+        if (email != null && !email.isEmpty()) {
+            userData.put("email", email);
+        }
+        if (phone != null && !phone.isEmpty()) {
+            userData.put("phone", phone);
+        }
 
         // Prepare address data
         Map<String, Object> addressMap = new HashMap<>();
