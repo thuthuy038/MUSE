@@ -57,10 +57,10 @@ public class ExploreFragment extends Fragment {
 
         // Category Grid Adapter
         categoryAdapter = new CategoryAdapter(categoryList, category -> {
-            Bundle bundle = new Bundle();
-            bundle.putString("category_id", category.getId());
-            Navigation.findNavController(binding.getRoot())
-                    .navigate(R.id.navigation_category_products, bundle);
+            // Chuyển sang CategoryProductsActivity cho tất cả danh mục (bao gồm cả "Tất cả")
+            Intent intent = new Intent(getActivity(), com.project.muse_android.product.CategoryProductsActivity.class);
+            intent.putExtra("category_id", category.getId());
+            startActivity(intent);
         });
 
         // Disable selection highlight for this overview screen

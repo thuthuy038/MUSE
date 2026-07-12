@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    android:fitsSystemWindows="true">
 
     <!-- Top Bar -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -23,7 +23,8 @@
             app:tint="@color/primary_500"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:contentDescription="Back" />
 
         <TextView
             android:id="@+id/txtHeaderTitle"
@@ -40,24 +41,26 @@
 
         <ImageView
             android:id="@+id/btnCart"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:src="@drawable/ic_cart"
             app:tint="@color/primary_500"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:contentDescription="Cart" />
 
         <ImageView
             android:id="@+id/btnSearch"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:src="@drawable/ic_search"
             app:tint="@color/primary_500"
-            android:layout_marginEnd="12dp"
             app:layout_constraintEnd_toStartOf="@id/btnCart"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="Search" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -84,21 +87,24 @@
         android:id="@+id/filterBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp"
-        android:gravity="center_vertical"
+        android:paddingVertical="8dp"
+        android:gravity="top"
+        android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/divider">
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:id="@+id/btnOpenFilter"
+            android:layout_width="28dp"
+            android:layout_height="36dp"
             android:src="@drawable/ic_filter_sliders"
+            android:scaleType="centerInside"
             app:tint="#333333" />
 
         <HorizontalScrollView
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:scrollbars="none">
 
@@ -107,72 +113,111 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
+                <LinearLayout
                     android:id="@+id/btnFilterPrice"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="36dp"
                     android:background="@drawable/bg_filter_button"
+                    android:gravity="center_vertical"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="Khoảng giá ▾"
-                    android:textColor="#333333"
-                    android:textSize="12sp" />
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_down_pink" />
+                    <TextView
+                        android:id="@+id/txtFilterPrice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="Khoảng giá"
+                        android:textColor="#333333"
+                        android:textSize="12sp" />
+                </LinearLayout>
 
-                <TextView
-                    android:id="@+id/btnFilterColor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_filter_button"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="Màu sắc ▾"
-                    android:textColor="#333333"
-                    android:textSize="12sp" />
 
-                <TextView
+                <LinearLayout
                     android:id="@+id/btnFilterSize"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="36dp"
                     android:layout_marginStart="8dp"
                     android:background="@drawable/bg_filter_button"
+                    android:gravity="center_vertical"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="Kích cỡ ▾"
-                    android:textColor="#333333"
-                    android:textSize="12sp" />
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_down_pink" />
+                    <TextView
+                        android:id="@+id/txtFilterSize"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="Kích cỡ"
+                        android:textColor="#333333"
+                        android:textSize="12sp" />
+                </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/btnFilterStar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_filter_button"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_down_pink" />
+                    <TextView
+                        android:id="@+id/txtFilterStar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="Sao đánh giá"
+                        android:textColor="#333333"
+                        android:textSize="12sp" />
+                </LinearLayout>
             </LinearLayout>
         </HorizontalScrollView>
     </LinearLayout>
 
-    <!-- Product Info Bar -->
-    <RelativeLayout
+    <!-- Info Bar -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/infoBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="16dp"
-        android:paddingBottom="12dp"
+        android:paddingVertical="12dp"
         app:layout_constraintTop_toBottomOf="@id/filterBar">
 
         <TextView
             android:id="@+id/txtProductCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0 (các) sản phẩm"
-            android:textColor="#666666" />
+            android:text="0 sản phẩm phù hợp"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
         <LinearLayout
             android:id="@+id/btnSort"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_sort_arrows"
                 app:tint="#000000" />
 
@@ -182,9 +227,10 @@
                 android:layout_marginStart="4dp"
                 android:text="Sắp xếp theo"
                 android:textColor="#333333"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
         </LinearLayout>
-    </RelativeLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Product Grid -->
     <androidx.recyclerview.widget.RecyclerView
